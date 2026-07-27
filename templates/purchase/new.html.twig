@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle commande{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Nouvelle commande fournisseur</h1>
+<form method="post">
+<div class="row g-3">
+<div class="col-lg-8">
+<div class="card stat-card p-3">
+<table class="table" id="lines">
+<thead><tr><th>Produit</th><th>Qté</th><th>Prix unit.</th><th></th></tr></thead>
+<tbody>
+<tr>
+<td><select name="product_id[]" class="form-select" required><option value="">Choisir...</option>{% for p in products %}<option value="{{ p.id }}" data-price="{{ p.purchasePrice }}">{{ p.name }}</option>{% endfor %}</select></td>
+<td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
+<td><input type="number" step="0.01" min="0" name="unit_price[]" class="form-control" value="0"></td>
+<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">×</button></td>
+</tr>
+</tbody>
+</table>
+<button type="button" class="btn btn-sm btn-outline-secondary" onclick="addLine()">+ Ligne</button>
+</div>
+</div>
+<div class="col-lg-4">
+<div class="card stat-card p-3">
+<div class="mb-3">
+<label class="form-label">Fournisseur</label>
+<select name="supplier_id" class="form-select" required>
+<option value="">Choisir...</option>
+{% for s in suppliers %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+</select>
+</div>
+<button class="btn btn-brand w-100">Créer la commande</button>
+</div>
+</div>
+</div>
+</form>
+<template id="lineTpl">
+<tr>
+<td><select name="product_id[]" class="form-select" required><option value="">Choisir...</option>{% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></td>
+<td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
+<td><input type="number" step="0.01" min="0" name="unit_price[]" class="form-control" value="0"></td>
+<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">×</button></td>
+</tr>
+</template>
+{% endblock %}
+{% block javascripts %}<script>function addLine(){document.querySelector('#lines tbody').appendChild(document.getElementById('lineTpl').content.cloneNode(true));}</script>{% endblock %}

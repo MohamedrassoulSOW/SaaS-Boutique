@@ -1,0 +1,16 @@
+parameters:
+    app.name: 'BoutiqueSaaS'
+    app.mail_from: '%env(MAIL_FROM)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    App\Service\PasswordResetMailer:
+        arguments:
+            $mailFrom: '%app.mail_from%'
+            $appName: '%app.name%'

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Notifications{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Notifications</h1>
+<div class="list-group">
+{% for n in notifications %}
+<div class="list-group-item {% if not n.read %}list-group-item-warning{% endif %}">
+    <div class="d-flex justify-content-between">
+        <div>
+            <strong>{{ n.title }}</strong>
+            <div class="small text-muted">{{ n.createdAt|date('d/m/Y H:i') }} — {{ n.type }}</div>
+            <div>{{ n.message }}</div>
+        </div>
+        {% if not n.read %}
+        <form method="post" action="{{ path('app_notification_read', {id: n.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('read' ~ n.id) }}">
+            <button class="btn btn-sm btn-outline-secondary">Lu</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">Aucune notification</div>
+{% endfor %}
+</div>
+{% endblock %}

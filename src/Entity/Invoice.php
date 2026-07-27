@@ -1,0 +1,85 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\InvoiceRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: InvoiceRepository::class)]
+#[ORM\Table(name: 'invoices')]
+class Invoice
+{
+    public const TYPE_INVOICE = 'invoice';
+    public const TYPE_RECEIPT = 'receipt';
+    public const TYPE_DELIVERY = 'delivery';
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\OneToOne(inversedBy: 'invoice')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Sale $sale = null;
+
+    #[ORM\Column(length: 40)]
+    private ?string $number = null;
+
+    #[ORM\Column(length: 30)]
+    private string $type = self::TYPE_INVOICE;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $issuedAt;
+
+    public function __construct()
+    {
+        $this->issuedAt = new \DateTimeImmutable();
+        $this->number = 'FAC-'.date('Ymd').'-'.substr(uniqid(), -5);
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getSale(): ?Sale
+    {
+        return $this->sale;
+    }
+
+    public function setSale(?Sale $sale): static
+    {
+        $this->sale = $sale;
+
+        return $this;
+    }
+
+    public function getNumber(): ?string
+    {
+        return $this->number;
+    }
+
+    public function setNumber(string $number): static
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getIssuedAt(): \DateTimeImmutable
+    {
+        return $this->issuedAt;
+    }
+}

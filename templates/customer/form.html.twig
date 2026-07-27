@@ -1,0 +1,14 @@
+﻿{% extends 'base.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">{{ title }}</h1>
+<div class="panel p-4" style="max-width:720px">
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-brand">Enregistrer</button>
+            <a class="btn btn-outline-secondary" href="javascript:history.back()">Annuler</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

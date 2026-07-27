@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inscription — {{ app_name }}{% endblock %}
+{% block auth_body %}
+<div class="auth-shell">
+    <section class="auth-visual">
+        <div>
+            <div class="brand-font fs-3 mb-3">{{ app_name }}</div>
+            <p class="auth-quote">Lancez votre boutique en quelques minutes.</p>
+        </div>
+        <div class="small opacity-75">Essai immédiat · données séparées par commerçant</div>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card" style="width:min(560px,100%)">
+            <div class="brand-line">Créer un compte</div>
+            <p class="text-muted mb-4">Espace commerçant sécurisé.</p>
+            {{ form_start(form) }}
+                <div class="row g-3">
+                    <div class="col-md-6">{{ form_row(form.firstName) }}</div>
+                    <div class="col-md-6">{{ form_row(form.lastName) }}</div>
+                    <div class="col-md-6">{{ form_row(form.email) }}</div>
+                    <div class="col-md-6">{{ form_row(form.phone) }}</div>
+                    <div class="col-12">{{ form_row(form.companyName) }}</div>
+                    <div class="col-md-6">{{ form_row(form.plainPassword.first) }}</div>
+                    <div class="col-md-6">{{ form_row(form.plainPassword.second) }}</div>
+                </div>
+                <button class="btn btn-brand w-100 mt-4 py-2">S'inscrire</button>
+            {{ form_end(form) }}
+            <div class="text-center mt-3 small"><a href="{{ path('app_login') }}">Déjà un compte ?</a></div>
+        </div>
+    </section>
+</div>
+{% endblock %}

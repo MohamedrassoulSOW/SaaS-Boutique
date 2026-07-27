@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% block title %}Utilisateurs{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Utilisateurs</h1>
+<div class="card stat-card">
+<table class="table mb-0 align-middle">
+<thead><tr><th>Nom</th><th>Email</th><th>Rôles</th><th>Statut</th><th></th></tr></thead>
+<tbody>
+{% for u in users %}
+<tr>
+    <td>{{ u.fullName }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ u.roles|join(', ') }}</td>
+    <td>{% if u.suspended %}<span class="badge text-bg-danger">Suspendu</span>{% else %}<span class="badge text-bg-success">Actif</span>{% endif %}</td>
+    <td class="text-end">
+        {% if not u.admin %}
+        <form method="post" action="{{ path('admin_user_toggle_suspend', {id: u.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('suspend' ~ u.id) }}">
+            <button class="btn btn-sm btn-outline-warning">{{ u.suspended ? 'Réactiver' : 'Suspendre' }}</button>
+        </form>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

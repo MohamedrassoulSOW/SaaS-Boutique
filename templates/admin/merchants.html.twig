@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% block title %}Commerçants{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Commerçants</h1>
+<div class="card stat-card">
+<table class="table mb-0">
+<thead><tr><th>Entreprise</th><th>Contact</th><th>Boutiques</th><th>Abonnement</th><th>Créé</th></tr></thead>
+<tbody>
+{% for m in merchants %}
+<tr>
+    <td>{{ m.companyName }}</td>
+    <td>{{ m.user ? m.user.fullName ~ ' (' ~ m.user.email ~ ')' : '—' }}</td>
+    <td>{{ m.shops|length }}</td>
+    <td>{{ m.subscription ? m.subscription.plan ~ ' / ' ~ m.subscription.status : '—' }}</td>
+    <td>{{ m.createdAt|date('d/m/Y') }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

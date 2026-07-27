@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tableau de bord{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Vue d'ensemble</div>
+        <h1 class="page-title h2 mb-1">Tableau de bord</h1>
+        <div class="text-muted">{{ shop.name }} · activité en direct</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_report_index') }}" class="btn btn-outline-brand">Rapports</a>
+        <a href="{{ path('app_sale_new') }}" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Nouvelle vente</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3 reveal reveal-delay-1">
+        <div class="stat-card h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">CA du jour</div>
+                    <div class="stat-value">{{ todaySales|number_format(2, ',', ' ') }} €</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 reveal reveal-delay-2">
+        <div class="stat-card h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">CA du mois</div>
+                    <div class="stat-value">{{ monthSales|number_format(2, ',', ' ') }} €</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 reveal reveal-delay-3">
+        <div class="stat-card h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Ventes</div>
+                    <div class="stat-value">{{ salesCount }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 reveal reveal-delay-4">
+        <div class="stat-card h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Clients</div>
+                    <div class="stat-value">{{ customerCount }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="panel mb-3">
+            <div class="panel-head">
+                <h2>Évolution des ventes (7 jours)</h2>
+            </div>
+            <div class="panel-body">
+                <canvas id="salesChart" height="120"></canvas>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Produits les plus vendus</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Produit</th><th>Quantité</th></tr></thead>
+                    <tbody>
+                    {% for row in topProducts %}
+                        <tr>
+                            <td class="fw-semibold">{{ row.name }}</td>
+                            <td><span class="badge-ok">{{ row.qty }}</span></td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="2" class="text-muted px-3 py-4">Aucune vente pour le moment</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="stat-card mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Produits en stock</div>
+                    <div class="stat-value">{{ productCount }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Alertes stock faible</h2>
+                <a href="{{ path('app_stock_index') }}" class="small">Voir tout</a>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group list-group-flush list-quiet">
+                    {% for p in lowStock %}
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span>{{ p.name }}</span>
+                            <span class="badge-stock">{{ p.quantity }}</span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item px-0 text-muted">Aucune alerte</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+<script>
+const ctx = document.getElementById('salesChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{ salesByDay|map(d => d.label)|json_encode|raw }},
+    datasets: [{
+      label: 'CA',
+      data: {{ salesByDay|map(d => d.value)|json_encode|raw }},
+      borderColor: '#0c5c50',
+      backgroundColor: (context) => {
+        const {ctx, chartArea} = context.chart;
+        if (!chartArea) return 'rgba(12,92,80,.12)';
+        const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+        g.addColorStop(0, 'rgba(20,122,106,.28)');
+        g.addColorStop(1, 'rgba(20,122,106,0)');
+        return g;
+      },
+      fill: true,
+      tension: .4,
+      pointRadius: 3,
+      pointBackgroundColor: '#0c5c50',
+      borderWidth: 2.5
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(19,32,28,.06)' }, ticks: { color: '#5f726c' } },
+      x: { grid: { display: false }, ticks: { color: '#5f726c' } }
+    }
+  }
+});
+</script>
+{% endblock %}

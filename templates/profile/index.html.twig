@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+{% block title %}Profil{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Mon profil</h1>
+<div class="card stat-card p-4" style="max-width:640px">
+{{ form_start(form) }}
+{{ form_widget(form) }}
+<button class="btn btn-brand mt-2">Enregistrer</button>
+{{ form_end(form) }}
+</div>
+{% endblock %}

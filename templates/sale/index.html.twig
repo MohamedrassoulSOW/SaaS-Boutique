@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}Ventes{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between mb-4">
+    <h1 class="page-title h3 mb-0">Ventes</h1>
+    <a href="{{ path('app_sale_new') }}" class="btn btn-brand">Nouvelle vente</a>
+</div>
+<div class="card stat-card">
+<table class="table mb-0 align-middle">
+<thead><tr><th>Réf.</th><th>Date</th><th>Client</th><th>Total</th><th>Paiement</th><th></th></tr></thead>
+<tbody>
+{% for s in sales %}
+<tr>
+    <td>{{ s.reference }}</td>
+    <td>{{ s.soldAt|date('d/m/Y H:i') }}</td>
+    <td>{{ s.customer ? s.customer.fullName : 'Comptoir' }}</td>
+    <td>{{ s.total|number_format(2, ',', ' ') }} €</td>
+    <td>{{ s.paymentMethod }}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_sale_show', {id: s.id}) }}">Voir</a></td>
+</tr>
+{% else %}
+<tr><td colspan="6" class="text-muted p-4">Aucune vente</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

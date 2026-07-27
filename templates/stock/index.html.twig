@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+{% block title %}Stock{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between mb-4">
+    <h1 class="page-title h3 mb-0">Gestion du stock</h1>
+    <a href="{{ path('app_stock_adjust') }}" class="btn btn-brand">Mouvement</a>
+</div>
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card stat-card p-3">
+            <h2 class="h6">Alertes rupture / stock faible</h2>
+            <ul class="list-group list-group-flush">
+            {% for p in lowStock %}
+                <li class="list-group-item px-0 d-flex justify-content-between"><span>{{ p.name }}</span><span class="badge text-bg-danger">{{ p.quantity }}</span></li>
+            {% else %}
+                <li class="list-group-item px-0 text-muted">Aucune alerte</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card stat-card">
+            <div class="p-3 border-bottom"><strong>Historique des mouvements</strong></div>
+            <table class="table mb-0">
+                <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th>Qté</th><th>Avant → Après</th></tr></thead>
+                <tbody>
+                {% for m in movements %}
+                <tr>
+                    <td>{{ m.createdAt|date('d/m/Y H:i') }}</td>
+                    <td>{{ m.product.name }}</td>
+                    <td>{{ m.type }}</td>
+                    <td>{{ m.quantity }}</td>
+                    <td>{{ m.quantityBefore }} → {{ m.quantityAfter }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-muted p-3">Aucun mouvement</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

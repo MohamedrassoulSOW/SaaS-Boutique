@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+{% block title %}Journal{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Journal des activités</h1>
+<div class="card stat-card">
+<table class="table mb-0">
+<thead><tr><th>Date</th><th>User</th><th>Action</th><th>Description</th><th>IP</th></tr></thead>
+<tbody>
+{% for log in logs %}
+<tr>
+    <td>{{ log.createdAt|date('d/m/Y H:i') }}</td>
+    <td>{{ log.user ? log.user.email : '—' }}</td>
+    <td>{{ log.action }}</td>
+    <td>{{ log.description }}</td>
+    <td>{{ log.ipAddress }}</td>
+</tr>
+{% else %}
+<tr><td colspan="5" class="text-muted p-3">Aucune activité</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

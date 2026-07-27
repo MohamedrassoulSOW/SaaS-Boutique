@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mouvement stock{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Entrée / Sortie / Ajustement</h1>
+<div class="card stat-card p-4" style="max-width:640px">
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Produit</label>
+        <select name="product_id" class="form-select" required>
+            <option value="">Choisir...</option>
+            {% for p in products %}<option value="{{ p.id }}">{{ p.name }} (stock {{ p.quantity }})</option>{% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Type</label>
+        <select name="type" class="form-select" id="stockType">
+            <option value="in">Entrée</option>
+            <option value="out">Sortie</option>
+            <option value="adjustment">Ajustement (quantité finale)</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Quantité</label>
+        <input type="number" name="quantity" class="form-control" min="0" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Motif</label>
+        <input type="text" name="reason" class="form-control">
+    </div>
+    <button class="btn btn-brand">Valider</button>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+{% if app.user %}
+{% set route = app.request.attributes.get('_route') %}
+<div class="sidebar-backdrop no-print" id="sidebarBackdrop"></div>
+<div class="app-shell">
+    <aside class="sidebar no-print" id="appSidebar">
+        <div class="sidebar-brand d-flex align-items-center gap-3">
+            <div class="mark">B</div>
+            <div>
+                <div class="name">{{ app_name }}</div>
+                <div class="tag">Gestion commerciale</div>
+            </div>
+        </div>
+
+        {% if accessible_shops|length > 0 and not is_granted('ROLE_ADMIN') %}
+        <div class="shop-switch mb-3 px-1">
+            <label class="form-label small text-white-50 mb-1">Boutique active</label>
+            <select class="form-select form-select-sm" onchange="if(this.value) location.href=this.value">
+                {% for shop in accessible_shops %}
+                    <option value="{{ path('app_shop_switch', {id: shop.id}) }}" {% if current_shop and current_shop.id == shop.id %}selected{% endif %}>
+                        {{ shop.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <nav class="sidebar-nav">
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class="nav-section">Plateforme</div>
+                <a class="{{ route == 'admin_dashboard' ? 'active' }}" href="{{ path('admin_dashboard') }}"><i class="bi bi-speedometer2"></i>Vue d'ensemble</a>
+                <a class="{{ route == 'admin_users' ? 'active' }}" href="{{ path('admin_users') }}"><i class="bi bi-people"></i>Utilisateurs</a>
+                <a class="{{ route == 'admin_merchants' ? 'active' }}" href="{{ path('admin_merchants') }}"><i class="bi bi-shop-window"></i>Commerçants</a>
+                <a class="{{ route == 'admin_subscriptions' ? 'active' }}" href="{{ path('admin_subscriptions') }}"><i class="bi bi-credit-card"></i>Abonnements</a>
+                <a class="{{ route == 'admin_activity' ? 'active' }}" href="{{ path('admin_activity') }}"><i class="bi bi-journal-text"></i>Journal</a>
+            {% else %}
+                <div class="nav-section">Pilot</div>
+                <a class="{{ route == 'app_dashboard' ? 'active' }}" href="{{ path('app_dashboard') }}"><i class="bi bi-speedometer2"></i>Tableau de bord</a>
+                <a class="{{ route == 'app_sale_new' ? 'active' }}" href="{{ path('app_sale_new') }}"><i class="bi bi-cart-check"></i>Nouvelle vente</a>
+                <a class="{{ route == 'app_sale_index' or route == 'app_sale_show' ? 'active' }}" href="{{ path('app_sale_index') }}"><i class="bi bi-receipt"></i>Ventes</a>
+
+                <div class="nav-section">Catalogue</div>
+                <a class="{{ route starts with 'app_product_' ? 'active' }}" href="{{ path('app_product_index') }}"><i class="bi bi-box-seam"></i>Produits</a>
+                <a class="{{ route starts with 'app_category_' ? 'active' }}" href="{{ path('app_category_index') }}"><i class="bi bi-tags"></i>Catégories</a>
+                <a class="{{ route starts with 'app_supplier_' ? 'active' }}" href="{{ path('app_supplier_index') }}"><i class="bi bi-building"></i>Fournisseurs</a>
+                <a class="{{ route starts with 'app_customer_' ? 'active' }}" href="{{ path('app_customer_index') }}"><i class="bi bi-people"></i>Clients</a>
+
+                <div class="nav-section">Opérations</div>
+                <a class="{{ route starts with 'app_stock_' ? 'active' }}" href="{{ path('app_stock_index') }}"><i class="bi bi-clipboard-data"></i>Stock</a>
+                <a class="{{ route starts with 'app_purchase_' ? 'active' }}" href="{{ path('app_purchase_index') }}"><i class="bi bi-truck"></i>Achats</a>
+                <a class="{{ route starts with 'app_inventory_' ? 'active' }}" href="{{ path('app_inventory_index') }}"><i class="bi bi-ui-checks-grid"></i>Inventaires</a>
+                <a class="{{ route == 'app_report_index' ? 'active' }}" href="{{ path('app_report_index') }}"><i class="bi bi-graph-up"></i>Rapports</a>
+                <a class="{{ route starts with 'app_shop_' ? 'active' }}" href="{{ path('app_shop_index') }}"><i class="bi bi-shop"></i>Boutiques</a>
+            {% endif %}
+
+            <div class="sidebar-foot">
+                <a class="{{ route == 'app_notifications' ? 'active' }}" href="{{ path('app_notifications') }}">
+                    <i class="bi bi-bell"></i>Notifications
+                    {% if unread_notifications %}<span class="badge-soft">{{ unread_notifications }}</span>{% endif %}
+                </a>
+                <a class="{{ route == 'app_profile' ? 'active' }}" href="{{ path('app_profile') }}"><i class="bi bi-person"></i>Profil</a>
+                <a href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right"></i>Déconnexion</a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="content-wrap">
+        <div class="topbar no-print">
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="mobile-toggle" id="sidebarToggle" aria-label="Menu">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                <div class="d-none d-md-block topbar-meta">
+                    {% if current_shop and not is_granted('ROLE_ADMIN') %}
+                        {{ current_shop.name }}
+                    {% else %}
+                        {{ app.user.fullName }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                {% if not is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_sale_new') }}" class="btn btn-brand btn-sm d-none d-sm-inline-flex">
+                        <i class="bi bi-plus-lg me-1"></i>Vente
+                    </a>
+                {% endif %}
+                <a href="{{ path('app_profile') }}" class="btn btn-outline-brand btn-sm">
+                    <i class="bi bi-person me-1"></i>{{ app.user.firstName }}
+                </a>
+            </div>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show reveal" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="reveal">
+            {% block body %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% else %}
+    {% block auth_body %}{% endblock %}
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+  const sidebar = document.getElementById('appSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const toggle = document.getElementById('sidebarToggle');
+  if (!sidebar || !toggle) return;
+  const close = () => { sidebar.classList.remove('open'); backdrop.classList.remove('show'); };
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    backdrop.classList.toggle('show');
+  });
+  backdrop.addEventListener('click', close);
+})();
+</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

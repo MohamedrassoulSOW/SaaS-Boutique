@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block title %}Réinitialisation{% endblock %}
+{% block auth_body %}
+<div class="auth-shell" style="grid-template-columns:1fr">
+    <section class="auth-panel" style="min-height:100vh">
+        <div class="auth-card">
+            <div class="brand-line">Mot de passe oublié</div>
+            <p class="text-muted mb-4">Saisissez votre email. Si un compte existe, vous recevrez un lien de réinitialisation.</p>
+
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+
+            {{ form_start(form) }}
+                {{ form_row(form.email) }}
+                <button class="btn btn-brand w-100 mt-2">Envoyer le lien par email</button>
+            {{ form_end(form) }}
+            <div class="mt-3 small"><a href="{{ path('app_login') }}">Retour à la connexion</a></div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau mot de passe{% endblock %}
+{% block auth_body %}
+<div class="auth-shell" style="grid-template-columns:1fr">
+    <section class="auth-panel" style="min-height:100vh">
+        <div class="auth-card">
+            <div class="brand-line">Nouveau mot de passe</div>
+            <p class="text-muted mb-4">Choisissez un mot de passe solide.</p>
+            {{ form_start(form) }}
+                {{ form_row(form.plainPassword.first) }}
+                {{ form_row(form.plainPassword.second) }}
+                <button class="btn btn-brand w-100 mt-2">Enregistrer</button>
+            {{ form_end(form) }}
+        </div>
+    </section>
+</div>
+{% endblock %}

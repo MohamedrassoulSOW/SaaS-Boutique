@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvel inventaire{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Nouvel inventaire</h1>
+<form method="post" class="card stat-card p-4" style="max-width:720px">
+    <div class="mb-3">
+        <label class="form-label">Type</label>
+        <select name="type" class="form-select" id="invType">
+            <option value="full">Complet</option>
+            <option value="partial">Partiel</option>
+        </select>
+    </div>
+    <div class="mb-3" id="partialBox" style="display:none">
+        <label class="form-label">Produits à inventorier</label>
+        {% for p in products %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="product_ids[]" value="{{ p.id }}" id="p{{ p.id }}">
+                <label class="form-check-label" for="p{{ p.id }}">{{ p.name }} (stock {{ p.quantity }})</label>
+            </div>
+        {% endfor %}
+    </div>
+    <button class="btn btn-brand">Créer</button>
+</form>
+{% endblock %}
+{% block javascripts %}
+<script>
+document.getElementById('invType').addEventListener('change', e => {
+  document.getElementById('partialBox').style.display = e.target.value === 'partial' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

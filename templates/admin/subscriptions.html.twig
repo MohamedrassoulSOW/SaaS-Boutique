@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block title %}Abonnements{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Abonnements</h1>
+<div class="card stat-card">
+<table class="table mb-0 align-middle">
+<thead><tr><th>Commerçant</th><th>Plan</th><th>Statut</th><th>Fin</th><th>Changer</th></tr></thead>
+<tbody>
+{% for s in subscriptions %}
+<tr>
+    <td>{{ s.merchant.companyName }}</td>
+    <td>{{ s.plan }} ({{ s.price }} €)</td>
+    <td>{{ s.status }}</td>
+    <td>{{ s.endsAt ? s.endsAt|date('d/m/Y') : '—' }}</td>
+    <td>
+        <form method="post" action="{{ path('admin_subscription_plan', {id: s.id}) }}" class="d-flex gap-2">
+            <input type="hidden" name="_token" value="{{ csrf_token('plan' ~ s.id) }}">
+            <select name="plan" class="form-select form-select-sm">
+                <option value="free">Free</option>
+                <option value="basic">Basic</option>
+                <option value="pro">Pro</option>
+            </select>
+            <button class="btn btn-sm btn-brand">OK</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

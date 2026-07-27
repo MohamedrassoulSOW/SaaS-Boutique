@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inventaires{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between mb-4">
+    <h1 class="page-title h3 mb-0">Inventaires</h1>
+    <a href="{{ path('app_inventory_new') }}" class="btn btn-brand">Nouvel inventaire</a>
+</div>
+<div class="card stat-card">
+<table class="table mb-0">
+<thead><tr><th>Réf.</th><th>Type</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+<tbody>
+{% for i in inventories %}
+<tr>
+    <td>{{ i.reference }}</td>
+    <td>{{ i.type }}</td>
+    <td>{{ i.status }}</td>
+    <td>{{ i.createdAt|date('d/m/Y H:i') }}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_inventory_show', {id: i.id}) }}">Ouvrir</a></td>
+</tr>
+{% else %}
+<tr><td colspan="5" class="text-muted p-4">Aucun inventaire</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

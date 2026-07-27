@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ inventory.reference }}{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-3">Inventaire {{ inventory.reference }}</h1>
+<p class="text-muted">Type: {{ inventory.type }} — Statut: {{ inventory.status }}</p>
+<form method="post" action="{{ path('app_inventory_complete', {id: inventory.id}) }}">
+<div class="card stat-card">
+<table class="table mb-0 align-middle">
+<thead><tr><th>Produit</th><th>Théorique</th><th>Réel</th><th>Écart</th></tr></thead>
+<tbody>
+{% for item in inventory.items %}
+<tr>
+    <td>{{ item.product.name }}</td>
+    <td>{{ item.theoreticalQty }}</td>
+    <td>
+        {% if inventory.status == 'draft' %}
+            <input type="number" class="form-control form-control-sm" style="width:100px" name="real_qty[{{ item.id }}]" value="{{ item.realQty }}">
+        {% else %}
+            {{ item.realQty }}
+        {% endif %}
+    </td>
+    <td>{{ item.difference }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% if inventory.status == 'draft' %}
+<button class="btn btn-brand mt-3">Terminer & ajuster le stock</button>
+{% endif %}
+</form>
+{% endblock %}

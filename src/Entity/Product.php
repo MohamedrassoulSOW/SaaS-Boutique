@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'products')]
 class Product
 {
+    use BinaryPayloadTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -53,8 +55,15 @@ class Product
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $photo = null;
+    /** Contenu image en base (BLOB), jamais sur le disque */
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private mixed $photoData = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $photoMime = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $photoName = null;
 
     #[ORM\Column]
     private bool $isActive = true;
@@ -212,16 +221,45 @@ class Product
         return $this;
     }
 
-    public function getPhoto(): ?string
+    public function getPhotoData(): ?string
     {
-        return $this->photo;
+        return $this->readBinary($this->photoData);
     }
 
-    public function setPhoto(?string $photo): static
+    public function setPhotoData(?string $photoData): static
     {
-        $this->photo = $photo;
+        $this->photoData = $this->writeBinary($photoData);
 
         return $this;
+    }
+
+    public function getPhotoMime(): ?string
+    {
+        return $this->photoMime;
+    }
+
+    public function setPhotoMime(?string $photoMime): static
+    {
+        $this->photoMime = $photoMime;
+
+        return $this;
+    }
+
+    public function getPhotoName(): ?string
+    {
+        return $this->photoName;
+    }
+
+    public function setPhotoName(?string $photoName): static
+    {
+        $this->photoName = $photoName;
+
+        return $this;
+    }
+
+    public function hasPhoto(): bool
+    {
+        return $this->getPhotoData() !== null && $this->getPhotoData() !== '';
     }
 
     public function isActive(): bool

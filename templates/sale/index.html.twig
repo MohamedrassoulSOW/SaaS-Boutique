@@ -14,7 +14,7 @@
     <td>{{ s.reference }}</td>
     <td>{{ s.soldAt|date('d/m/Y H:i') }}</td>
     <td>{{ s.customer ? s.customer.fullName : 'Comptoir' }}</td>
-    <td>{{ s.total|number_format(2, ',', ' ') }} €</td>
+    <td>{{ s.total|money }}</td>
     <td>{{ s.paymentMethod }}</td>
     <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_sale_show', {id: s.id}) }}">Voir</a></td>
 </tr>

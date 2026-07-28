@@ -16,7 +16,7 @@
     <td>{{ c.products|length }}</td>
     <td class="text-end">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_category_edit', {id: c.id}) }}">Modifier</a>
-        <form class="d-inline" method="post" action="{{ path('app_category_delete', {id: c.id}) }}" onsubmit="return confirm('Supprimer ?')">
+        <form class="d-inline" method="post" action="{{ path('app_category_delete', {id: c.id}) }}" data-confirm="Supprimer cette catégorie ?" data-confirm-title="Supprimer la catégorie" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
             <button class="btn btn-sm btn-outline-danger">Suppr.</button>
         </form>

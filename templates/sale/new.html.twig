@@ -1,45 +1,78 @@
 {% extends 'base.html.twig' %}
 {% block title %}Nouvelle vente{% endblock %}
 {% block body %}
-<h1 class="page-title h3 mb-4">Nouvelle vente</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Point de vente</div>
+        <h1 class="page-title h2 mb-0">Nouvelle vente</h1>
+        <p class="text-muted mb-0">Ajoutez autant d'articles différents que nécessaire.</p>
+    </div>
+    <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand">Historique</a>
+</div>
+
 <form method="post" id="saleForm">
 <div class="row g-3">
     <div class="col-lg-8">
-        <div class="card stat-card p-3">
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Articles de la vente</h2>
+                <button type="button" class="btn btn-brand btn-sm" id="btnAddLine">
+                    <i class="bi bi-plus-lg me-1"></i>Ajouter un article
+                </button>
+            </div>
             <div class="table-responsive">
-            <table class="table align-middle" id="lines">
-                <thead><tr><th>Produit</th><th style="width:120px">Qté</th><th style="width:100px"></th></tr></thead>
+            <table class="table align-middle mb-0" id="lines">
+                <thead>
+                    <tr>
+                        <th>Article / produit</th>
+                        <th style="width:110px">Qté</th>
+                        <th style="width:130px">P.U.</th>
+                        <th style="width:140px">Total ligne</th>
+                        <th style="width:56px"></th>
+                    </tr>
+                </thead>
                 <tbody>
-                <tr>
+                <tr class="sale-line">
                     <td>
-                        <select name="product_id[]" class="form-select" required>
-                            <option value="">Choisir...</option>
+                        <select name="product_id[]" class="form-select product-select" required>
+                            <option value="">Choisir un article…</option>
                             {% for p in products %}
-                                <option value="{{ p.id }}" data-price="{{ p.salePrice }}" data-stock="{{ p.quantity }}">{{ p.name }} — {{ p.salePrice }} € (stock {{ p.quantity }})</option>
+                                <option value="{{ p.id }}" data-price="{{ p.salePrice }}" data-stock="{{ p.quantity }}">
+                                    {{ p.name }} — stock {{ p.quantity }}
+                                </option>
                             {% endfor %}
                         </select>
                     </td>
-                    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove()">×</button></td>
+                    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control qty-input" required></td>
+                    <td><span class="unit-price text-muted">—</span></td>
+                    <td><strong class="line-total">—</strong></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-line" title="Retirer">×</button></td>
                 </tr>
                 </tbody>
             </table>
             </div>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addLine()">+ Ligne</button>
+            <div class="p-3 border-top d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-brand btn-sm" id="btnAddLineBottom">
+                    <i class="bi bi-plus-lg me-1"></i>Ajouter un autre article
+                </button>
+                <div class="small text-muted" id="lineCount">1 article</div>
+            </div>
         </div>
     </div>
     <div class="col-lg-4">
-        <div class="card stat-card p-3">
+        <div class="panel p-3 sticky-top" style="top:1rem">
+            <h2 class="h5 page-title mb-3">Encaissement</h2>
             <div class="mb-3">
-                <label class="form-label">Client</label>
+                <label class="form-label">Client <span class="text-muted fw-normal">(optionnel)</span></label>
                 <select name="customer_id" class="form-select">
-                    <option value="">Comptoir / anonyme</option>
+                    <option value="">Comptoir / sans client</option>
                     {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
                 </select>
+                <div class="form-text">Vous pouvez encaisser sans renseigner de client.</div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Remise (€)</label>
-                <input type="number" step="0.01" min="0" name="discount" value="0" class="form-control">
+                <label class="form-label">Remise (FCFA)</label>
+                <input type="number" step="1" min="0" name="discount" id="discountInput" value="0" class="form-control">
             </div>
             <div class="mb-3">
                 <label class="form-label">Paiement</label>
@@ -51,34 +84,129 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Montant encaissé (€)</label>
-                <input type="number" step="0.01" min="0" name="amount_paid" value="0" class="form-control" placeholder="0 = total">
+                <label class="form-label">Montant encaissé (FCFA)</label>
+                <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" value="0" class="form-control" placeholder="0 = total">
             </div>
-            <button class="btn btn-brand w-100">Encaisser & facturer</button>
+
+            <div class="p-3 mb-3 rounded-3" style="background:rgba(12,92,80,.06)">
+                <div class="d-flex justify-content-between small mb-1"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
+                <div class="d-flex justify-content-between small mb-2"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
+                <div class="d-flex justify-content-between fw-semibold"><span>Total</span><span id="totalDisplay" class="text-brand">0 FCFA</span></div>
+            </div>
+
+            <button class="btn btn-brand w-100" type="submit">Encaisser &amp; facturer</button>
         </div>
     </div>
 </div>
 </form>
+
 <template id="lineTpl">
-<tr>
+<tr class="sale-line">
     <td>
-        <select name="product_id[]" class="form-select" required>
-            <option value="">Choisir...</option>
+        <select name="product_id[]" class="form-select product-select" required>
+            <option value="">Choisir un article…</option>
             {% for p in products %}
-                <option value="{{ p.id }}">{{ p.name }} — {{ p.salePrice }} € (stock {{ p.quantity }})</option>
+                <option value="{{ p.id }}" data-price="{{ p.salePrice }}" data-stock="{{ p.quantity }}">
+                    {{ p.name }} — stock {{ p.quantity }}
+                </option>
             {% endfor %}
         </select>
     </td>
-    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
-    <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove()">×</button></td>
+    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control qty-input" required></td>
+    <td><span class="unit-price text-muted">—</span></td>
+    <td><strong class="line-total">—</strong></td>
+    <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-line" title="Retirer">×</button></td>
 </tr>
 </template>
 {% endblock %}
+
 {% block javascripts %}
 <script>
-function addLine(){
+(() => {
+  const money = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n || 0)) + ' FCFA';
+  const tbody = document.querySelector('#lines tbody');
   const tpl = document.getElementById('lineTpl');
-  document.querySelector('#lines tbody').appendChild(tpl.content.cloneNode(true));
-}
+  const discountInput = document.getElementById('discountInput');
+
+  function addLine() {
+    tbody.appendChild(tpl.content.cloneNode(true));
+    bindRow();
+    updateTotals();
+    const selects = tbody.querySelectorAll('.product-select');
+    selects[selects.length - 1]?.focus();
+  }
+
+  function bindRow(row) {
+    const rows = row ? [row] : tbody.querySelectorAll('.sale-line');
+    rows.forEach((tr) => {
+      if (tr.dataset.bound === '1') return;
+      tr.dataset.bound = '1';
+      tr.querySelector('.product-select')?.addEventListener('change', updateTotals);
+      tr.querySelector('.qty-input')?.addEventListener('input', updateTotals);
+      tr.querySelector('.btn-remove-line')?.addEventListener('click', async () => {
+        if (tbody.querySelectorAll('.sale-line').length <= 1) {
+          if (window.AppUI) AppUI.toast('Gardez au moins un article, ou changez-le.', 'warning');
+          return;
+        }
+        const ok = window.AppUI
+          ? await AppUI.confirm('Retirer cet article de la vente ?', { title: 'Retirer l\'article', confirmLabel: 'Retirer' })
+          : true;
+        if (ok) {
+          tr.remove();
+          updateTotals();
+        }
+      });
+    });
+  }
+
+  function updateTotals() {
+    let subtotal = 0;
+    let count = 0;
+    tbody.querySelectorAll('.sale-line').forEach((tr) => {
+      const select = tr.querySelector('.product-select');
+      const qty = Math.max(0, parseInt(tr.querySelector('.qty-input')?.value || '0', 10));
+      const opt = select?.selectedOptions?.[0];
+      const price = parseFloat(opt?.dataset?.price || '0');
+      const stock = parseInt(opt?.dataset?.stock || '0', 10);
+      const line = (select?.value && qty > 0) ? price * qty : 0;
+      if (select?.value) count += 1;
+      tr.querySelector('.unit-price').textContent = select?.value ? money(price) : '—';
+      tr.querySelector('.line-total').textContent = select?.value ? money(line) : '—';
+      if (select?.value && qty > stock) {
+        tr.classList.add('table-warning');
+      } else {
+        tr.classList.remove('table-warning');
+      }
+      subtotal += line;
+    });
+    const discount = Math.max(0, parseFloat(discountInput?.value || '0'));
+    const total = Math.max(0, subtotal - discount);
+    document.getElementById('subtotalDisplay').textContent = money(subtotal);
+    document.getElementById('discountDisplay').textContent = money(discount);
+    document.getElementById('totalDisplay').textContent = money(total);
+    document.getElementById('lineCount').textContent = count + (count > 1 ? ' articles' : ' article');
+  }
+
+  document.getElementById('btnAddLine')?.addEventListener('click', addLine);
+  document.getElementById('btnAddLineBottom')?.addEventListener('click', addLine);
+  discountInput?.addEventListener('input', updateTotals);
+
+  document.getElementById('saleForm')?.addEventListener('submit', (e) => {
+    const products = [...tbody.querySelectorAll('.product-select')].map((s) => s.value).filter(Boolean);
+    if (products.length === 0) {
+      e.preventDefault();
+      if (window.AppUI) AppUI.toast('Ajoutez au moins un article.', 'danger');
+      return;
+    }
+    const unique = new Set(products);
+    if (unique.size !== products.length) {
+      e.preventDefault();
+      if (window.AppUI) AppUI.toast('Un même article est sélectionné plusieurs fois. Regroupez les quantités sur une seule ligne.', 'warning');
+    }
+  });
+
+  bindRow();
+  updateTotals();
+})();
 </script>
 {% endblock %}

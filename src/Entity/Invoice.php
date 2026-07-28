@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 #[ORM\Table(name: 'invoices')]
 class Invoice
 {
+    use BinaryPayloadTrait;
+
     public const TYPE_INVOICE = 'invoice';
     public const TYPE_RECEIPT = 'receipt';
     public const TYPE_DELIVERY = 'delivery';
@@ -30,6 +33,13 @@ class Invoice
 
     #[ORM\Column]
     private \DateTimeImmutable $issuedAt;
+
+    /** PDF généré stocké en base */
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private mixed $pdfData = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $pdfMime = 'application/pdf';
 
     public function __construct()
     {
@@ -81,5 +91,28 @@ class Invoice
     public function getIssuedAt(): \DateTimeImmutable
     {
         return $this->issuedAt;
+    }
+
+    public function getPdfData(): ?string
+    {
+        return $this->readBinary($this->pdfData);
+    }
+
+    public function setPdfData(?string $pdfData): static
+    {
+        $this->pdfData = $this->writeBinary($pdfData);
+        $this->pdfMime = 'application/pdf';
+
+        return $this;
+    }
+
+    public function getPdfMime(): ?string
+    {
+        return $this->pdfMime;
+    }
+
+    public function hasPdf(): bool
+    {
+        return $this->getPdfData() !== null && $this->getPdfData() !== '';
     }
 }

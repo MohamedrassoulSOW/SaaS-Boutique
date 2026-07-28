@@ -8,28 +8,15 @@ use App\Form\SupplierType;
 use App\Repository\SupplierRepository;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/suppliers')]
-#[IsGranted('ROLE_USER')]
-class SupplierController extends AbstractController
+#[IsGranted('MODULE_SUPPLIERS')]
+class SupplierController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_supplier_index')]
     public function index(SupplierRepository $repo, ShopContext $shopContext): Response
     {
@@ -64,9 +51,7 @@ class SupplierController extends AbstractController
     public function show(Supplier $supplier, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($supplier->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $supplier->getShop());
 
         return $this->render('supplier/show.html.twig', ['supplier' => $supplier]);
     }
@@ -75,9 +60,7 @@ class SupplierController extends AbstractController
     public function edit(Supplier $supplier, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($supplier->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $supplier->getShop());
 
         $form = $this->createForm(SupplierType::class, $supplier);
         $form->handleRequest($request);
@@ -95,9 +78,7 @@ class SupplierController extends AbstractController
     public function delete(Supplier $supplier, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($supplier->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $supplier->getShop());
         if ($this->isCsrfTokenValid('delete'.$supplier->getId(), $request->request->get('_token'))) {
             $em->remove($supplier);
             $em->flush();

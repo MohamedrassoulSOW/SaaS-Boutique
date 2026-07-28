@@ -37,11 +37,28 @@ class Subscription
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $price = '0.00';
 
+    #[ORM\Column(length: 20)]
+    private string $billingPeriod = 'monthly';
+
     #[ORM\Column]
     private \DateTimeImmutable $startsAt;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $endsAt = null;
+
+    /** Prochaine échéance de paiement (facturation récurrente). */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $nextDueAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastPaidAt = null;
+
+    /** Dernière action d’enforcement (notify / suspend / terminate). */
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $lastEnforcementAction = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastEnforcementAt = null;
 
     /** @var Collection<int, Payment> */
     #[ORM\OneToMany(mappedBy: 'subscription', targetEntity: Payment::class, cascade: ['persist'])]
@@ -51,6 +68,7 @@ class Subscription
     {
         $this->startsAt = new \DateTimeImmutable();
         $this->endsAt = (new \DateTimeImmutable())->modify('+30 days');
+        $this->nextDueAt = (new \DateTimeImmutable())->modify('+1 month');
         $this->payments = new ArrayCollection();
     }
 
@@ -107,6 +125,18 @@ class Subscription
         return $this;
     }
 
+    public function getBillingPeriod(): string
+    {
+        return $this->billingPeriod;
+    }
+
+    public function setBillingPeriod(string $billingPeriod): static
+    {
+        $this->billingPeriod = $billingPeriod;
+
+        return $this;
+    }
+
     public function getStartsAt(): \DateTimeImmutable
     {
         return $this->startsAt;
@@ -131,6 +161,54 @@ class Subscription
         return $this;
     }
 
+    public function getNextDueAt(): ?\DateTimeImmutable
+    {
+        return $this->nextDueAt;
+    }
+
+    public function setNextDueAt(?\DateTimeImmutable $nextDueAt): static
+    {
+        $this->nextDueAt = $nextDueAt;
+
+        return $this;
+    }
+
+    public function getLastPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->lastPaidAt;
+    }
+
+    public function setLastPaidAt(?\DateTimeImmutable $lastPaidAt): static
+    {
+        $this->lastPaidAt = $lastPaidAt;
+
+        return $this;
+    }
+
+    public function getLastEnforcementAction(): ?string
+    {
+        return $this->lastEnforcementAction;
+    }
+
+    public function setLastEnforcementAction(?string $lastEnforcementAction): static
+    {
+        $this->lastEnforcementAction = $lastEnforcementAction;
+
+        return $this;
+    }
+
+    public function getLastEnforcementAt(): ?\DateTimeImmutable
+    {
+        return $this->lastEnforcementAt;
+    }
+
+    public function setLastEnforcementAt(?\DateTimeImmutable $lastEnforcementAt): static
+    {
+        $this->lastEnforcementAt = $lastEnforcementAt;
+
+        return $this;
+    }
+
     /** @return Collection<int, Payment> */
     public function getPayments(): Collection
     {
@@ -141,5 +219,30 @@ class Subscription
     {
         return $this->status === self::STATUS_ACTIVE
             && ($this->endsAt === null || $this->endsAt >= new \DateTimeImmutable());
+    }
+
+    public function isBillable(): bool
+    {
+        return (float) $this->price > 0;
+    }
+
+    public function getGraceDays(): int
+    {
+        return ShopContract::unpaidDaysForPeriod($this->billingPeriod);
+    }
+
+    public function getDaysOverdue(?\DateTimeImmutable $today = null): int
+    {
+        if (!$this->nextDueAt) {
+            return 0;
+        }
+
+        $today ??= new \DateTimeImmutable('today');
+        $due = $this->nextDueAt->setTime(0, 0);
+        if ($due > $today) {
+            return 0;
+        }
+
+        return (int) $due->diff($today)->days;
     }
 }

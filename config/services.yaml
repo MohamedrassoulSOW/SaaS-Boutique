@@ -1,6 +1,16 @@
 parameters:
     app.name: 'BoutiqueSaaS'
     app.mail_from: '%env(MAIL_FROM)%'
+    app.platform:
+        name: '%env(PLATFORM_NAME)%'
+        legal_name: '%env(PLATFORM_LEGAL_NAME)%'
+        address: '%env(PLATFORM_ADDRESS)%'
+        city: '%env(PLATFORM_CITY)%'
+        country: '%env(PLATFORM_COUNTRY)%'
+        tax_id: '%env(PLATFORM_TAX_ID)%'
+        email: '%env(PLATFORM_EMAIL)%'
+        phone: '%env(PLATFORM_PHONE)%'
+        representative: '%env(PLATFORM_REPRESENTATIVE)%'
 
 services:
     _defaults:
@@ -14,3 +24,18 @@ services:
         arguments:
             $mailFrom: '%app.mail_from%'
             $appName: '%app.name%'
+
+    App\Service\ContractService:
+        arguments:
+            $platform: '%app.platform%'
+
+    App\Controller\MarketingController:
+        arguments:
+            $platform: '%app.platform%'
+            $mailFrom: '%app.mail_from%'
+
+    # Sessions PHP stockées en base (table `sessions`)
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            - '%env(DATABASE_URL)%'
+            - { db_table: sessions, db_id_col: sess_id, db_data_col: sess_data, db_lifetime_col: sess_lifetime, db_time_col: sess_time }

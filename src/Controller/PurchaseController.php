@@ -13,28 +13,15 @@ use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use App\Service\StockService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/purchases')]
-#[IsGranted('ROLE_USER')]
-class PurchaseController extends AbstractController
+#[IsGranted('MODULE_PURCHASES')]
+class PurchaseController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_purchase_index')]
     public function index(PurchaseOrderRepository $repo, ShopContext $shopContext): Response
     {
@@ -108,9 +95,7 @@ class PurchaseController extends AbstractController
     public function show(PurchaseOrder $order, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($order->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $order->getShop());
 
         return $this->render('purchase/show.html.twig', ['order' => $order]);
     }
@@ -125,9 +110,7 @@ class PurchaseController extends AbstractController
         ActivityLogger $logger,
     ): Response {
         $shop = $this->requireShop($shopContext);
-        if ($order->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $order->getShop());
 
         if (!$this->isCsrfTokenValid('receive'.$order->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();

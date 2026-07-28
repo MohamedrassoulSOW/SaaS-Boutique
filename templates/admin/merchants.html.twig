@@ -1,19 +1,31 @@
 {% extends 'base.html.twig' %}
 {% block title %}Commerçants{% endblock %}
 {% block body %}
-<h1 class="page-title h3 mb-4">Commerçants</h1>
-<div class="card stat-card">
-<table class="table mb-0">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Plateforme</div>
+        <h1 class="page-title h2 mb-0">Commerçants</h1>
+        <p class="text-muted mb-0">Comptes créés uniquement par l'administration.</p>
+    </div>
+    <a href="{{ path('admin_merchant_new') }}" class="btn btn-brand">Nouveau commerçant</a>
+</div>
+<div class="panel">
+<table class="table mb-0 align-middle">
 <thead><tr><th>Entreprise</th><th>Contact</th><th>Boutiques</th><th>Abonnement</th><th>Créé</th></tr></thead>
 <tbody>
 {% for m in merchants %}
 <tr>
-    <td>{{ m.companyName }}</td>
-    <td>{{ m.user ? m.user.fullName ~ ' (' ~ m.user.email ~ ')' : '—' }}</td>
+    <td class="fw-semibold">{{ m.companyName }}</td>
+    <td>
+        {{ m.user ? m.user.fullName : '—' }}
+        <div class="small text-muted">{{ m.user ? m.user.email : '' }}</div>
+    </td>
     <td>{{ m.shops|length }}</td>
     <td>{{ m.subscription ? m.subscription.plan ~ ' / ' ~ m.subscription.status : '—' }}</td>
     <td>{{ m.createdAt|date('d/m/Y') }}</td>
 </tr>
+{% else %}
+<tr><td colspan="5" class="text-muted p-4">Aucun commerçant</td></tr>
 {% endfor %}
 </tbody>
 </table>

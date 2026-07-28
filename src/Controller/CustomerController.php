@@ -8,28 +8,15 @@ use App\Form\CustomerType;
 use App\Repository\CustomerRepository;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/customers')]
-#[IsGranted('ROLE_USER')]
-class CustomerController extends AbstractController
+#[IsGranted('MODULE_CUSTOMERS')]
+class CustomerController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_customer_index')]
     public function index(CustomerRepository $repo, ShopContext $shopContext): Response
     {
@@ -64,9 +51,7 @@ class CustomerController extends AbstractController
     public function show(Customer $customer, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($customer->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $customer->getShop());
 
         return $this->render('customer/show.html.twig', ['customer' => $customer]);
     }
@@ -75,9 +60,7 @@ class CustomerController extends AbstractController
     public function edit(Customer $customer, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($customer->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $customer->getShop());
 
         $form = $this->createForm(CustomerType::class, $customer);
         $form->handleRequest($request);
@@ -95,9 +78,7 @@ class CustomerController extends AbstractController
     public function delete(Customer $customer, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($customer->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $customer->getShop());
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->request->get('_token'))) {
             $em->remove($customer);
             $em->flush();

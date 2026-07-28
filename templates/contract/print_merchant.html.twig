@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Impression {{ contract.number }}</title>
+<style>
+@media print { .no-print { display: none !important; } }
+body { margin: 0; background: #f4f4f4; }
+.toolbar { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ddd; padding: 10px 16px; display: flex; gap: 8px; }
+.sheet { background: #fff; max-width: 900px; margin: 16px auto; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <strong>{{ contract.number }}</strong>
+  <button type="button" onclick="window.print()">Imprimer</button>
+  <a href="{{ path('app_shop_contract', {id: shop.id}) }}">Retour</a>
+</div>
+<div class="sheet">
+{% include 'contract/pdf.html.twig' %}
+</div>
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));</script>
+</body>
+</html>

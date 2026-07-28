@@ -1,68 +1,76 @@
 # BoutiqueSaaS — Gestion des boutiques
 
-Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + MySQL/SQLite) pour gérer boutiques, produits, stocks, ventes, factures, inventaires et rapports.
+Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + **MySQL**) pour gérer boutiques, produits, stocks, ventes, factures, inventaires et rapports.
 
-## Démarrage rapide
+## Principe stockage (web + mobile)
 
-```bash
-composer install
-php bin/console doctrine:database:create --if-not-exists
-php bin/console doctrine:schema:update --force
-php bin/console doctrine:fixtures:load --no-interaction
-php -S 127.0.0.1:8000 -t public
-```
+**Tout est en base de données** — rien d’opérationnel sur le disque du site :
 
-Ouvrir : http://127.0.0.1:8000
+| Donnée | Stockage |
+|--------|----------|
+| Produits, stocks, ventes, clients… | Tables Doctrine / MySQL |
+| Photos produits | BLOB (`products.photo_data`) |
+| Logos boutiques | BLOB (`shops.logo_data`) |
+| Factures PDF | BLOB (`invoices.pdf_data`) |
+| Boutique active | `users.preferred_shop_id` |
+| Sessions PHP | Table `sessions` (PDO) |
 
-### Comptes de démo
+Ainsi une future **app mobile** consommera la même base (ou la même API) sans dépendre des fichiers du serveur web.
 
-| Rôle | Email | Mot de passe |
-|------|-------|--------------|
-| Admin | admin@boutiquesaas.test | admin123 |
-| Commerçant | commercant@demo.test | demo1234 |
+## Démarrage rapide (MySQL / WAMP)
 
-## MySQL (WAMP)
-
-Dans `.env` :
+1. Démarrez MySQL (WAMP).
+2. Dans `.env` (déjà configuré) :
 
 ```env
 DATABASE_URL="mysql://root:@127.0.0.1:3306/saas_boutique?serverVersion=8.0.32&charset=utf8mb4"
 ```
 
-Puis recréez le schéma et rechargez les fixtures.
+3. Puis :
+
+```bash
+composer install
+php bin/console doctrine:database:create --if-not-exists
+php bin/console doctrine:schema:update --force
+php bin/console app:sessions:init
+php bin/console doctrine:fixtures:load --no-interaction
+php -S 127.0.0.1:8080 -t public
+```
+
+Ouvrir : http://127.0.0.1:8080
+
+## Comptes de démo
+
+| Rôle | Email | Mot de passe | Boutique |
+|------|-------|--------------|----------|
+| Admin | admin@boutiquesaas.test | admin123 | (aucune boutique opérationnelle) |
+| Commerçant | commercant@demo.test | demo1234 | Plateau |
+| Commerçant | almadies@demo.test | demo1234 | Almadies |
+| Commerçant | guediawaye@demo.test | demo1234 | Guédiawaye |
+| Commerçant | thies@demo.test | demo1234 | Thiès |
+| Commerçant | mbour@demo.test | demo1234 | Mbour |
+| Vendeur | vendeur@demo.test | demo1234 | Plateau (accès créé par le commerçant) |
+
+Chaque commerçant n’accède **qu’à sa propre boutique**. L’admin crée les boutiques sur demande, sans accès aux ventes / stocks.
+
+Le commerçant gère les **accès vendeurs** (créer / modifier / supprimer) via le menu **Vendeurs**.
 
 ## Emails (réinitialisation mot de passe)
 
 Par défaut : `MAILER_DSN=smtp://127.0.0.1:1025` (Mailpit).
 
-1. Installez [Mailpit](https://mailpit.axllent.org)
-2. Ouvrez l’UI : http://127.0.0.1:8025
-3. Demandez un reset via `/reset-password`
-
-Autres options dans `.env` :
-```env
-# PHP mail()
-MAILER_DSN=native://default
-
-# Gmail (mot de passe d'application)
-MAILER_DSN=smtp://USER:APP_PASSWORD@smtp.gmail.com:587
-MAIL_FROM="BoutiqueSaaS <noreply@votre-domaine.com>"
-DEFAULT_URI=http://127.0.0.1:8080
-```
-
 ## Modules livrés
 
-- Authentification (inscription, connexion, reset, profil)
-- Multi-boutiques + contexte boutique
-- Produits, catégories, fournisseurs, clients
+- Authentification (connexion, reset, profil) — comptes créés par l'admin (commerçants) et par les commerçants (vendeurs)
+- Multi-boutiques + contexte boutique en BDD
+- Produits (photo en BDD), catégories, fournisseurs, clients
 - Achats + réception stock
-- Ventes POS, remises, paiements, factures PDF / impression
-- Stock (entrées/sorties/ajustements, alertes)
-- Inventaires complets / partiels
-- Rapports & tableau de bord (Chart.js)
-- Notifications + journal d'activités
-- Admin plateforme (users, commerçants, abonnements)
+- Ventes POS, remises, paiements, factures PDF en BDD
+- Stock, inventaires, rapports, notifications, journal
+- Admin plateforme (users, commerçants, création boutique, abonnements)
+- Accès vendeurs (création / modification / suppression par le commerçant)
+- Création boutique admin avec infos commerçant + **contrat multi-pages** (PDF en BDD, impression, signature électronique)
 
 ## App mobile
 
-Hors scope de cette version web. Les mêmes APIs métier pourront être exposées ensuite (API Platform / JSON).
+Hors scope de cette version web. Les données sont déjà centralisées en MySQL pour une API (API Platform / JSON) ultérieure.

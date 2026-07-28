@@ -6,7 +6,7 @@
     <p class="mb-1"><strong>Tél.</strong> {{ customer.phone ?: '—' }}</p>
     <p class="mb-1"><strong>Email</strong> {{ customer.email ?: '—' }}</p>
     <p class="mb-1"><strong>Adresse</strong> {{ customer.address ?: '—' }}</p>
-    <p class="mb-0"><strong>Solde</strong> {{ customer.balance|number_format(2, ',', ' ') }} €</p>
+    <p class="mb-0"><strong>Solde</strong> {{ customer.balance|money }}</p>
 </div>
 <h2 class="h5">Historique des achats</h2>
 <div class="card stat-card">
@@ -17,7 +17,7 @@
 <tr>
     <td><a href="{{ path('app_sale_show', {id: s.id}) }}">{{ s.reference }}</a></td>
     <td>{{ s.soldAt|date('d/m/Y H:i') }}</td>
-    <td>{{ s.total|number_format(2, ',', ' ') }} €</td>
+    <td>{{ s.total|money }}</td>
 </tr>
 {% else %}
 <tr><td colspan="3" class="text-muted p-3">Aucun achat</td></tr>

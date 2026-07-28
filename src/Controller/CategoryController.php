@@ -8,28 +8,15 @@ use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/categories')]
-#[IsGranted('ROLE_USER')]
-class CategoryController extends AbstractController
+#[IsGranted('MODULE_CATEGORIES')]
+class CategoryController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_category_index')]
     public function index(CategoryRepository $repo, ShopContext $shopContext): Response
     {
@@ -64,9 +51,7 @@ class CategoryController extends AbstractController
     public function edit(Category $category, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($category->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $category->getShop());
 
         $form = $this->createForm(CategoryType::class, $category);
         $form->handleRequest($request);
@@ -84,9 +69,7 @@ class CategoryController extends AbstractController
     public function delete(Category $category, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($category->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $category->getShop());
 
         if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
             $em->remove($category);

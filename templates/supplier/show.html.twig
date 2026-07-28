@@ -17,7 +17,7 @@
     <td><a href="{{ path('app_purchase_show', {id: o.id}) }}">{{ o.reference }}</a></td>
     <td>{{ o.createdAt|date('d/m/Y') }}</td>
     <td>{{ o.status }}</td>
-    <td>{{ o.total|number_format(2, ',', ' ') }} €</td>
+    <td>{{ o.total|money }}</td>
 </tr>
 {% else %}
 <tr><td colspan="4" class="text-muted p-3">Aucune commande</td></tr>

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% block title %}Contrat {{ contract.number }}{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">{{ shop.name }}</div>
+        <h1 class="page-title h2 mb-1">Contrat {{ contract.number }}</h1>
+        <p class="text-muted mb-0">Statut : <strong>{{ contract.statusLabel }}</strong></p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-brand" href="{{ path('app_shop_contract_print', {id: shop.id}) }}" target="_blank">Imprimer</a>
+        <a class="btn btn-outline-brand" href="{{ path('app_shop_contract_pdf', {id: shop.id}) }}" target="_blank">PDF</a>
+        <a class="btn btn-outline-secondary" href="{{ path('app_shop_index') }}">Retour</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="panel p-0 overflow-hidden">
+            <iframe title="Contrat" src="{{ path('app_shop_contract_pdf', {id: shop.id}) }}" style="width:100%;height:70vh;border:0"></iframe>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel p-4 mb-3">
+            <h2 class="h5 page-title mb-3">Signatures</h2>
+            <p class="mb-2">Plateforme :
+                {% if contract.platformSignedAt %}<span class="badge-ok">Signé</span>
+                <span class="small text-muted">{{ contract.platformSignedBy }}</span>
+                {% else %}<span class="badge-stock">En attente</span>{% endif %}
+            </p>
+            <p class="mb-0">Votre signature :
+                {% if contract.merchantSignedAt %}<span class="badge-ok">Signé</span>
+                <span class="small text-muted">{{ contract.merchantSignedBy }}</span>
+                {% else %}<span class="badge-stock">En attente</span>{% endif %}
+            </p>
+        </div>
+        {% if form %}
+        <div class="panel p-4">
+            <h2 class="h5 page-title mb-3">Signer le contrat</h2>
+            <p class="small text-muted">Lisez / imprimez le document, puis confirmez votre signature électronique.</p>
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <button class="btn btn-brand mt-2">Je signe le contrat</button>
+            {{ form_end(form) }}
+        </div>
+        {% elseif contract.fullySigned %}
+        <div class="alert alert-success">Contrat entièrement signé. Conservez une copie imprimée.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

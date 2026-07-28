@@ -8,28 +8,15 @@ use App\Repository\ProductRepository;
 use App\Repository\StockMovementRepository;
 use App\Service\ShopContext;
 use App\Service\StockService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/stock')]
-#[IsGranted('ROLE_USER')]
-class StockController extends AbstractController
+#[IsGranted('MODULE_STOCK')]
+class StockController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_stock_index')]
     public function index(ShopContext $shopContext, StockService $stockService, StockMovementRepository $movements): Response
     {
@@ -55,8 +42,8 @@ class StockController extends AbstractController
             /** @var User $user */
             $user = $this->getUser();
             $product = $products->find($request->request->getInt('product_id'));
-            if (!$product || $product->getShop()?->getId() !== $shop->getId()) {
-                $this->addFlash('danger', 'Produit invalide.');
+            if (!$product || !$shopContext->userCanAccess($user, $product->getShop()) || $product->getShop()?->getId() !== $shop->getId()) {
+                $this->addFlash('danger', 'Produit invalide ou hors de votre boutique.');
             } else {
                 $type = (string) $request->request->get('type', StockMovement::TYPE_ADJUSTMENT);
                 $qty = abs($request->request->getInt('quantity'));

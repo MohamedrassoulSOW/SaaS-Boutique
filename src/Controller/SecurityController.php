@@ -2,10 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Merchant;
-use App\Entity\Subscription;
 use App\Entity\User;
-use App\Form\RegistrationFormType;
 use App\Form\ResetPasswordRequestType;
 use App\Form\ResetPasswordType;
 use App\Repository\UserRepository;
@@ -13,9 +10,11 @@ use App\Service\ActivityLogger;
 use App\Service\PasswordResetMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -40,49 +39,6 @@ class SecurityController extends AbstractController
         throw new \LogicException('Intercepted by firewall.');
     }
 
-    #[Route('/register', name: 'app_register')]
-    public function register(
-        Request $request,
-        UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $em,
-        ActivityLogger $activityLogger,
-    ): Response {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
-        }
-
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));
-            $user->setRoles([User::ROLE_MERCHANT]);
-
-            $merchant = new Merchant();
-            $merchant->setCompanyName($form->get('companyName')->getData());
-            $merchant->setUser($user);
-            $user->setMerchant($merchant);
-
-            $subscription = new Subscription();
-            $subscription->setMerchant($merchant);
-            $subscription->setPlan(Subscription::PLAN_FREE);
-            $merchant->setSubscription($subscription);
-
-            $em->persist($user);
-            $em->flush();
-
-            $activityLogger->log('user.register', 'Inscription commerçant '.$user->getEmail(), $user);
-            $this->addFlash('success', 'Compte créé. Vous pouvez vous connecter.');
-
-            return $this->redirectToRoute('app_login');
-        }
-
-        return $this->render('security/register.html.twig', [
-            'form' => $form,
-        ]);
-    }
-
     #[Route('/reset-password', name: 'app_reset_password_request')]
     public function requestReset(
         Request $request,
@@ -90,11 +46,21 @@ class SecurityController extends AbstractController
         EntityManagerInterface $em,
         PasswordResetMailer $passwordResetMailer,
         ActivityLogger $activityLogger,
+        #[Autowire(service: 'limiter.password_reset')]
+        RateLimiterFactory $passwordResetLimiter,
     ): Response {
         $form = $this->createForm(ResetPasswordRequestType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $clientIp = $request->getClientIp() ?: 'unknown';
+            $limiter = $passwordResetLimiter->create($clientIp);
+            if (!$limiter->consume(1)->isAccepted()) {
+                $this->addFlash('danger', 'Trop de demandes. Réessayez dans une heure.');
+
+                return $this->render('security/reset_request.html.twig', ['form' => $form]);
+            }
+
             $email = strtolower(trim((string) $form->get('email')->getData()));
             $user = $users->findOneBy(['email' => $email]);
 

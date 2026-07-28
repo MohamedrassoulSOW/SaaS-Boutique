@@ -6,7 +6,9 @@
         <div class="text-muted small mb-1">Catalogue</div>
         <h1 class="page-title h2 mb-0">Produits</h1>
     </div>
+    {% if can_module('products_manage') %}
     <a href="{{ path('app_product_new') }}" class="btn btn-brand">Ajouter</a>
+    {% endif %}
 </div>
 <form class="panel p-3 mb-3">
     <div class="row g-2 align-items-center">
@@ -21,25 +23,34 @@
 <div class="panel">
 <div class="table-responsive">
 <table class="table align-middle mb-0">
-<thead><tr><th>Nom</th><th>Réf.</th><th>Catégorie</th><th>Prix vente</th><th>Stock</th><th></th></tr></thead>
+<thead><tr><th></th><th>Nom</th><th>Réf.</th><th>Catégorie</th><th>Prix vente</th><th>Stock</th>{% if can_module('products_manage') %}<th></th>{% endif %}</tr></thead>
 <tbody>
 {% for p in products %}
 <tr>
+    <td style="width:48px">
+        {% if p.hasPhoto %}
+            <img src="{{ path('app_media_product_photo', {id: p.id}) }}" alt="" width="40" height="40" style="object-fit:cover;border-radius:6px">
+        {% else %}
+            <span class="text-muted">—</span>
+        {% endif %}
+    </td>
     <td class="fw-semibold">{{ p.name }}</td>
     <td class="text-muted">{{ p.reference }}</td>
     <td>{{ p.category }}</td>
-    <td>{{ p.salePrice|number_format(2, ',', ' ') }} €</td>
+    <td>{{ p.salePrice|money }}</td>
     <td>{% if p.lowStock %}<span class="badge-stock">{{ p.quantity }}</span>{% else %}<span class="badge-ok">{{ p.quantity }}</span>{% endif %}</td>
+    {% if can_module('products_manage') %}
     <td class="text-end">
         <a class="btn btn-sm btn-outline-brand" href="{{ path('app_product_edit', {id: p.id}) }}">Modifier</a>
-        <form class="d-inline" method="post" action="{{ path('app_product_delete', {id: p.id}) }}" onsubmit="return confirm('Supprimer ?')">
+        <form class="d-inline" method="post" action="{{ path('app_product_delete', {id: p.id}) }}" data-confirm="Supprimer ce produit ?" data-confirm-title="Supprimer le produit" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
             <button class="btn btn-sm btn-outline-danger">Suppr.</button>
         </form>
     </td>
+    {% endif %}
 </tr>
 {% else %}
-<tr><td colspan="6" class="text-muted p-4">Aucun produit</td></tr>
+<tr><td colspan="{{ can_module('products_manage') ? 7 : 6 }}" class="text-muted p-4">Aucun produit</td></tr>
 {% endfor %}
 </tbody>
 </table>

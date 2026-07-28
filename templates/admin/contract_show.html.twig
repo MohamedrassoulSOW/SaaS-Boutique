@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+{% block title %}Contrat {{ contract.number }}{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Contrat d'abonnement</div>
+        <h1 class="page-title h2 mb-1">{{ contract.number }}</h1>
+        <p class="text-muted mb-0">
+            {{ contract.displayShopName }} — {{ contract.merchant.companyName }}
+            · <strong>{{ contract.statusLabel }}</strong>
+            {% if contract.sharedWithMerchant %} · Visible commerçant{% endif %}
+        </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        {% if contract.status != 'signed' %}
+            <a class="btn btn-outline-brand" href="{{ path('admin_contract_edit', {id: contract.id}) }}">Modifier</a>
+        {% endif %}
+        <a class="btn btn-outline-brand" href="{{ path('admin_contract_print', {id: contract.id}) }}" target="_blank">Imprimer</a>
+        <a class="btn btn-outline-brand" href="{{ path('admin_contract_pdf', {id: contract.id}) }}" target="_blank">PDF</a>
+        <a class="btn btn-outline-secondary" href="{{ path('admin_contracts') }}">Liste</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="panel p-0 overflow-hidden" style="min-height:70vh">
+            <iframe title="Aperçu contrat" src="{{ path('admin_contract_pdf', {id: contract.id}) }}" style="width:100%;height:75vh;border:0"></iframe>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel p-4 mb-3">
+            <h2 class="h5 page-title mb-3">Actions discussion</h2>
+            {% if not contract.sharedWithMerchant %}
+            <form method="post" action="{{ path('admin_contract_share', {id: contract.id}) }}" class="mb-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('share_contract' ~ contract.id) }}">
+                <button class="btn btn-brand w-100">Montrer au commerçant</button>
+            </form>
+            {% else %}
+            <p class="small text-muted mb-2">Déjà visible sur le dashboard du commerçant.</p>
+            {% endif %}
+            {% if contract.draft or contract.status == 'pending_signature' %}
+            {% if not contract.fullySigned %}
+            <form method="post" action="{{ path('admin_contract_send_signature', {id: contract.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('send_contract' ~ contract.id) }}">
+                <button class="btn btn-outline-brand w-100">Envoyer pour signature</button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="panel p-4 mb-3">
+            <h2 class="h5 page-title mb-3">État des signatures</h2>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2">
+                    Plateforme :
+                    {% if contract.platformSignedAt %}
+                        <span class="badge-ok">Signé</span>
+                        <div class="small text-muted">{{ contract.platformSignedBy }} — {{ contract.platformSignedAt|date('d/m/Y H:i') }}</div>
+                    {% else %}
+                        <span class="badge-stock">En attente</span>
+                    {% endif %}
+                </li>
+                <li>
+                    Commerçant :
+                    {% if contract.merchantSignedAt %}
+                        <span class="badge-ok">Signé</span>
+                        <div class="small text-muted">{{ contract.merchantSignedBy }} ({{ contract.merchantSignedTitle }}) — {{ contract.merchantSignedAt|date('d/m/Y H:i') }}</div>
+                    {% else %}
+                        <span class="badge-stock">En attente</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+
+        {% if form %}
+        <div class="panel p-4">
+            <h2 class="h5 page-title mb-3">Signer le contrat</h2>
+            <p class="small text-muted">Après lecture / impression, enregistrez la signature électronique.</p>
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <button class="btn btn-brand mt-2">Enregistrer la signature</button>
+            {{ form_end(form) }}
+        </div>
+        {% elseif contract.fullySigned %}
+        <div class="alert alert-success mb-0">Contrat entièrement signé — document formel archivé en base.</div>
+        {% elseif contract.draft %}
+        <div class="alert alert-info mb-0">Brouillon de discussion — envoyez pour signature quand l'accord est trouvé.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

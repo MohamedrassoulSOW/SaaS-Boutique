@@ -28,8 +28,23 @@ class Merchant
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $taxId = null;
 
+    /** Forme juridique (SARL, EI, SA…) */
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $legalForm = null;
+
+    /** RCCM / registre de commerce */
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $registrationNumber = null;
+
+    /** Qualité du signataire (Gérant, Directeur…) */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $representativeTitle = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $postalCode = null;
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $city = null;
@@ -94,6 +109,42 @@ class Merchant
         return $this;
     }
 
+    public function getLegalForm(): ?string
+    {
+        return $this->legalForm;
+    }
+
+    public function setLegalForm(?string $legalForm): static
+    {
+        $this->legalForm = $legalForm;
+
+        return $this;
+    }
+
+    public function getRegistrationNumber(): ?string
+    {
+        return $this->registrationNumber;
+    }
+
+    public function setRegistrationNumber(?string $registrationNumber): static
+    {
+        $this->registrationNumber = $registrationNumber;
+
+        return $this;
+    }
+
+    public function getRepresentativeTitle(): ?string
+    {
+        return $this->representativeTitle;
+    }
+
+    public function setRepresentativeTitle(?string $representativeTitle): static
+    {
+        $this->representativeTitle = $representativeTitle;
+
+        return $this;
+    }
+
     public function getAddress(): ?string
     {
         return $this->address;
@@ -102,6 +153,18 @@ class Merchant
     public function setAddress(?string $address): static
     {
         $this->address = $address;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
 
         return $this;
     }

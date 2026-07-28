@@ -68,6 +68,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $passwordResetToken = null;
 
+    /** Boutique préférée (persistée en BDD, pas en fichier session seule) */
+    #[ORM\Column(nullable: true)]
+    private ?int $preferredShopId = null;
+
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Merchant $merchant = null;
 
@@ -269,6 +273,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->shopMemberships;
     }
 
+    public function getPreferredShopId(): ?int
+    {
+        return $this->preferredShopId;
+    }
+
+    public function setPreferredShopId(?int $preferredShopId): static
+    {
+        $this->preferredShopId = $preferredShopId;
+
+        return $this;
+    }
+
     public function isAdmin(): bool
     {
         return in_array(self::ROLE_ADMIN, $this->getRoles(), true);
@@ -277,6 +293,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isMerchant(): bool
     {
         return in_array(self::ROLE_MERCHANT, $this->getRoles(), true);
+    }
+
+    public function isEmployee(): bool
+    {
+        return in_array(self::ROLE_EMPLOYEE, $this->getRoles(), true);
     }
 
     public function __toString(): string

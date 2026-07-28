@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+{% block title %}Boutiques — Admin{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Plateforme</div>
+        <h1 class="page-title h2 mb-0">Boutiques</h1>
+        <p class="text-muted mb-0">Création sur demande — contrat généré pour signature formelle.</p>
+    </div>
+    <a href="{{ path('admin_shop_new') }}" class="btn btn-brand">Créer une boutique</a>
+</div>
+
+<div class="panel">
+<table class="table mb-0 align-middle">
+<thead>
+<tr>
+    <th>Boutique</th>
+    <th>Commerçant</th>
+    <th>Contrat</th>
+    <th>Statut</th>
+    <th>Créée</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for shop in shops %}
+<tr>
+    <td class="fw-semibold">{{ shop.name }}</td>
+    <td>
+        {{ shop.merchant.companyName }}
+        <div class="small text-muted">{{ shop.merchant.user ? shop.merchant.user.email : '—' }}</div>
+    </td>
+    <td>
+        {% if shop.contract %}
+            <a href="{{ path('admin_contract_show', {id: shop.contract.id}) }}">{{ shop.contract.number }}</a>
+            <div class="small text-muted">{{ shop.contract.statusLabel }}</div>
+        {% else %}
+            <span class="text-muted">—</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if shop.active %}
+            <span class="badge-ok">Active</span>
+        {% else %}
+            <span class="badge-stock">Inactive</span>
+        {% endif %}
+    </td>
+    <td>{{ shop.createdAt|date('d/m/Y') }}</td>
+    <td class="text-end text-nowrap">
+        {% if shop.contract %}
+            <a class="btn btn-sm btn-outline-brand" href="{{ path('admin_contract_show', {id: shop.contract.id}) }}">Contrat</a>
+        {% endif %}
+        <form method="post" action="{{ path('admin_shop_toggle', {id: shop.id}) }}" class="d-inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('shop_toggle' ~ shop.id) }}">
+            <button class="btn btn-sm btn-outline-brand">{{ shop.active ? 'Désactiver' : 'Activer' }}</button>
+        </form>
+    </td>
+</tr>
+{% else %}
+<tr><td colspan="6" class="text-muted p-4">Aucune boutique</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

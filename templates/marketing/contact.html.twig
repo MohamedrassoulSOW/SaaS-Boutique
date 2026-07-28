@@ -1,0 +1,54 @@
+{% extends 'marketing/layout.html.twig' %}
+
+{% block title %}Contact — {{ app_name }}{% endblock %}
+{% block meta_description %}Contactez l’équipe {{ app_name }} pour ouvrir un compte commerçant ou poser une question.{% endblock %}
+
+{% block content %}
+<section class="mkt-page-hero">
+    <div class="mkt-wrap reveal-up">
+        <p class="mkt-kicker">Contact</p>
+        <h1 class="mkt-page-title">Écrivons-nous.</h1>
+        <p class="mkt-lead mkt-lead-wide">Demande d’ouverture de compte, question d’abonnement ou support — on répond sous 48 h ouvrées.</p>
+    </div>
+</section>
+
+<section class="mkt-section">
+    <div class="mkt-wrap mkt-contact-grid">
+        <div class="reveal-up">
+            <h2 class="mkt-h2">Coordonnées</h2>
+            <p class="mkt-copy">{{ platform.legal_name }}</p>
+            <p class="mkt-copy">{{ platform.address }}<br>{{ platform.city }}, {{ platform.country }}</p>
+            <p class="mkt-copy">
+                <a href="mailto:{{ platform.email }}">{{ platform.email }}</a><br>
+                <a href="tel:{{ platform.phone|replace({' ': ''}) }}">{{ platform.phone }}</a>
+            </p>
+        </div>
+
+        <div class="mkt-contact-form reveal-up delay-1">
+            {{ form_start(form, { attr: { class: 'mkt-form', novalidate: 'novalidate' } }) }}
+                <div class="mkt-field">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name, { attr: { class: 'mkt-input' } }) }}
+                    {{ form_errors(form.name) }}
+                </div>
+                <div class="mkt-field">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email, { attr: { class: 'mkt-input' } }) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                <div class="mkt-field">
+                    {{ form_label(form.subject) }}
+                    {{ form_widget(form.subject, { attr: { class: 'mkt-input' } }) }}
+                    {{ form_errors(form.subject) }}
+                </div>
+                <div class="mkt-field">
+                    {{ form_label(form.message) }}
+                    {{ form_widget(form.message, { attr: { class: 'mkt-input mkt-textarea' } }) }}
+                    {{ form_errors(form.message) }}
+                </div>
+                <button type="submit" class="mkt-btn mkt-btn-primary">Envoyer le message</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</section>
+{% endblock %}

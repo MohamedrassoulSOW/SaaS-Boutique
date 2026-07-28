@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ app_name }} — gestion multi-boutiques pour commerçants en Afrique de l’Ouest.{% endblock %}">
+    <script>
+      (function () {
+        try {
+          var key = 'boutiquesaas-theme';
+          var saved = localStorage.getItem(key);
+          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/marketing.css') }}" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="mkt-body{% block body_class %}{% endblock %}">
+{% set route = app.request.attributes.get('_route') %}
+{% set flash_payload = [] %}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        {% set flash_payload = flash_payload|merge([{ type: label, message: message }]) %}
+    {% endfor %}
+{% endfor %}
+<script type="application/json" id="mkt-flash-data">{{ flash_payload|json_encode|raw }}</script>
+
+<header class="mkt-nav" id="mktNav">
+    <a class="mkt-nav-brand" href="{{ path('app_home') }}">
+        <span class="mkt-mark" aria-hidden="true">B</span>
+        <span class="mkt-brand-name">{{ app_name }}</span>
+    </a>
+    <nav class="mkt-nav-links" id="mktNavLinks">
+        <a class="{{ route == 'app_home' ? 'is-active' }}" href="{{ path('app_home') }}">Accueil</a>
+        <a class="{{ route == 'app_about' ? 'is-active' }}" href="{{ path('app_about') }}">À propos</a>
+        <a class="{{ route == 'app_contact' ? 'is-active' }}" href="{{ path('app_contact') }}">Contact</a>
+        {% if app.user %}
+            <a class="mkt-nav-cta mkt-nav-cta-menu" href="{{ path(app.user.isAdmin ? 'admin_dashboard' : 'app_dashboard') }}">Mon espace</a>
+        {% else %}
+            <a class="mkt-nav-cta mkt-nav-cta-menu" href="{{ path('app_login') }}">Connexion</a>
+        {% endif %}
+    </nav>
+    <div class="mkt-nav-end">
+        <button type="button" class="mkt-theme-toggle" id="mktThemeToggle" aria-label="Activer le mode sombre" title="Mode clair / sombre">
+            <svg class="mkt-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg class="mkt-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        {% if app.user %}
+            <a class="mkt-nav-cta mkt-nav-cta-bar" href="{{ path(app.user.isAdmin ? 'admin_dashboard' : 'app_dashboard') }}">Mon espace</a>
+        {% else %}
+            <a class="mkt-nav-cta mkt-nav-cta-bar" href="{{ path('app_login') }}">Connexion</a>
+        {% endif %}
+    </div>
+    <button type="button" class="mkt-nav-toggle" id="mktNavToggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span>
+    </button>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="mkt-footer">
+    <div class="mkt-wrap mkt-footer-grid">
+        <div>
+            <div class="mkt-footer-brand">{{ app_name }}</div>
+            <p>Logiciel de gestion pour boutiques et équipes commerciales.</p>
+        </div>
+        <div>
+            <div class="mkt-footer-label">Navigation</div>
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <a href="{{ path('app_about') }}">À propos</a>
+            <a href="{{ path('app_contact') }}">Contact</a>
+        </div>
+        <div>
+            <div class="mkt-footer-label">Contact</div>
+            <a href="mailto:{{ platform.email }}">{{ platform.email }}</a>
+            <p>{{ platform.phone }}</p>
+            <p>{{ platform.city }}, {{ platform.country }}</p>
+        </div>
+    </div>
+    <div class="mkt-wrap mkt-footer-copy">
+        © {{ "now"|date('Y') }} {{ platform.legal_name }}. Tous droits réservés.
+    </div>
+</footer>
+
+<div class="mkt-toasts" id="mktToasts" aria-live="polite"></div>
+<script src="{{ asset('js/marketing.js') }}"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

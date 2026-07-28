@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'customers')]
@@ -22,12 +21,10 @@ class Customer
     #[ORM\JoinColumn(nullable: false)]
     private ?Shop $shop = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $firstName = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 30, nullable: true)]
@@ -77,9 +74,9 @@ class Customer
         return $this->firstName;
     }
 
-    public function setFirstName(string $firstName): static
+    public function setFirstName(?string $firstName): static
     {
-        $this->firstName = $firstName;
+        $this->firstName = $firstName !== null && trim($firstName) !== '' ? trim($firstName) : null;
 
         return $this;
     }
@@ -89,16 +86,27 @@ class Customer
         return $this->lastName;
     }
 
-    public function setLastName(string $lastName): static
+    public function setLastName(?string $lastName): static
     {
-        $this->lastName = $lastName;
+        $this->lastName = $lastName !== null && trim($lastName) !== '' ? trim($lastName) : null;
 
         return $this;
     }
 
     public function getFullName(): string
     {
-        return trim(($this->firstName ?? '').' '.($this->lastName ?? ''));
+        $name = trim(($this->firstName ?? '').' '.($this->lastName ?? ''));
+        if ($name !== '') {
+            return $name;
+        }
+        if ($this->phone) {
+            return 'Client '.$this->phone;
+        }
+        if ($this->email) {
+            return (string) $this->email;
+        }
+
+        return 'Client sans nom';
     }
 
     public function getPhone(): ?string

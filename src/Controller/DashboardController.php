@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\CustomerRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
+use App\Repository\ShopContractRepository;
 use App\Service\ShopContext;
 use App\Service\StockService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,12 +17,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class DashboardController extends AbstractController
 {
-    #[Route('/', name: 'app_home')]
-    public function home(): Response
-    {
-        return $this->redirectToRoute('app_dashboard');
-    }
-
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(
         ShopContext $shopContext,
@@ -29,6 +24,7 @@ class DashboardController extends AbstractController
         ProductRepository $products,
         CustomerRepository $customers,
         StockService $stockService,
+        ShopContractRepository $contractRepo,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -88,8 +84,15 @@ class DashboardController extends AbstractController
             $salesByDay[] = ['label' => $day->format('d/m'), 'value' => (float) $amount];
         }
 
+        $merchantContracts = [];
+        if ($user->isMerchant() && $user->getMerchant()) {
+            $merchantContracts = $contractRepo->findVisibleForMerchant($user->getMerchant());
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'shop' => $shop,
+            'contract' => $shop->getContract(),
+            'merchantContracts' => $merchantContracts,
             'todaySales' => $todaySales,
             'monthSales' => $monthSales,
             'salesCount' => $salesCount,
@@ -106,13 +109,22 @@ class DashboardController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        $target = null;
         foreach ($shopContext->getAccessibleShops($user) as $shop) {
             if ($shop->getId() === $id) {
-                $shopContext->setCurrentShop($shop);
-                $this->addFlash('success', 'Boutique active : '.$shop->getName());
+                $target = $shop;
                 break;
             }
         }
+
+        if (!$target) {
+            $this->addFlash('danger', 'Boutique inaccessible.');
+
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        $shopContext->setCurrentShop($target, $user);
+        $this->addFlash('success', 'Boutique active : '.$target->getName());
 
         return $this->redirectToRoute('app_dashboard');
     }

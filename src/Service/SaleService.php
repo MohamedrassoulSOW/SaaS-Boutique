@@ -16,6 +16,7 @@ class SaleService
         private EntityManagerInterface $em,
         private StockService $stockService,
         private ActivityLogger $activityLogger,
+        private InvoicePdfService $invoicePdfService,
     ) {
     }
 
@@ -87,6 +88,9 @@ class SaleService
 
         $this->em->persist($sale);
         $this->em->flush();
+
+        // PDF facture stocké en base (pas de fichier disque)
+        $this->invoicePdfService->generate($sale);
 
         $this->activityLogger->log('sale.create', 'Vente '.$sale->getReference(), $user, $shop);
 

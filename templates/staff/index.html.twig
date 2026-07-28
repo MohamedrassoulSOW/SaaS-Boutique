@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+{% block title %}Vendeurs{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">{{ shop.name }}</div>
+        <h1 class="page-title h2 mb-0">Accès vendeurs</h1>
+        <p class="text-muted mb-0">Créez des comptes pour vos vendeurs : ils se connectent avec leur email.</p>
+    </div>
+    <a href="{{ path('app_staff_new') }}" class="btn btn-brand">Nouvel accès</a>
+</div>
+
+<div class="panel">
+<div class="table-responsive">
+<table class="table align-middle mb-0">
+<thead>
+<tr>
+    <th>Nom</th>
+    <th>Email</th>
+    <th>Téléphone</th>
+    <th>Rôle</th>
+    <th>Statut</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for m in members %}
+<tr>
+    <td class="fw-semibold">{{ m.user.fullName }}</td>
+    <td class="text-muted">{{ m.user.email }}</td>
+    <td>{{ m.user.phone ?: '—' }}</td>
+    <td>{{ m.roleLabel }}</td>
+    <td>
+        {% if m.active and m.user.active %}
+            <span class="badge-ok">Actif</span>
+        {% else %}
+            <span class="badge-stock">Inactif</span>
+        {% endif %}
+    </td>
+    <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-brand" href="{{ path('app_staff_edit', {id: m.id}) }}">Modifier</a>
+        <form class="d-inline" method="post" action="{{ path('app_staff_delete', {id: m.id}) }}" data-confirm="Supprimer cet accès vendeur ?" data-confirm-title="Supprimer le vendeur" data-confirm-label="Supprimer">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_staff' ~ m.id) }}">
+            <button class="btn btn-sm btn-outline-danger">Suppr.</button>
+        </form>
+    </td>
+</tr>
+{% else %}
+<tr><td colspan="6" class="text-muted p-4">Aucun vendeur pour cette boutique.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

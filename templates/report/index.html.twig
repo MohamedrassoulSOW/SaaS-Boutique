@@ -3,10 +3,10 @@
 {% block body %}
 <h1 class="page-title h3 mb-4">Rapports — {{ shop.name }}</h1>
 <div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes journalières</div><div class="fs-4 fw-bold">{{ daily|number_format(2, ',', ' ') }} €</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes mensuelles</div><div class="fs-4 fw-bold">{{ monthly|number_format(2, ',', ' ') }} €</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Achats du mois</div><div class="fs-4 fw-bold">{{ purchaseTotal|number_format(2, ',', ' ') }} €</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Bénéfice estimé</div><div class="fs-4 fw-bold">{{ profit|number_format(2, ',', ' ') }} €</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes journalières</div><div class="fs-4 fw-bold">{{ daily|money }}</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes mensuelles</div><div class="fs-4 fw-bold">{{ monthly|money }}</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Achats du mois</div><div class="fs-4 fw-bold">{{ purchaseTotal|money }}</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Bénéfice estimé</div><div class="fs-4 fw-bold">{{ profit|money }}</div></div></div>
 </div>
 <div class="row g-3">
 <div class="col-lg-7">
@@ -15,7 +15,7 @@
 <table class="table mb-0"><thead><tr><th>Produit</th><th>Qté</th><th>CA</th></tr></thead>
 <tbody>
 {% for row in soldProducts %}
-<tr><td>{{ row.name }}</td><td>{{ row.qty }}</td><td>{{ row.amount|number_format(2, ',', ' ') }} €</td></tr>
+<tr><td>{{ row.name }}</td><td>{{ row.qty }}</td><td>{{ row.amount|money }}</td></tr>
 {% else %}<tr><td colspan="3" class="text-muted p-3">Aucune donnée</td></tr>{% endfor %}
 </tbody></table>
 </div>

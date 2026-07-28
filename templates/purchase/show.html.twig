@@ -13,7 +13,7 @@
 <div class="card stat-card p-3 mb-3">
     <div><strong>Fournisseur:</strong> {{ order.supplier.name }}</div>
     <div><strong>Statut:</strong> {{ order.status }}</div>
-    <div><strong>Total:</strong> {{ order.total|number_format(2, ',', ' ') }} €</div>
+    <div><strong>Total:</strong> {{ order.total|money }}</div>
 </div>
 <div class="card stat-card">
 <table class="table mb-0">
@@ -23,8 +23,8 @@
 <tr>
     <td>{{ item.product.name }}</td>
     <td>{{ item.quantity }}</td>
-    <td>{{ item.unitPrice|number_format(2, ',', ' ') }} €</td>
-    <td>{{ item.lineTotal|number_format(2, ',', ' ') }} €</td>
+    <td>{{ item.unitPrice|money }}</td>
+    <td>{{ item.lineTotal|money }}</td>
 </tr>
 {% endfor %}
 </tbody>

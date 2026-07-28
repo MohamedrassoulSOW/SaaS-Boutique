@@ -14,16 +14,18 @@
 <div class="d-flex flex-wrap gap-2 mb-4">
     <a class="btn btn-outline-brand" href="{{ path('admin_users') }}">Utilisateurs</a>
     <a class="btn btn-outline-brand" href="{{ path('admin_merchants') }}">Commerçants</a>
+    <a class="btn btn-outline-brand" href="{{ path('admin_shops') }}">Boutiques</a>
     <a class="btn btn-outline-brand" href="{{ path('admin_subscriptions') }}">Abonnements</a>
     <a class="btn btn-outline-brand" href="{{ path('admin_activity') }}">Journal d'activités</a>
 </div>
+<a href="{{ path('admin_shop_new') }}" class="btn btn-brand mb-4">Créer une boutique (demande commerçant)</a>
 <div class="panel">
 <div class="panel-head"><h2>Derniers paiements</h2></div>
 <table class="table mb-0">
 <thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
 <tbody>
 {% for p in payments %}
-<tr><td>{{ p.reference ?: '#' ~ p.id }}</td><td>{{ p.amount }} €</td><td>{{ p.status }}</td><td>{{ p.createdAt|date('d/m/Y') }}</td></tr>
+<tr><td>{{ p.reference ?: '#' ~ p.id }}</td><td>{{ p.amount|money }}</td><td>{{ p.status }}</td><td>{{ p.createdAt|date('d/m/Y') }}</td></tr>
 {% else %}<tr><td colspan="4" class="text-muted p-3">Aucun paiement</td></tr>{% endfor %}
 </tbody>
 </table>

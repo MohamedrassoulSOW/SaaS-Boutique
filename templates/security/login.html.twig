@@ -20,19 +20,11 @@
 
     <section class="auth-panel">
         <div class="auth-card">
-            <div class="brand-line">Bon retour</div>
-            <p class="text-muted mb-4">Connectez-vous à votre espace commerçant.</p>
+            <div class="brand-line text-center">Bon retour</div>
+            <p class="text-muted mb-4 text-center">Connectez-vous avec le compte fourni par l'administration ou votre commerçant.</p>
+            <p class="text-center mb-4"><a href="{{ path('app_home') }}">← Retour au site</a></p>
 
-            {% if error %}
-                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-            {% endif %}
-            {% for label, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ label }}">{{ message }}</div>
-                {% endfor %}
-            {% endfor %}
-
-            <form method="post">
+            <form method="post" id="loginForm">
                 <div class="mb-3">
                     <label class="form-label">Email</label>
                     <input type="email" name="_username" value="{{ last_username }}" class="form-control" required autofocus placeholder="vous@boutique.com">
@@ -41,18 +33,29 @@
                     <label class="form-label">Mot de passe</label>
                     <input type="password" name="_password" class="form-control" required placeholder="••••••••">
                 </div>
-                <div class="form-check mb-4">
-                    <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me">
-                    <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me">
+                        <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                    </div>
+                    <a class="small" href="{{ path('app_reset_password_request') }}">Mot de passe oublié</a>
                 </div>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                <button class="btn btn-brand w-100 mb-3 py-2">Se connecter</button>
+                <button class="btn btn-brand w-100 mb-3 py-2" type="submit">Se connecter</button>
             </form>
-            <div class="d-flex justify-content-between small">
-                <a href="{{ path('app_register') }}">Créer un compte</a>
-                <a href="{{ path('app_reset_password_request') }}">Mot de passe oublié</a>
-            </div>
         </div>
     </section>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{% if error %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.AppUI) {
+    AppUI.toast({{ error.messageKey|trans(error.messageData, 'security')|json_encode|raw }}, 'danger');
+  }
+});
+</script>
+{% endif %}
 {% endblock %}

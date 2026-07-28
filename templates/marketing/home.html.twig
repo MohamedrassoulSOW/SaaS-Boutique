@@ -1,0 +1,75 @@
+{% extends 'marketing/layout.html.twig' %}
+
+{% block body_class %} mkt-has-hero{% endblock %}
+
+{% block title %}{{ app_name }} — Gestion de boutiques{% endblock %}
+
+{% block content %}
+<section class="mkt-hero">
+    <div class="mkt-hero-media" aria-hidden="true">
+        <img
+            src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=2000&q=80"
+            alt=""
+            width="2000"
+            height="1333"
+        >
+    </div>
+    <div class="mkt-hero-scrim" aria-hidden="true"></div>
+    <div class="mkt-hero-inner mkt-wrap">
+        <p class="mkt-hero-brand reveal-up">{{ app_name }}</p>
+        <h1 class="mkt-hero-title reveal-up delay-1">La caisse et le stock, enfin alignés.</h1>
+        <p class="mkt-hero-lead reveal-up delay-2">Pilotez ventes, inventaires et équipes multi-boutiques depuis un seul espace pensé pour le commerce ouest-africain.</p>
+        <div class="mkt-hero-actions reveal-up delay-3">
+            <a class="mkt-btn mkt-btn-primary" href="{{ path('app_contact') }}">Parler à un conseiller</a>
+            <a class="mkt-btn mkt-btn-ghost" href="{{ path('app_login') }}">Se connecter</a>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section">
+    <div class="mkt-wrap mkt-split">
+        <div class="reveal-up">
+            <p class="mkt-kicker">Une plateforme</p>
+            <h2 class="mkt-h2">Conçue pour le rythme réel d’une boutique.</h2>
+            <p class="mkt-lead">Ventes multi-articles, stock à jour, factures PDF et comptes vendeurs — sans quitter le comptoir.</p>
+        </div>
+        <figure class="mkt-photo reveal-up delay-1">
+            <img
+                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80"
+                alt="Rayon de boutique au détail"
+                width="1400"
+                height="933"
+            >
+        </figure>
+    </div>
+</section>
+
+<section class="mkt-section mkt-section-tint">
+    <div class="mkt-wrap">
+        <p class="mkt-kicker reveal-up">Ce que vous gagnez</p>
+        <h2 class="mkt-h2 reveal-up delay-1">Trois gestes. Toute votre opération.</h2>
+        <ul class="mkt-points">
+            <li class="reveal-up delay-1">
+                <strong>Vendre vite</strong>
+                <span>Caisse multi-lignes, clients optionnels, tickets et factures en FCFA.</span>
+            </li>
+            <li class="reveal-up delay-2">
+                <strong>Garder le stock juste</strong>
+                <span>Mouvements, achats, inventaires et alertes de rupture.</span>
+            </li>
+            <li class="reveal-up delay-3">
+                <strong>Diriger l’équipe</strong>
+                <span>Rôles caissier, magasinier ou responsable — chaque accès à sa place.</span>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="mkt-section mkt-cta-band">
+    <div class="mkt-wrap reveal-up">
+        <h2 class="mkt-h2">Prêt à équiper vos boutiques ?</h2>
+        <p class="mkt-lead">Écrivez-nous : on active votre espace commerçant et on vous accompagne.</p>
+        <a class="mkt-btn mkt-btn-primary" href="{{ path('app_contact') }}">Nous contacter</a>
+    </div>
+</section>
+{% endblock %}

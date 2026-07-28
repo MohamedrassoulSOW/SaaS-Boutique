@@ -3,7 +3,13 @@
 {% block body %}
 <h1 class="page-title h3 mb-4">{{ title }}</h1>
 <div class="panel p-4" style="max-width:720px">
-    {{ form_start(form) }}
+    {% if product is defined and product.hasPhoto %}
+        <div class="mb-3">
+            <div class="text-muted small mb-1">Photo actuelle (base de données)</div>
+            <img src="{{ path('app_media_product_photo', {id: product.id}) }}" alt="" style="max-height:120px;border-radius:8px">
+        </div>
+    {% endif %}
+    {{ form_start(form, {attr: {enctype: 'multipart/form-data'}}) }}
         {{ form_widget(form) }}
         <div class="mt-3 d-flex gap-2">
             <button class="btn btn-brand">Enregistrer</button>

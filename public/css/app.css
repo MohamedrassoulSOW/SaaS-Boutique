@@ -466,6 +466,169 @@ a:hover { color: var(--brand-dark); }
 .reveal-delay-3 { animation-delay: .18s; }
 .reveal-delay-4 { animation-delay: .24s; }
 
+/* Dynamic UI — toasts, popups, motion */
+#toastStack {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+    width: min(380px, calc(100vw - 1.5rem));
+    pointer-events: none;
+}
+
+.app-toast {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .9rem 1rem 1rem;
+    border-radius: var(--radius-sm);
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(8, 63, 55, .16);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(18px) scale(.98);
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.app-toast.show {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.app-toast.hiding {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.app-toast-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: .65rem;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+}
+
+.app-toast-success .app-toast-icon { background: #d8efe9; color: var(--brand); }
+.app-toast-danger .app-toast-icon,
+.app-toast-error .app-toast-icon { background: #ffe8e0; color: var(--danger); }
+.app-toast-warning .app-toast-icon { background: var(--accent-soft); color: var(--accent); }
+.app-toast-info .app-toast-icon { background: #e7f0ff; color: #2563eb; }
+
+.app-toast-title {
+    font-weight: 600;
+    font-size: .82rem;
+    margin-bottom: .1rem;
+}
+
+.app-toast-msg {
+    font-size: .88rem;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.app-toast-close {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    margin-left: auto;
+    padding: .15rem;
+    line-height: 1;
+}
+
+.app-toast-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    animation: toast-shrink linear forwards;
+    background: var(--brand-mid);
+}
+
+.app-toast-danger .app-toast-progress,
+.app-toast-error .app-toast-progress { background: var(--danger); }
+.app-toast-warning .app-toast-progress { background: var(--accent); }
+.app-toast-info .app-toast-progress { background: #2563eb; }
+
+@keyframes toast-shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+#appConfirmModal .modal-content {
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+#appConfirmModal .modal-header {
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #f7fbf9, #fff);
+}
+
+#appConfirmModal .modal-title {
+    font-family: var(--font-brand);
+    font-weight: 650;
+}
+
+.ui-rise {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .45s ease, transform .45s ease;
+    transition-delay: var(--rise-delay, 0ms);
+}
+
+.ui-rise.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.table tbody tr {
+    transition: background-color .18s ease, transform .18s ease;
+}
+
+.table tbody tr.row-hot {
+    background: rgba(20, 122, 106, .05);
+}
+
+.btn.is-loading {
+    pointer-events: none;
+    opacity: .85;
+}
+
+.panel, .stat-card {
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(8, 63, 55, .1);
+}
+
+.sidebar-nav a {
+    transition: background .18s ease, transform .18s ease, color .18s ease;
+}
+
+.sidebar-nav a:hover {
+    transform: translateX(2px);
+}
+
+.topbar-clock {
+    font-size: .78rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
 .sidebar-backdrop {
     display: none;
     position: fixed;
@@ -490,10 +653,11 @@ a:hover { color: var(--brand-dark); }
     .auth-shell { grid-template-columns: 1fr; }
     .auth-visual { min-height: 220px; padding: 1.5rem; }
     .auth-quote { max-width: none; font-size: 1.55rem; }
+    #toastStack { top: auto; bottom: 1rem; right: .75rem; left: .75rem; width: auto; }
 }
 
 @media print {
-    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop { display: none !important; }
+    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop, #toastStack, #appConfirmModal { display: none !important; }
     .content-wrap { margin: 0 !important; padding: 0 !important; }
     body { background: #fff; }
 }

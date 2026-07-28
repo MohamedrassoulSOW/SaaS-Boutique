@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Contrat {{ contract.number }}</title>
+<style>
+@page { margin: 16mm 14mm 14mm 14mm; }
+body {
+    font-family: DejaVu Sans, sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    line-height: 1.35;
+    margin: 0;
+    padding: 0;
+}
+h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
+h2 { font-size: 12px; margin: 10px 0 4px; padding: 0; border: none; font-weight: bold; }
+h3 { font-size: 11px; margin: 8px 0 3px; }
+.subtitle { text-align: center; font-size: 11px; margin: 0 0 8px; }
+.meta { font-size: 9.5px; color: #444; margin: 0 0 8px; }
+.parties { width: 100%; border-collapse: collapse; margin: 6px 0 8px; }
+.parties td { width: 50%; vertical-align: top; padding: 6px 8px; border: 1px solid #ccc; }
+.small { font-size: 9.5px; color: #555; }
+.page-break { page-break-before: auto; }
+p { margin: 0 0 5px; }
+ul { margin: 3px 0 6px 16px; padding: 0; }
+li { margin-bottom: 2px; }
+.signatures { width: 100%; margin-top: 14px; border-collapse: collapse; }
+.signatures td { width: 50%; vertical-align: top; padding: 8px; height: 90px; }
+.sign-box { border-top: 1px solid #333; margin-top: 36px; padding-top: 4px; }
+.badge { display: inline-block; padding: 1px 5px; border: 1px solid #333; font-size: 9px; }
+</style>
+</head>
+<body>
+
+<h1>CONTRAT D'ABONNEMENT SAAS</h1>
+<p class="subtitle">Mise à disposition de la plateforme {{ platform.name }}<br>
+<span class="badge">N° {{ contract.number }}</span>
+— Version des conditions {{ contract.termsVersion }}</p>
+
+<p class="meta">
+Fait à {{ platform.city }}, le {{ contract.createdAt|date('d/m/Y') }}<br>
+Durée d'engagement : {{ contract.durationMonths }} mois
+(du {{ contract.startsAt|date('d/m/Y') }} au {{ contract.endsAt|date('d/m/Y') }})<br>
+Abonnement : <strong>{{ contract.billingPeriodLabel }}</strong>
+— Formule {{ contract.planLabel }} — {{ contract.price|money }} {{ contract.pricePeriodLabel }}<br>
+Rupture immédiate :
+{% if contract.billingPeriod == 'annual' %}
+{{ contract.annualUnpaidDaysBeforeTermination }} jours (1 mois) de retard max (annuel)
+{% else %}
+{{ contract.monthlyUnpaidDaysBeforeTermination }} jours de retard max (mensuel)
+{% endif %}.
+</p>
+
+<table class="parties">
+<tr>
+<td>
+<strong>LE PRESTATAIRE</strong><br>
+{{ platform.legal_name }}<br>
+{{ platform.address }}<br>
+{{ platform.city }}, {{ platform.country }}<br>
+Identifiant fiscal : {{ platform.tax_id }}<br>
+Email : {{ platform.email }} — Tél. : {{ platform.phone }}<br>
+Représenté par : {{ platform.representative }}
+</td>
+<td>
+<strong>LE COMMERÇANT</strong><br>
+{{ merchant.companyName }}
+{% if merchant.legalForm %} ({{ merchant.legalForm }}){% endif %}<br>
+Représenté par : {{ user ? user.fullName : '—' }}
+{% if merchant.representativeTitle %} — {{ merchant.representativeTitle }}{% endif %}<br>
+{% if merchant.address %}{{ merchant.address }}<br>{% endif %}
+{% if merchant.postalCode or merchant.city %}{{ merchant.postalCode }} {{ merchant.city }}{% if merchant.country %}, {{ merchant.country }}{% endif %}<br>{% endif %}
+{% if merchant.taxId %}NINEA / fiscal : {{ merchant.taxId }}<br>{% endif %}
+{% if merchant.registrationNumber %}RCCM : {{ merchant.registrationNumber }}<br>{% endif %}
+Email : {{ user ? user.email : '—' }} — Tél. : {{ user and user.phone ? user.phone : '—' }}
+</td>
+</tr>
+</table>
+
+<p><strong>Boutique concernée :</strong> {{ contract.displayShopName }}
+{% if contract.displayShopAddress %} — {{ contract.displayShopAddress }}{% endif %}
+{% if contract.displayShopPhone %} — {{ contract.displayShopPhone }}{% endif %}
+{% if contract.displayShopEmail %} — {{ contract.displayShopEmail }}{% endif %}
+{% if contract.draft %}<br><em class="small">(Projet de contrat — discussion commerciale)</em>{% endif %}
+</p>
+{% if contract.discussionNotes %}
+<p class="small"><strong>Notes :</strong> {{ contract.discussionNotes }}</p>
+{% endif %}
+
+<p>Ci-après dénommés ensemble « les Parties », et individuellement « une Partie ».</p>
+
+<h2>Article 1 — Objet</h2>
+<p>
+Le présent contrat a pour objet de définir les conditions dans lesquelles le Prestataire met à disposition du Commerçant
+un accès à la plateforme logicielle {{ platform.name }} (SaaS) permettant la gestion de boutique(s) :
+catalogue produits, stocks, ventes, clients, fournisseurs, facturation, inventaires, rapports et gestion des accès vendeurs.
+</p>
+
+<h2>Article 2 — Définitions</h2>
+<ul>
+<li><strong>Plateforme :</strong> application web et services associés édités par le Prestataire.</li>
+<li><strong>Boutique :</strong> établissement digital/physique configuré pour le Commerçant sur la Plateforme.</li>
+<li><strong>Données :</strong> informations saisies ou générées par le Commerçant et ses utilisateurs (produits, ventes, clients, etc.).</li>
+<li><strong>Utilisateur :</strong> toute personne autorisée (commerçant, vendeur) à accéder à la Boutique.</li>
+</ul>
+
+<h2>Article 3 — Description des services</h2>
+<p>Le Prestataire fournit un droit d'accès non exclusif et non cessible à la Plateforme, incluant notamment :</p>
+<ul>
+<li>gestion multi-utilisateurs (commerçant et vendeurs) ;</li>
+<li>gestion du catalogue, stocks, achats et inventaires ;</li>
+<li>point de vente, factures/reçus PDF, rapports ;</li>
+<li>hébergement des données en base (y compris logos, photos et PDF) ;</li>
+<li>support technique raisonnable pendant la durée du contrat.</li>
+</ul>
+<p>La formule souscrite est <strong>{{ contract.planLabel }}</strong>.</p>
+
+<h2>Article 4 — Durée — Entrée en vigueur — Abonnement</h2>
+<p>
+Le contrat entre en vigueur à compter de sa double signature électronique, pour une durée d'engagement de
+<strong>{{ contract.durationMonths }} mois</strong>, du {{ contract.startsAt|date('d/m/Y') }} au {{ contract.endsAt|date('d/m/Y') }},
+renouvelable par accord écrit des Parties ou reconduction tacite sauf dénonciation avec préavis de trente (30) jours.
+</p>
+<p>
+L'abonnement est souscrit selon une périodicité
+<strong>{% if contract.billingPeriod == 'annual' %}annuelle{% else %}mensuelle{% endif %}</strong>
+(au choix des Parties à la signature) :
+</p>
+<ul>
+<li><strong>Mensuel :</strong> redevance payable chaque mois à l'avance ;</li>
+<li><strong>Annuel :</strong> redevance payable une fois par an à l'avance pour douze (12) mois de service.</li>
+</ul>
+<p>
+La périodicité retenue pour le présent contrat est : <strong>{{ contract.billingPeriodLabel }}</strong>.
+</p>
+
+<h2>Article 5 — Conditions financières</h2>
+<p>
+En contrepartie des services, le Commerçant s'acquitte d'une redevance de
+<strong>{{ contract.price|money }} {{ contract.pricePeriodLabel }}</strong>
+({% if contract.billingPeriod == 'annual' %}abonnement annuel{% else %}abonnement mensuel{% endif %}), hors éventuelles taxes applicables,
+selon les modalités communiquées par le Prestataire (espèces, mobile money, virement).
+</p>
+<ul>
+<li>L'abonnement est strictement <strong>mensuel</strong> ou <strong>annuel</strong>, conformément à l'Article 4.</li>
+<li>Tout retard de paiement expose à suspension puis, le cas échéant, à la rupture prévue à l'Article 11.</li>
+<li>Les montants déjà perçus restent acquis en cas de résiliation pour manquement du Commerçant.</li>
+</ul>
+
+<h2>Article 6 — Obligations du Prestataire</h2>
+<ul>
+<li>Mettre en œuvre les moyens raisonnables pour assurer la disponibilité et la sécurité de la Plateforme.</li>
+<li>Assurer la sauvegarde et l'intégrité des Données dans la base de données.</li>
+<li>Informer le Commerçant des maintenances planifiées majeures.</li>
+<li>Ne pas exploiter les Données à des fins commerciales tierces sans accord.</li>
+</ul>
+
+<h2>Article 7 — Obligations du Commerçant</h2>
+<ul>
+<li>Fournir des informations exactes (identité, entreprise, boutique) et les tenir à jour.</li>
+<li>Veiller à la confidentialité des identifiants et à la gestion de ses vendeurs.</li>
+<li>Utiliser la Plateforme conformément aux lois en vigueur et aux présentes conditions.</li>
+<li>Ne pas tenter de contourner les mesures de sécurité ni de reverse-engineer la Plateforme.</li>
+<li>S'acquitter des redevances aux échéances convenues.</li>
+</ul>
+
+<h2>Article 8 — Propriété intellectuelle</h2>
+<p>
+La Plateforme, ses marques, codes, interfaces et documentation restent la propriété exclusive du Prestataire.
+Le présent contrat ne transfère aucun droit de propriété intellectuelle au Commerçant, hors le droit d'usage temporaire prévu.
+</p>
+
+<h2>Article 9 — Données personnelles et confidentialité</h2>
+<p>
+Les Parties s'engagent à traiter les données personnelles conformément à la réglementation applicable.
+Le Commerçant demeure responsable des traitements qu'il effectue sur ses clients et collaborateurs.
+Chaque Partie s'engage à garder confidentielles les informations commerciales et techniques de l'autre Partie
+pendant la durée du contrat et trois (3) ans après son terme.
+</p>
+
+<h2>Article 10 — Responsabilité</h2>
+<p>
+Le Prestataire est tenu à une obligation de moyens. Sa responsabilité totale, toutes causes confondues,
+est limitée au montant des redevances payées par le Commerçant au cours des trois (3) derniers mois.
+Sont exclus les dommages indirects (perte de chiffre d'affaires, atteinte à l'image, etc.).
+Le Commerçant reste responsable de ses opérations de caisse, stocks et obligations fiscales.
+</p>
+
+<h2>Article 11 — Suspension et résiliation — Impayés</h2>
+<p><strong>11.1 — Suspension</strong></p>
+<ul>
+<li>Le Prestataire peut suspendre l'accès en cas de non-paiement d'une échéance ou d'usage abusif, après information du Commerçant.</li>
+</ul>
+<p><strong>11.2 — Rupture immédiate pour impayés</strong></p>
+<p>
+Les Parties conviennent expressément que le présent contrat est <strong>résilié de plein droit avec effet immédiat</strong>
+en cas de retard de paiement au-delà des délais suivants après la date d'échéance :
+</p>
+<ul>
+<li><strong>Abonnement mensuel :</strong> quinze ({{ contract.monthlyUnpaidDaysBeforeTermination }}) jours de retard maximum ;</li>
+<li><strong>Abonnement annuel :</strong> trente ({{ contract.annualUnpaidDaysBeforeTermination }}) jours de retard maximum (soit un mois).</li>
+</ul>
+<p>
+Dans ces cas, la résiliation intervient <strong>sans préavis ni formalité judiciaire</strong>,
+et l'accès à la Plateforme ainsi qu'à la Boutique est coupé immédiatement.
+Le Prestataire conserve le droit de réclamer les sommes dues. Les Données restent consultables pour export pendant trente (30) jours
+sur demande écrite, sauf obligation légale contraire.
+</p>
+<p><strong>11.3 — Autres cas de résiliation</strong></p>
+<ul>
+<li>Chaque Partie peut résilier de plein droit en cas de manquement grave non réparé sous quinze (15) jours après mise en demeure.</li>
+<li>À la fin normale du contrat, le Commerçant peut demander une exportation de ses Données dans un délai de trente (30) jours.</li>
+</ul>
+
+<h2>Article 12 — Force majeure</h2>
+<p>
+Aucune Partie n'est responsable d'un manquement dû à un événement de force majeure (catastrophe, coupure réseau majeure,
+décision administrative, etc.), sous réserve d'en informer l'autre Partie dans les meilleurs délais.
+</p>
+
+<h2>Article 13 — Droit applicable et litiges</h2>
+<p>
+Le présent contrat est régi par le droit sénégalais. En cas de litige, les Parties recherchent une solution amiable.
+À défaut, les tribunaux compétents de {{ platform.city }} seront seuls compétents.
+</p>
+
+<h2>Article 14 — Dispositions générales</h2>
+<ul>
+<li>Le présent document constitue l'intégralité de l'accord relatif à son objet.</li>
+<li>Si une clause est invalidée, les autres demeurent applicables.</li>
+<li>La signature électronique via la Plateforme a la même valeur qu'une signature manuscrite entre les Parties.</li>
+</ul>
+
+<h2>Article 15 — Signatures</h2>
+<p class="small">Les Parties reconnaissent avoir lu et accepté l'intégralité des articles ci-dessus.</p>
+
+<table class="signatures">
+<tr>
+<td>
+<strong>Pour le Prestataire</strong><br>
+{{ platform.legal_name }}<br>
+{% if contract.platformSignedAt %}
+<div class="sign-box">
+Signé électroniquement par : <strong>{{ contract.platformSignedBy }}</strong><br>
+Le {{ contract.platformSignedAt|date('d/m/Y à H:i') }}
+</div>
+{% else %}
+<div class="sign-box">Signature / Nom / Date<br><span class="small">En attente</span></div>
+{% endif %}
+</td>
+<td>
+<strong>Pour le Commerçant</strong><br>
+{{ merchant.companyName }}<br>
+{% if contract.merchantSignedAt %}
+<div class="sign-box">
+Signé électroniquement par : <strong>{{ contract.merchantSignedBy }}</strong><br>
+Qualité : {{ contract.merchantSignedTitle }}<br>
+Le {{ contract.merchantSignedAt|date('d/m/Y à H:i') }}
+</div>
+{% else %}
+<div class="sign-box">Signature / Nom / Qualité / Date<br><span class="small">En attente</span></div>
+{% endif %}
+</td>
+</tr>
+</table>
+
+<p class="small" style="margin-top:24px;text-align:center">
+Document généré par {{ platform.name }} — Contrat {{ contract.number }} — Conservé en base de données.
+</p>
+
+</body>
+</html>

@@ -36,7 +36,8 @@ class SuspendedUserSubscriber implements EventSubscriberInterface
         }
 
         $path = $event->getRequest()->getPathInfo();
-        if (str_starts_with($path, '/logout') || str_starts_with($path, '/login')) {
+        if (str_starts_with($path, '/logout') || str_starts_with($path, '/login')
+            || $path === '/' || str_starts_with($path, '/a-propos') || str_starts_with($path, '/contact')) {
             return;
         }
 

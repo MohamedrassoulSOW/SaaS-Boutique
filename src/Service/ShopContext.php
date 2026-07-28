@@ -3,35 +3,36 @@
 namespace App\Service;
 
 use App\Entity\Shop;
-use App\Entity\ShopMember;
 use App\Entity\User;
 use App\Repository\ShopRepository;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * Contexte boutique persisté en base (preferredShopId), sans dépendance fichier.
+ */
 class ShopContext
 {
-    private const SESSION_KEY = 'current_shop_id';
-
     public function __construct(
-        private RequestStack $requestStack,
         private ShopRepository $shopRepository,
+        private EntityManagerInterface $em,
     ) {
     }
 
     public function getCurrentShop(?User $user = null): ?Shop
     {
-        $session = $this->requestStack->getSession();
-        $shopId = $session->get(self::SESSION_KEY);
-
-        if ($shopId) {
-            $shop = $this->shopRepository->find($shopId);
-            if ($shop && $user && $this->userCanAccess($user, $shop)) {
-                return $shop;
-            }
+        if (!$user || $user->isAdmin()) {
+            return null;
         }
 
-        if (!$user) {
-            return null;
+        if ($user->getPreferredShopId()) {
+            $shop = $this->shopRepository->find($user->getPreferredShopId());
+            if ($shop && $this->userCanAccess($user, $shop)) {
+                return $shop;
+            }
+            $user->setPreferredShopId(null);
+            $this->em->flush();
         }
 
         $shops = $this->getAccessibleShops($user);
@@ -39,31 +40,58 @@ class ShopContext
             return null;
         }
 
-        $this->setCurrentShop($shops[0]);
+        $this->setCurrentShop($shops[0], $user);
 
         return $shops[0];
     }
 
-    public function setCurrentShop(Shop $shop): void
+    public function setCurrentShop(Shop $shop, ?User $user = null): void
     {
-        $this->requestStack->getSession()->set(self::SESSION_KEY, $shop->getId());
+        if (!$user) {
+            throw new AccessDeniedHttpException('Utilisateur requis.');
+        }
+
+        if (!$this->userCanAccess($user, $shop)) {
+            throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette boutique.');
+        }
+
+        $user->setPreferredShopId($shop->getId());
+        $this->em->flush();
+    }
+
+    public function clearCurrentShop(?User $user = null): void
+    {
+        if ($user) {
+            $user->setPreferredShopId(null);
+            $this->em->flush();
+        }
     }
 
     /** @return Shop[] */
     public function getAccessibleShops(User $user): array
     {
         if ($user->isAdmin()) {
-            return $this->shopRepository->findBy(['isActive' => true], ['name' => 'ASC']);
+            return [];
         }
 
         if ($user->isMerchant() && $user->getMerchant()) {
-            return $user->getMerchant()->getShops()->toArray();
+            $shops = [];
+            foreach ($user->getMerchant()->getShops() as $shop) {
+                if ($shop->isActive()) {
+                    $shops[] = $shop;
+                }
+            }
+
+            usort($shops, static fn (Shop $a, Shop $b) => strcmp((string) $a->getName(), (string) $b->getName()));
+
+            return $shops;
         }
 
         $shops = [];
         foreach ($user->getShopMemberships() as $membership) {
-            if ($membership->isActive() && $membership->getShop()) {
-                $shops[] = $membership->getShop();
+            $shop = $membership->getShop();
+            if ($membership->isActive() && $shop && $shop->isActive()) {
+                $shops[] = $shop;
             }
         }
 
@@ -72,20 +100,72 @@ class ShopContext
 
     public function userCanAccess(User $user, Shop $shop): bool
     {
-        if ($user->isAdmin()) {
-            return true;
+        if ($user->isSuspended() || !$user->isActive()) {
+            return false;
         }
 
-        if ($user->isMerchant() && $user->getMerchant()?->getId() === $shop->getMerchant()?->getId()) {
-            return true;
+        if ($user->isAdmin()) {
+            return false;
+        }
+
+        if ($user->isMerchant()) {
+            $merchant = $user->getMerchant();
+            if (!$merchant || !$shop->getMerchant()) {
+                return false;
+            }
+
+            return $merchant->getId() === $shop->getMerchant()->getId();
         }
 
         foreach ($user->getShopMemberships() as $membership) {
-            if ($membership->isActive() && $membership->getShop()?->getId() === $shop->getId()) {
+            if ($membership->isActive()
+                && $membership->getShop()?->getId() === $shop->getId()) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    public function getMemberRole(User $user, Shop $shop): ?string
+    {
+        if ($user->isMerchant() && $this->userCanAccess($user, $shop)) {
+            return 'merchant';
+        }
+
+        foreach ($user->getShopMemberships() as $membership) {
+            if ($membership->isActive()
+                && $membership->getShop()?->getId() === $shop->getId()) {
+                return $membership->getRole();
+            }
+        }
+
+        return null;
+    }
+
+    public function requireAccessibleShop(User $user): Shop
+    {
+        if ($user->isAdmin()) {
+            throw new AccessDeniedHttpException('L\'administrateur n\'a pas accès aux boutiques.');
+        }
+
+        $shop = $this->getCurrentShop($user);
+        if (!$shop) {
+            throw new NotFoundHttpException('Aucune boutique accessible. Contactez l\'administrateur pour en créer une.');
+        }
+
+        if (!$this->userCanAccess($user, $shop)) {
+            $this->clearCurrentShop($user);
+            throw new AccessDeniedHttpException('Accès refusé à cette boutique.');
+        }
+
+        return $shop;
+    }
+
+    public function assertOwnsShopData(User $user, ?Shop $dataShop): void
+    {
+        if ($user->isAdmin() || !$dataShop || !$this->userCanAccess($user, $dataShop)) {
+            throw new AccessDeniedHttpException('Ces données n\'appartiennent pas à votre boutique.');
+        }
     }
 }

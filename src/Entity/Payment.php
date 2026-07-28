@@ -39,6 +39,9 @@ class Payment
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dueAt = null;
+
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $paidAt = null;
 
     public function __construct()
@@ -114,6 +117,18 @@ class Payment
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getDueAt(): ?\DateTimeImmutable
+    {
+        return $this->dueAt;
+    }
+
+    public function setDueAt(?\DateTimeImmutable $dueAt): static
+    {
+        $this->dueAt = $dueAt;
+
+        return $this;
     }
 
     public function getPaidAt(): ?\DateTimeImmutable

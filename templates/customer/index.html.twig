@@ -13,10 +13,10 @@
 <tr>
     <td><a href="{{ path('app_customer_show', {id: c.id}) }}">{{ c.fullName }}</a></td>
     <td>{{ c.phone }}</td>
-    <td>{{ c.balance|number_format(2, ',', ' ') }} €</td>
+    <td>{{ c.balance|money }}</td>
     <td class="text-end">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_customer_edit', {id: c.id}) }}">Modifier</a>
-        <form class="d-inline" method="post" action="{{ path('app_customer_delete', {id: c.id}) }}" onsubmit="return confirm('Supprimer ?')">
+        <form class="d-inline" method="post" action="{{ path('app_customer_delete', {id: c.id}) }}" data-confirm="Supprimer ce client ?" data-confirm-title="Supprimer le client" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
             <button class="btn btn-sm btn-outline-danger">Suppr.</button>
         </form>

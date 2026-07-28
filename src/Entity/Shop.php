@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ShopRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -12,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'shops')]
 class Shop
 {
+    use BinaryPayloadTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -34,8 +37,14 @@ class Shop
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $logo = null;
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private mixed $logoData = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $logoMime = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $logoName = null;
 
     #[ORM\Column]
     private bool $isActive = true;
@@ -62,6 +71,9 @@ class Shop
     /** @var Collection<int, Customer> */
     #[ORM\OneToMany(mappedBy: 'shop', targetEntity: Customer::class, orphanRemoval: true)]
     private Collection $customers;
+
+    #[ORM\OneToOne(mappedBy: 'shop', cascade: ['persist', 'remove'])]
+    private ?ShopContract $contract = null;
 
     public function __construct()
     {
@@ -138,16 +150,45 @@ class Shop
         return $this;
     }
 
-    public function getLogo(): ?string
+    public function getLogoData(): ?string
     {
-        return $this->logo;
+        return $this->readBinary($this->logoData);
     }
 
-    public function setLogo(?string $logo): static
+    public function setLogoData(?string $logoData): static
     {
-        $this->logo = $logo;
+        $this->logoData = $this->writeBinary($logoData);
 
         return $this;
+    }
+
+    public function getLogoMime(): ?string
+    {
+        return $this->logoMime;
+    }
+
+    public function setLogoMime(?string $logoMime): static
+    {
+        $this->logoMime = $logoMime;
+
+        return $this;
+    }
+
+    public function getLogoName(): ?string
+    {
+        return $this->logoName;
+    }
+
+    public function setLogoName(?string $logoName): static
+    {
+        $this->logoName = $logoName;
+
+        return $this;
+    }
+
+    public function hasLogo(): bool
+    {
+        return $this->getLogoData() !== null && $this->getLogoData() !== '';
     }
 
     public function isActive(): bool
@@ -195,6 +236,26 @@ class Shop
     public function getCustomers(): Collection
     {
         return $this->customers;
+    }
+
+    public function getContract(): ?ShopContract
+    {
+        return $this->contract;
+    }
+
+    public function setContract(?ShopContract $contract): static
+    {
+        if ($contract === null && $this->contract !== null) {
+            $this->contract->setShop(null);
+        }
+
+        if ($contract !== null && $contract->getShop() !== $this) {
+            $contract->setShop($this);
+        }
+
+        $this->contract = $contract;
+
+        return $this;
     }
 
     public function __toString(): string

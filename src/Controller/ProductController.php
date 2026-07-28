@@ -3,34 +3,21 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Entity\User;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
 use App\Service\ActivityLogger;
+use App\Service\BinaryUploadService;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/products')]
-#[IsGranted('ROLE_USER')]
-class ProductController extends AbstractController
+#[IsGranted('MODULE_PRODUCTS_VIEW')]
+class ProductController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_product_index')]
     public function index(Request $request, ProductRepository $repo, ShopContext $shopContext): Response
     {
@@ -59,8 +46,14 @@ class ProductController extends AbstractController
     }
 
     #[Route('/new', name: 'app_product_new')]
-    public function new(Request $request, EntityManagerInterface $em, ShopContext $shopContext, ActivityLogger $logger): Response
-    {
+    #[IsGranted('MODULE_PRODUCTS_MANAGE')]
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+        BinaryUploadService $uploader,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $product = new Product();
         $product->setShop($shop);
@@ -68,30 +61,39 @@ class ProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->applyPhoto($form->get('photoFile')->getData(), $product, $uploader);
             $em->persist($product);
             $em->flush();
-            /** @var User $user */
-            $user = $this->getUser();
-            $logger->log('product.create', 'Produit '.$product->getName(), $user, $shop);
-            $this->addFlash('success', 'Produit ajouté.');
+            $logger->log('product.create', 'Produit '.$product->getName(), $this->getShopUser(), $shop);
+            $this->addFlash('success', 'Produit ajouté (données en base).');
 
             return $this->redirectToRoute('app_product_index');
         }
 
-        return $this->render('product/form.html.twig', ['form' => $form, 'title' => 'Nouveau produit']);
+        return $this->render('product/form.html.twig', [
+            'form' => $form,
+            'title' => 'Nouveau produit',
+            'product' => $product,
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'app_product_edit')]
-    public function edit(Product $product, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    #[IsGranted('MODULE_PRODUCTS_MANAGE')]
+    public function edit(
+        Product $product,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        BinaryUploadService $uploader,
+    ): Response {
         $shop = $this->requireShop($shopContext);
-        if ($product->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $product->getShop());
 
         $form = $this->createForm(ProductType::class, $product, ['shop' => $shop]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->applyPhoto($form->get('photoFile')->getData(), $product, $uploader);
+            $product->setShop($shop);
             $product->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
             $this->addFlash('success', 'Produit mis à jour.');
@@ -99,16 +101,19 @@ class ProductController extends AbstractController
             return $this->redirectToRoute('app_product_index');
         }
 
-        return $this->render('product/form.html.twig', ['form' => $form, 'title' => 'Modifier le produit']);
+        return $this->render('product/form.html.twig', [
+            'form' => $form,
+            'title' => 'Modifier le produit',
+            'product' => $product,
+        ]);
     }
 
     #[Route('/{id}/delete', name: 'app_product_delete', methods: ['POST'])]
+    #[IsGranted('MODULE_PRODUCTS_MANAGE')]
     public function delete(Product $product, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
     {
-        $shop = $this->requireShop($shopContext);
-        if ($product->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->requireShop($shopContext);
+        $this->assertShopData($shopContext, $product->getShop());
 
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
             $em->remove($product);
@@ -117,5 +122,21 @@ class ProductController extends AbstractController
         }
 
         return $this->redirectToRoute('app_product_index');
+    }
+
+    private function applyPhoto(mixed $file, Product $product, BinaryUploadService $uploader): void
+    {
+        if (!$file) {
+            return;
+        }
+
+        try {
+            $payload = $uploader->readImage($file);
+            $product->setPhotoData($payload['data']);
+            $product->setPhotoMime($payload['mime']);
+            $product->setPhotoName($payload['name']);
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
     }
 }

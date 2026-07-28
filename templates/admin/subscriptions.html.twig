@@ -1,31 +1,74 @@
 {% extends 'base.html.twig' %}
 {% block title %}Abonnements{% endblock %}
 {% block body %}
-<h1 class="page-title h3 mb-4">Abonnements</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Administration</div>
+        <h1 class="page-title h3 mb-0">Abonnements</h1>
+        <p class="text-muted small mb-0">Échéances, paiements manuels, suspension / résiliation (15 j mensuel · 30 j annuel).</p>
+    </div>
+    <form method="post" action="{{ path('admin_subscriptions_enforce') }}" data-confirm="Lancer l’enforcement maintenant (suspendre / résilier les impayés) ?" data-confirm-title="Enforcement" data-confirm-label="Lancer">
+        <input type="hidden" name="_token" value="{{ csrf_token('enforce_subs') }}">
+        <button class="btn btn-outline-brand btn-sm">Appliquer les impayés</button>
+    </form>
+</div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
-<thead><tr><th>Commerçant</th><th>Plan</th><th>Statut</th><th>Fin</th><th>Changer</th></tr></thead>
+<thead>
+<tr>
+    <th>Commerçant</th>
+    <th>Plan</th>
+    <th>Statut</th>
+    <th>Échéance</th>
+    <th>Retard</th>
+    <th>Paiement</th>
+    <th>Plan</th>
+</tr>
+</thead>
 <tbody>
 {% for s in subscriptions %}
+{% set overdue = s.daysOverdue %}
+{% set grace = s.graceDays %}
 <tr>
-    <td>{{ s.merchant.companyName }}</td>
-    <td>{{ s.plan }} ({{ s.price }} €)</td>
-    <td>{{ s.status }}</td>
-    <td>{{ s.endsAt ? s.endsAt|date('d/m/Y') : '—' }}</td>
+    <td class="fw-semibold">{{ s.merchant.companyName }}</td>
+    <td>{{ s.plan }} · {{ s.price|money }} <span class="text-muted small">{{ s.billingPeriod == 'annual' ? '/ an' : '/ mois' }}</span></td>
+    <td>
+        {% if s.status == 'cancelled' %}<span class="badge-stock">{{ s.status }}</span>
+        {% elseif overdue > grace and s.billable %}<span class="badge-stock">impayé critique</span>
+        {% elseif overdue > 0 and s.billable %}<span class="badge-stock">retard {{ overdue }} j</span>
+        {% else %}<span class="badge-ok">{{ s.status }}</span>{% endif %}
+    </td>
+    <td>{{ s.nextDueAt ? s.nextDueAt|date('d/m/Y') : '—' }}</td>
+    <td>
+        {% if not s.billable %}—{% elseif overdue <= 0 %}À jour{% else %}{{ overdue }} j / {{ grace }} j{% endif %}
+    </td>
+    <td>
+        {% if s.billable and s.status != 'cancelled' %}
+        <form method="post" action="{{ path('admin_subscription_payment', {id: s.id}) }}" class="d-flex flex-wrap gap-1">
+            <input type="hidden" name="_token" value="{{ csrf_token('pay' ~ s.id) }}">
+            <input type="text" name="reference" class="form-control form-control-sm" placeholder="Réf." style="width:7rem">
+            <button class="btn btn-sm btn-brand">Payer</button>
+        </form>
+        {% else %}—{% endif %}
+    </td>
     <td>
         <form method="post" action="{{ path('admin_subscription_plan', {id: s.id}) }}" class="d-flex gap-2">
             <input type="hidden" name="_token" value="{{ csrf_token('plan' ~ s.id) }}">
             <select name="plan" class="form-select form-select-sm">
-                <option value="free">Free</option>
-                <option value="basic">Basic</option>
-                <option value="pro">Pro</option>
+                <option value="free" {{ s.plan == 'free' ? 'selected' }}>Free</option>
+                <option value="basic" {{ s.plan == 'basic' ? 'selected' }}>Basic</option>
+                <option value="pro" {{ s.plan == 'pro' ? 'selected' }}>Pro</option>
             </select>
-            <button class="btn btn-sm btn-brand">OK</button>
+            <button class="btn btn-sm btn-outline-brand">OK</button>
         </form>
     </td>
 </tr>
+{% else %}
+<tr><td colspan="7" class="text-muted p-4">Aucun abonnement</td></tr>
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

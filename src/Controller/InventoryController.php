@@ -14,28 +14,15 @@ use App\Service\NotificationService;
 use App\Service\ShopContext;
 use App\Service\StockService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/inventories')]
-#[IsGranted('ROLE_USER')]
-class InventoryController extends AbstractController
+#[IsGranted('MODULE_INVENTORIES')]
+class InventoryController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_inventory_index')]
     public function index(InventoryRepository $repo, ShopContext $shopContext): Response
     {
@@ -104,9 +91,7 @@ class InventoryController extends AbstractController
     public function show(Inventory $inventory, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($inventory->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $inventory->getShop());
 
         return $this->render('inventory/show.html.twig', ['inventory' => $inventory]);
     }
@@ -121,9 +106,7 @@ class InventoryController extends AbstractController
         ActivityLogger $logger,
     ): Response {
         $shop = $this->requireShop($shopContext);
-        if ($inventory->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $inventory->getShop());
 
         /** @var User $user */
         $user = $this->getUser();

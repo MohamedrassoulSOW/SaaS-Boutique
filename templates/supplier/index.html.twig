@@ -16,7 +16,7 @@
     <td>{{ s.email }}</td>
     <td class="text-end">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_supplier_edit', {id: s.id}) }}">Modifier</a>
-        <form class="d-inline" method="post" action="{{ path('app_supplier_delete', {id: s.id}) }}" onsubmit="return confirm('Supprimer ?')">
+        <form class="d-inline" method="post" action="{{ path('app_supplier_delete', {id: s.id}) }}" data-confirm="Supprimer ce fournisseur ?" data-confirm-title="Supprimer le fournisseur" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ s.id) }}">
             <button class="btn btn-sm btn-outline-danger">Suppr.</button>
         </form>

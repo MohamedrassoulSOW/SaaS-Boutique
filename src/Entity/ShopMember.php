@@ -86,6 +86,15 @@ class ShopMember
         return $this;
     }
 
+    public function getRoleLabel(): string
+    {
+        return match ($this->role) {
+            self::ROLE_MANAGER => 'Responsable',
+            self::ROLE_STOCK => 'Magasinier',
+            default => 'Vendeur / Caissier',
+        };
+    }
+
     /** @return list<string> */
     public function getPermissions(): array
     {

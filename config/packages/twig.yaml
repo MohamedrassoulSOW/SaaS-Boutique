@@ -3,6 +3,8 @@ twig:
     form_themes: ['bootstrap_5_layout.html.twig']
     globals:
         app_name: 'BoutiqueSaaS'
+        currency: 'FCFA'
+        currency_code: 'XOF'
 
 when@test:
     twig:

@@ -10,28 +10,15 @@ use App\Repository\SaleRepository;
 use App\Service\InvoicePdfService;
 use App\Service\SaleService;
 use App\Service\ShopContext;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/sales')]
-#[IsGranted('ROLE_USER')]
-class SaleController extends AbstractController
+#[IsGranted('MODULE_SALES')]
+class SaleController extends ShopAwareController
 {
-    private function requireShop(ShopContext $shopContext): \App\Entity\Shop
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $shop = $shopContext->getCurrentShop($user);
-        if (!$shop) {
-            throw $this->createNotFoundException('Aucune boutique active.');
-        }
-
-        return $shop;
-    }
-
     #[Route('', name: 'app_sale_index')]
     public function index(SaleRepository $repo, ShopContext $shopContext): Response
     {
@@ -61,11 +48,19 @@ class SaleController extends AbstractController
             $quantities = $request->request->all('quantity') ?: [];
             $lines = [];
             foreach ($productIds as $i => $productId) {
+                $pid = (int) $productId;
                 $qty = (int) ($quantities[$i] ?? 0);
-                if ($qty > 0) {
-                    $lines[] = ['product_id' => (int) $productId, 'quantity' => $qty];
+                if ($pid < 1 || $qty < 1) {
+                    continue;
+                }
+                // Fusionne les quantités si le même produit est répété
+                if (isset($lines[$pid])) {
+                    $lines[$pid]['quantity'] += $qty;
+                } else {
+                    $lines[$pid] = ['product_id' => $pid, 'quantity' => $qty];
                 }
             }
+            $lines = array_values($lines);
 
             if ($lines === []) {
                 $this->addFlash('danger', 'Ajoutez au moins un produit.');
@@ -73,6 +68,9 @@ class SaleController extends AbstractController
                 try {
                     $customerId = $request->request->getInt('customer_id') ?: null;
                     $customer = $customerId ? $customers->find($customerId) : null;
+                    if ($customer) {
+                        $this->assertShopData($shopContext, $customer->getShop());
+                    }
                     $sale = $saleService->createSale(
                         $shop,
                         $user,
@@ -101,9 +99,7 @@ class SaleController extends AbstractController
     public function show(Sale $sale, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($sale->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $sale->getShop());
 
         return $this->render('sale/show.html.twig', ['sale' => $sale]);
     }
@@ -112,9 +108,7 @@ class SaleController extends AbstractController
     public function invoicePdf(Sale $sale, ShopContext $shopContext, InvoicePdfService $pdf): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($sale->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $sale->getShop());
 
         $content = $pdf->generate($sale);
         $number = $sale->getInvoice()?->getNumber() ?? $sale->getReference();
@@ -129,9 +123,7 @@ class SaleController extends AbstractController
     public function print(Sale $sale, ShopContext $shopContext): Response
     {
         $shop = $this->requireShop($shopContext);
-        if ($sale->getShop()?->getId() !== $shop->getId()) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->assertShopData($shopContext, $sale->getShop());
 
         return $this->render('sale/print.html.twig', ['sale' => $sale]);
     }

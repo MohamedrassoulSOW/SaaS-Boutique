@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Shop;
 use App\Entity\ShopMember;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -30,5 +31,18 @@ class ShopMemberRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /** @return list<ShopMember> */
+    public function findByShop(Shop $shop): array
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')->addSelect('u')
+            ->andWhere('m.shop = :shop')
+            ->setParameter('shop', $shop)
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

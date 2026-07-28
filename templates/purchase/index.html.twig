@@ -15,7 +15,7 @@
     <td>{{ o.supplier.name }}</td>
     <td>{{ o.createdAt|date('d/m/Y') }}</td>
     <td><span class="badge text-bg-secondary">{{ o.status }}</span></td>
-    <td>{{ o.total|number_format(2, ',', ' ') }} €</td>
+    <td>{{ o.total|money }}</td>
     <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_purchase_show', {id: o.id}) }}">Voir</a></td>
 </tr>
 {% else %}

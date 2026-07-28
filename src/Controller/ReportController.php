@@ -8,14 +8,13 @@ use App\Repository\PurchaseOrderRepository;
 use App\Repository\SaleRepository;
 use App\Service\ShopContext;
 use App\Service\StockService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/reports')]
-#[IsGranted('ROLE_USER')]
-class ReportController extends AbstractController
+#[IsGranted('MODULE_REPORTS')]
+class ReportController extends ShopAwareController
 {
     #[Route('', name: 'app_report_index')]
     public function index(

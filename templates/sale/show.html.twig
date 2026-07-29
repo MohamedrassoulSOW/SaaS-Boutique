@@ -45,3 +45,16 @@
     </table>
 </div>
 {% endblock %}
+
+{% block javascripts %}
+<script>
+(() => {
+  try {
+    const shopId = {{ sale.shop.id }};
+    localStorage.removeItem(`ndamstore.pos.cart.${shopId}`);
+  } catch (_) {
+    /* ignore */
+  }
+})();
+</script>
+{% endblock %}

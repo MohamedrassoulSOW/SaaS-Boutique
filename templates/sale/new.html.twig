@@ -30,18 +30,28 @@
                 data-price="{{ p.salePrice }}"
                 data-stock="{{ p.quantity }}"
                 data-photo="{% if p.hasPhoto %}{{ path('app_media_product_photo', {id: p.id}) }}{% endif %}"
-                data-search="{{ (p.name ~ ' ' ~ (p.reference ?? '') ~ ' ' ~ (p.barcode ?? ''))|lower|e('html_attr') }}"
+                data-search="{{ (p.name ~ ' ' ~ (p.reference ?? '') ~ ' ' ~ (p.barcode ?? '') ~ ' ' ~ (p.brand ?? '') ~ ' ' ~ (p.category ? p.category.name : ''))|lower|e('html_attr') }}"
             >
+                <span class="pos-tile-name">{{ p.name }}</span>
                 <span class="pos-tile-photo">
                     {% if p.hasPhoto %}
-                        <img src="{{ path('app_media_product_photo', {id: p.id}) }}" alt="" loading="lazy">
+                        <img src="{{ path('app_media_product_photo', {id: p.id}) }}" alt="{{ p.name }}" loading="lazy">
                     {% else %}
                         <span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>
                     {% endif %}
-                    <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">{{ p.quantity }}</span>
+                    <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">Stock {{ p.quantity }}</span>
                 </span>
                 <span class="pos-tile-body">
-                    <span class="pos-tile-name">{{ p.name }}</span>
+                    {% set metaParts = [] %}
+                    {% if p.category %}{% set metaParts = metaParts|merge([p.category.name]) %}{% endif %}
+                    {% if p.brand %}{% set metaParts = metaParts|merge([p.brand]) %}{% endif %}
+                    {% if p.reference %}{% set metaParts = metaParts|merge(['Réf. ' ~ p.reference]) %}{% endif %}
+                    {% if metaParts|length %}
+                        <span class="pos-tile-meta">{{ metaParts|join(' · ') }}</span>
+                    {% endif %}
+                    {% if p.barcode %}
+                        <span class="pos-tile-meta pos-tile-barcode">{{ p.barcode }}</span>
+                    {% endif %}
                     <span class="pos-tile-price">{{ p.salePrice|money }}</span>
                 </span>
             </button>

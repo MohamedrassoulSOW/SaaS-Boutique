@@ -40,7 +40,7 @@ class SaleController extends ShopAwareController
         FiscalService $fiscal,
     ): Response {
         $shop = $this->requireShop($shopContext);
-        $productList = $products->findBy(['shop' => $shop, 'isActive' => true], ['name' => 'ASC']);
+        $productList = $products->findActiveForPos($shop);
         $customerList = $customers->findBy(['shop' => $shop], ['lastName' => 'ASC']);
         $taxConfig = $fiscal->resolveShopTax($shop);
 

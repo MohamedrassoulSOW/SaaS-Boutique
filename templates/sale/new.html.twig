@@ -1,21 +1,24 @@
 {% extends 'base.html.twig' %}
 {% block title %}Nouvelle vente{% endblock %}
 {% block body %}
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+<div class="pos-page">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
-        <div class="text-muted small mb-1">Point de vente</div>
         <h1 class="page-title h2 mb-0">Nouvelle vente</h1>
-        <p class="text-muted mb-0">Touchez l’image du produit pour l’ajouter au panier.</p>
+        <p class="text-muted small mb-0">Touchez un produit pour l’ajouter au panier.</p>
     </div>
-    <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand">Historique</a>
+    <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand btn-sm">Historique</a>
 </div>
 
-<form method="post" id="saleForm">
+<form method="post" id="saleForm" class="pos-form">
 <div class="pos-layout">
     <section class="pos-catalog panel">
-        <div class="panel-head">
-            <h2>Choisir un produit</h2>
-            <input type="search" id="posSearch" class="form-control form-control-sm" placeholder="Rechercher…" style="max-width:14rem" autocomplete="off">
+        <div class="panel-head pos-catalog-head">
+            <h2>Produits</h2>
+            <div class="pos-search-wrap">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" id="posSearch" class="form-control form-control-sm" placeholder="Rechercher un produit…" autocomplete="off">
+            </div>
         </div>
         <div class="pos-grid" id="posGrid">
             {% for p in products %}
@@ -35,10 +38,12 @@
                     {% else %}
                         <span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>
                     {% endif %}
+                    <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">{{ p.quantity }}</span>
                 </span>
-                <span class="pos-tile-name">{{ p.name }}</span>
-                <span class="pos-tile-price">{{ p.salePrice|money }}</span>
-                <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">{{ p.quantity }}</span>
+                <span class="pos-tile-body">
+                    <span class="pos-tile-name">{{ p.name }}</span>
+                    <span class="pos-tile-price">{{ p.salePrice|money }}</span>
+                </span>
             </button>
             {% else %}
             <div class="text-muted p-4">Aucun produit actif</div>
@@ -49,66 +54,74 @@
     <aside class="pos-cart panel">
         <div class="panel-head">
             <h2>Panier</h2>
-            <span class="small text-muted" id="lineCount">0 article</span>
+            <span class="pos-cart-badge" id="lineCount">0</span>
         </div>
 
         <div class="pos-cart-list" id="cartList">
             <div class="pos-cart-empty text-muted" id="cartEmpty">
-                <i class="bi bi-hand-index-thumb d-block mb-2 fs-3"></i>
-                Touchez une image pour commencer
+                <i class="bi bi-cart3 d-block mb-2"></i>
+                Panier vide — sélectionnez un produit
             </div>
         </div>
 
         <div id="cartFields" class="d-none" aria-hidden="true"></div>
 
         <div class="pos-cart-footer">
-            <div class="mb-3">
-                <label class="form-label">Client <span class="text-muted fw-normal">(optionnel)</span></label>
-                <select name="customer_id" class="form-select">
-                    <option value="">Comptoir / sans client</option>
-                    {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Remise (FCFA)</label>
-                <input type="number" step="1" min="0" name="discount" id="discountInput" value="0" class="form-control">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Paiement</label>
-                <select name="payment_method" class="form-select">
-                    <option value="cash">Espèces</option>
-                    <option value="card">Carte</option>
-                    <option value="mobile">Mobile</option>
-                    <option value="credit">Crédit client</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Montant encaissé (FCFA)</label>
-                <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" value="0" class="form-control" placeholder="0 = total">
+            <div class="pos-fields">
+                <div class="pos-field">
+                    <label class="form-label" for="posCustomer">Client</label>
+                    <select name="customer_id" id="posCustomer" class="form-select form-select-sm">
+                        <option value="">Comptoir</option>
+                        {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="pos-field">
+                    <label class="form-label" for="discountInput">Remise</label>
+                    <input type="number" step="1" min="0" name="discount" id="discountInput" value="0" class="form-control form-control-sm" inputmode="numeric">
+                </div>
+                <div class="pos-field">
+                    <label class="form-label" for="posPayment">Paiement</label>
+                    <select name="payment_method" id="posPayment" class="form-select form-select-sm">
+                        <option value="cash">Espèces</option>
+                        <option value="card">Carte</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="credit">Crédit</option>
+                    </select>
+                </div>
+                <div class="pos-field">
+                    <label class="form-label" for="amountPaid">Encaissé</label>
+                    <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" value="0" class="form-control form-control-sm" placeholder="= total" inputmode="numeric">
+                </div>
             </div>
 
-            <div class="pos-totals mb-3">
-                <div class="d-flex justify-content-between small mb-1"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
-                <div class="d-flex justify-content-between small mb-1"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
-                <div class="d-flex justify-content-between small mb-2 {% if not taxConfig.enabled %}d-none{% endif %}" id="taxRow">
+            <div class="pos-totals">
+                <div class="pos-total-row"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
+                <div class="pos-total-row"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
+                <div class="pos-total-row {% if not taxConfig.enabled %}d-none{% endif %}" id="taxRow">
                     <span>TVA (<span id="taxRateLabel">{{ taxConfig.rate }}</span> %)</span>
                     <span id="taxDisplay">0 FCFA</span>
                 </div>
-                <div class="d-flex justify-content-between fw-semibold fs-5"><span>Total{% if taxConfig.enabled %} TTC{% endif %}</span><span id="totalDisplay">0 FCFA</span></div>
+                <div class="pos-total-row pos-total-main">
+                    <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
+                    <span id="totalDisplay">0 FCFA</span>
+                </div>
             </div>
 
-            <button class="btn btn-brand w-100 btn-lg" type="submit">Encaisser</button>
+            <button class="btn btn-brand w-100 pos-checkout-btn" type="submit">
+                <i class="bi bi-cash-coin me-1"></i>Encaisser
+            </button>
         </div>
     </aside>
 </div>
 </form>
+</div>
 {% endblock %}
 
 {% block javascripts %}
 <script>
 (() => {
   const money = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n || 0)) + ' FCFA';
-  const cart = new Map(); // id -> {id, name, price, stock, photo, qty}
+  const cart = new Map();
   const cartList = document.getElementById('cartList');
   const cartEmpty = document.getElementById('cartEmpty');
   const cartFields = document.getElementById('cartFields');
@@ -148,7 +161,7 @@
   function renderCart() {
     const items = [...cart.values()];
     cartList.querySelectorAll('.pos-cart-item').forEach((el) => el.remove());
-    cartEmpty.style.display = items.length ? 'none' : 'block';
+    cartEmpty.style.display = items.length ? 'none' : 'flex';
     cartFields.innerHTML = '';
 
     let subtotal = 0;
@@ -163,13 +176,18 @@
             : `<span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>`}
         </div>
         <div class="pos-cart-info">
-          <div class="pos-cart-name">${item.name}</div>
-          <div class="pos-cart-line">${money(item.price)} × ${item.qty} = <strong>${money(item.price * item.qty)}</strong></div>
-          <div class="pos-qty">
-            <button type="button" class="pos-qty-btn" data-act="minus" data-id="${item.id}" aria-label="Moins">−</button>
-            <span class="pos-qty-val">${item.qty}</span>
-            <button type="button" class="pos-qty-btn" data-act="plus" data-id="${item.id}" aria-label="Plus">+</button>
-            <button type="button" class="pos-qty-btn pos-qty-remove" data-act="remove" data-id="${item.id}" aria-label="Retirer">×</button>
+          <div class="pos-cart-top">
+            <div class="pos-cart-name">${item.name}</div>
+            <button type="button" class="pos-qty-btn pos-qty-remove" data-act="remove" data-id="${item.id}" aria-label="Retirer"><i class="bi bi-trash3"></i></button>
+          </div>
+          <div class="pos-cart-line">${money(item.price)} × ${item.qty}</div>
+          <div class="pos-cart-bottom">
+            <div class="pos-qty">
+              <button type="button" class="pos-qty-btn" data-act="minus" data-id="${item.id}" aria-label="Moins">−</button>
+              <span class="pos-qty-val">${item.qty}</span>
+              <button type="button" class="pos-qty-btn" data-act="plus" data-id="${item.id}" aria-label="Plus">+</button>
+            </div>
+            <div class="pos-cart-sum">${money(item.price * item.qty)}</div>
           </div>
         </div>
       `;
@@ -206,7 +224,7 @@
     const taxDisplay = document.getElementById('taxDisplay');
     if (taxDisplay) taxDisplay.textContent = money(tax);
     document.getElementById('totalDisplay').textContent = money(total);
-    document.getElementById('lineCount').textContent = items.length + (items.length > 1 ? ' articles' : ' article');
+    document.getElementById('lineCount').textContent = String(items.reduce((n, i) => n + i.qty, 0));
   }
 
   document.getElementById('posGrid')?.addEventListener('click', (e) => {
@@ -248,7 +266,7 @@
   document.getElementById('saleForm')?.addEventListener('submit', (e) => {
     if (cart.size === 0) {
       e.preventDefault();
-      if (window.AppUI) AppUI.toast('Ajoutez au moins un produit (touchez une image).', 'danger');
+      if (window.AppUI) AppUI.toast('Ajoutez au moins un produit.', 'danger');
     }
   });
 

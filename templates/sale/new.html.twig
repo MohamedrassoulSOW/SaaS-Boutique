@@ -7,7 +7,14 @@
         <h1 class="page-title h2 mb-0">Nouvelle vente</h1>
         <p class="text-muted small mb-0">Touchez un produit pour l’ajouter au panier.</p>
     </div>
-    <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand btn-sm">Historique</a>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" class="btn btn-brand pos-cart-toggle" id="posCartToggle" aria-controls="posCartDrawer" aria-expanded="false">
+            <i class="bi bi-cart3" aria-hidden="true"></i>
+            Panier
+            <span class="pos-cart-badge js-cart-count">0</span>
+        </button>
+        <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand btn-sm">Historique</a>
+    </div>
 </div>
 
 <form method="post" id="saleForm" class="pos-form">
@@ -60,13 +67,22 @@
             {% endfor %}
         </div>
     </section>
+</div>
 
-    <aside class="pos-cart panel">
-        <div class="panel-head">
-            <h2>Panier</h2>
-            <span class="pos-cart-badge" id="lineCount">0</span>
+<div class="pos-cart-backdrop" id="posCartBackdrop" hidden></div>
+
+<aside class="pos-cart panel" id="posCartDrawer" aria-hidden="true" aria-labelledby="posCartTitle">
+    <div class="panel-head">
+        <h2 id="posCartTitle">Panier</h2>
+        <div class="d-flex align-items-center gap-2">
+            <span class="pos-cart-badge js-cart-count">0</span>
+            <button type="button" class="btn btn-sm btn-outline-brand pos-cart-close" id="posCartClose" aria-label="Fermer le panier">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
         </div>
+    </div>
 
+    <div class="pos-cart-body">
         <div class="pos-cart-list" id="cartList">
             <div class="pos-cart-empty text-muted" id="cartEmpty">
                 <i class="bi bi-cart3 d-block mb-2"></i>
@@ -76,7 +92,7 @@
 
         <div id="cartFields" class="d-none" aria-hidden="true"></div>
 
-        <div class="pos-cart-footer">
+        <div class="pos-cart-options">
             <div class="pos-fields">
                 <div class="pos-field">
                     <label class="form-label" for="posCustomer">Client</label>
@@ -111,18 +127,20 @@
                     <span>TVA (<span id="taxRateLabel">{{ taxConfig.rate }}</span> %)</span>
                     <span id="taxDisplay">0 FCFA</span>
                 </div>
-                <div class="pos-total-row pos-total-main">
-                    <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
-                    <span id="totalDisplay">0 FCFA</span>
-                </div>
             </div>
-
-            <button class="btn btn-brand w-100 pos-checkout-btn" type="submit">
-                <i class="bi bi-cash-coin me-1"></i>Encaisser
-            </button>
         </div>
-    </aside>
-</div>
+    </div>
+
+    <div class="pos-cart-action">
+        <div class="pos-cart-action-total">
+            <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
+            <strong id="totalDisplay">0 FCFA</strong>
+        </div>
+        <button class="btn btn-brand w-100 pos-checkout-btn" type="submit">
+            <i class="bi bi-cash-coin me-1"></i>Encaisser
+        </button>
+    </div>
+</aside>
 </form>
 </div>
 {% endblock %}
@@ -137,9 +155,31 @@
   const cartFields = document.getElementById('cartFields');
   const discountInput = document.getElementById('discountInput');
   const search = document.getElementById('posSearch');
+  const cartDrawer = document.getElementById('posCartDrawer');
+  const cartBackdrop = document.getElementById('posCartBackdrop');
+  const cartToggle = document.getElementById('posCartToggle');
+  const cartClose = document.getElementById('posCartClose');
   const taxEnabled = {{ taxConfig.enabled ? 'true' : 'false' }};
   const taxRate = {{ taxConfig.rate|default(0) }};
   const pricesIncludeTax = {{ taxConfig.pricesIncludeTax ? 'true' : 'false' }};
+
+  function setCartOpen(open) {
+    if (!cartDrawer) return;
+    cartDrawer.classList.toggle('is-open', open);
+    cartDrawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+    cartToggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (cartBackdrop) {
+      cartBackdrop.hidden = !open;
+      cartBackdrop.classList.toggle('is-open', open);
+    }
+    document.body.classList.toggle('pos-cart-open', open);
+  }
+
+  function openCart() { setCartOpen(true); }
+  function closeCart() { setCartOpen(false); }
+  function toggleCart() {
+    setCartOpen(!cartDrawer?.classList.contains('is-open'));
+  }
 
   function addProduct(tile) {
     const id = tile.dataset.id;
@@ -234,7 +274,8 @@
     const taxDisplay = document.getElementById('taxDisplay');
     if (taxDisplay) taxDisplay.textContent = money(tax);
     document.getElementById('totalDisplay').textContent = money(total);
-    document.getElementById('lineCount').textContent = String(items.reduce((n, i) => n + i.qty, 0));
+    const count = String(items.reduce((n, i) => n + i.qty, 0));
+    document.querySelectorAll('.js-cart-count').forEach((el) => { el.textContent = count; });
   }
 
   document.getElementById('posGrid')?.addEventListener('click', (e) => {
@@ -273,9 +314,17 @@
 
   discountInput?.addEventListener('input', renderCart);
 
+  cartToggle?.addEventListener('click', toggleCart);
+  cartClose?.addEventListener('click', closeCart);
+  cartBackdrop?.addEventListener('click', closeCart);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeCart();
+  });
+
   document.getElementById('saleForm')?.addEventListener('submit', (e) => {
     if (cart.size === 0) {
       e.preventDefault();
+      openCart();
       if (window.AppUI) AppUI.toast('Ajoutez au moins un produit.', 'danger');
     }
   });

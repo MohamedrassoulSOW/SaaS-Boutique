@@ -17,6 +17,7 @@ use App\Form\AdminContractDraftType;
 use App\Form\AdminMerchantType;
 use App\Form\AdminShopType;
 use App\Form\ContractSignType;
+use App\Form\PlatformFiscalSettingsType;
 use App\Repository\ActivityLogRepository;
 use App\Repository\MerchantRepository;
 use App\Repository\PaymentRepository;
@@ -27,6 +28,7 @@ use App\Repository\UserRepository;
 use App\Service\ActivityLogger;
 use App\Service\BinaryUploadService;
 use App\Service\ContractService;
+use App\Service\FiscalService;
 use App\Service\NotificationService;
 use App\Service\SubscriptionBillingService;
 use App\Service\SubscriptionEnforcementService;
@@ -129,7 +131,7 @@ class AdminController extends AbstractController
                 'revenueByMonth' => $revenueByMonth,
                 'cancelledByMonth' => $cancelledByMonth,
                 'paymentHealth' => [
-                    'labels' => ['À jour / payés', 'Impayés', 'Résiliés'],
+                    'labels' => ['Payés', 'Impayés', 'Résiliés'],
                     'values' => [$paidCount, $unpaidCount, $cancelledCount],
                 ],
                 'plans' => [
@@ -847,10 +849,52 @@ class AdminController extends AbstractController
     }
 
     #[Route('/subscriptions', name: 'admin_subscriptions')]
-    public function subscriptions(SubscriptionRepository $subscriptions): Response
+    public function subscriptions(Request $request, SubscriptionRepository $subscriptions): Response
     {
+        $filter = (string) $request->query->get('filter', 'all');
+        $all = $subscriptions->findBy([], ['startsAt' => 'DESC']);
+        $today = new \DateTimeImmutable('today');
+
+        $filtered = array_values(array_filter($all, static function (Subscription $s) use ($filter, $today): bool {
+            if ($filter === 'all') {
+                return true;
+            }
+            if ($filter === 'cancelled') {
+                return $s->getStatus() === Subscription::STATUS_CANCELLED;
+            }
+
+            $isUnpaid = $s->isBillable()
+                && $s->getStatus() !== Subscription::STATUS_CANCELLED
+                && $s->getDaysOverdue($today) > 0;
+            $isPaid = $s->getStatus() !== Subscription::STATUS_CANCELLED && !$isUnpaid;
+
+            return match ($filter) {
+                'paid' => $isPaid,
+                'unpaid' => $isUnpaid,
+                default => true,
+            };
+        }));
+
+        $counts = [
+            'all' => \count($all),
+            'paid' => 0,
+            'unpaid' => 0,
+            'cancelled' => 0,
+        ];
+        foreach ($all as $s) {
+            if ($s->getStatus() === Subscription::STATUS_CANCELLED) {
+                ++$counts['cancelled'];
+            } elseif (!$s->isBillable() || $s->getDaysOverdue($today) <= 0) {
+                ++$counts['paid'];
+            } else {
+                ++$counts['unpaid'];
+            }
+        }
+
         return $this->render('admin/subscriptions.html.twig', [
-            'subscriptions' => $subscriptions->findBy([], ['startsAt' => 'DESC']),
+            'subscriptions' => $filtered,
+            'filter' => $filter,
+            'counts' => $counts,
         ]);
     }
 
@@ -884,16 +928,39 @@ class AdminController extends AbstractController
         if ($this->isCsrfTokenValid('pay'.$subscription->getId(), $request->request->get('_token'))) {
             /** @var User $admin */
             $admin = $this->getUser();
-            $billing->recordPayment(
-                $subscription,
-                $admin,
-                (string) $request->request->get('method', 'manuel'),
-                $request->request->getString('reference') ?: null,
-            );
-            $this->addFlash('success', 'Paiement enregistré. Accès rétabli si nécessaire.');
+            $status = (string) $request->request->get('payment_status', 'paid');
+            $reference = $request->request->getString('reference') ?: null;
+
+            try {
+                if ($status === 'unpaid') {
+                    if ($subscription->getStatus() === Subscription::STATUS_CANCELLED) {
+                        $subscription->setStatus(Subscription::STATUS_ACTIVE);
+                    }
+                    $billing->markUnpaid($subscription, $admin, $reference);
+                    $this->addFlash('warning', 'Abonnement marqué comme impayé.');
+                } elseif ($status === 'cancelled') {
+                    $billing->markCancelled($subscription, $admin, $reference);
+                    $this->addFlash('danger', 'Abonnement résilié.');
+                } else {
+                    if ($subscription->getStatus() === Subscription::STATUS_CANCELLED) {
+                        $subscription->setStatus(Subscription::STATUS_ACTIVE);
+                    }
+                    $billing->recordPayment(
+                        $subscription,
+                        $admin,
+                        (string) $request->request->get('method', 'manuel'),
+                        $reference,
+                    );
+                    $this->addFlash('success', 'Abonnement marqué comme payé. Accès rétabli si nécessaire.');
+                }
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('danger', $e->getMessage());
+            }
         }
 
-        return $this->redirectToRoute('admin_subscriptions');
+        $filter = (string) $request->request->get('filter', 'all');
+
+        return $this->redirectToRoute('admin_subscriptions', $filter !== 'all' ? ['filter' => $filter] : []);
     }
 
     #[Route('/activity', name: 'admin_activity')]
@@ -950,5 +1017,35 @@ class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_subscriptions');
+    }
+
+    #[Route('/fiscalite', name: 'admin_fiscal')]
+    public function fiscalSettings(
+        Request $request,
+        EntityManagerInterface $em,
+        FiscalService $fiscal,
+        ActivityLogger $logger,
+    ): Response {
+        $settings = $fiscal->getPlatformSettings();
+        $form = $this->createForm(PlatformFiscalSettingsType::class, $settings);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $settings->setDefaultVatRate(number_format((float) $settings->getDefaultVatRate(), 2, '.', ''));
+            $settings->touch();
+            $em->flush();
+
+            /** @var User $admin */
+            $admin = $this->getUser();
+            $logger->log('admin.fiscal_update', 'Paramètres fiscaux plateforme mis à jour', $admin);
+            $this->addFlash('success', 'Fiscalité plateforme enregistrée.');
+
+            return $this->redirectToRoute('admin_fiscal');
+        }
+
+        return $this->render('admin/fiscal.html.twig', [
+            'form' => $form,
+            'settings' => $settings,
+        ]);
     }
 }

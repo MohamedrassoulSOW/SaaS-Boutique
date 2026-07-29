@@ -47,12 +47,21 @@ class ShopController extends ShopAwareController
         $user = $this->getShopUser();
 
         $form = $this->createForm(ShopType::class, $shop);
+        $form->get('merchantTaxId')->setData($shop->getMerchant()?->getTaxId());
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($user->isMerchant() && $shop->getMerchant()?->getId() !== $user->getMerchant()?->getId()) {
                 throw $this->createAccessDeniedException();
             }
+
+            $merchant = $shop->getMerchant();
+            if ($merchant) {
+                $merchant->setTaxId($form->get('merchantTaxId')->getData());
+            }
+
+            $vatRate = $form->get('vatRate')->getData();
+            $shop->setVatRate($vatRate === null || $vatRate === '' ? null : number_format((float) $vatRate, 2, '.', ''));
 
             $file = $form->get('logoFile')->getData();
             if ($file) {
@@ -68,7 +77,7 @@ class ShopController extends ShopAwareController
 
             $em->flush();
             $logger->log('shop.update', 'Modification boutique '.$shop->getName(), $user, $shop);
-            $this->addFlash('success', 'Boutique mise à jour (logo en base si fourni).');
+            $this->addFlash('success', 'Boutique et paramètres fiscaux mis à jour.');
 
             return $this->redirectToRoute('app_shop_index');
         }

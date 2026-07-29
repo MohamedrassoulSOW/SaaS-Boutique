@@ -45,6 +45,17 @@ class Sale
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $discount = '0.00';
 
+    /** Taux TVA appliqué au moment de la vente (%) */
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    private string $taxRate = '0.00';
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
+    private string $taxAmount = '0.00';
+
+    /** true si les prix saisis étaient TTC */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $pricesIncludeTax = true;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $total = '0.00';
 
@@ -147,6 +158,42 @@ class Sale
     public function setDiscount(string $discount): static
     {
         $this->discount = $discount;
+
+        return $this;
+    }
+
+    public function getTaxRate(): string
+    {
+        return $this->taxRate;
+    }
+
+    public function setTaxRate(string $taxRate): static
+    {
+        $this->taxRate = $taxRate;
+
+        return $this;
+    }
+
+    public function getTaxAmount(): string
+    {
+        return $this->taxAmount;
+    }
+
+    public function setTaxAmount(string $taxAmount): static
+    {
+        $this->taxAmount = $taxAmount;
+
+        return $this;
+    }
+
+    public function isPricesIncludeTax(): bool
+    {
+        return $this->pricesIncludeTax;
+    }
+
+    public function setPricesIncludeTax(bool $pricesIncludeTax): static
+    {
+        $this->pricesIncludeTax = $pricesIncludeTax;
 
         return $this;
     }
@@ -254,8 +301,28 @@ class Sale
             $subtotal += (float) $item->getUnitPrice() * $item->getQuantity();
         }
         $this->subtotal = number_format($subtotal, 2, '.', '');
-        $total = max(0, $subtotal - (float) $this->discount);
-        $this->total = number_format($total, 2, '.', '');
+        $afterDiscount = max(0, $subtotal - (float) $this->discount);
+        $rate = (float) $this->taxRate;
+
+        if ($rate <= 0) {
+            $this->taxAmount = '0.00';
+            $this->total = number_format($afterDiscount, 2, '.', '');
+
+            return;
+        }
+
+        if ($this->pricesIncludeTax) {
+            $gross = round($afterDiscount, 2);
+            $net = round($gross / (1 + $rate / 100), 2);
+            $tax = round($gross - $net, 2);
+            $this->taxAmount = number_format($tax, 2, '.', '');
+            $this->total = number_format($gross, 2, '.', '');
+        } else {
+            $net = round($afterDiscount, 2);
+            $tax = round($net * $rate / 100, 2);
+            $this->taxAmount = number_format($tax, 2, '.', '');
+            $this->total = number_format($net + $tax, 2, '.', '');
+        }
     }
 
     public function isPaid(): bool

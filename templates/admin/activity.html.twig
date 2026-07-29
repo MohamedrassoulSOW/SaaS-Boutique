@@ -12,7 +12,6 @@
     <th>Boutique</th>
     <th>Action</th>
     <th>Description</th>
-    <th>IP</th>
 </tr>
 </thead>
 <tbody>
@@ -30,10 +29,9 @@
     <td>{{ log.shop ? log.shop.name : '—' }}</td>
     <td><code class="small">{{ log.action }}</code></td>
     <td>{{ log.description }}</td>
-    <td class="text-muted small">{{ log.ipAddress ?: '—' }}</td>
 </tr>
 {% else %}
-<tr><td colspan="6" class="text-muted p-3">Aucune activité</td></tr>
+<tr><td colspan="5" class="text-muted p-3">Aucune activité</td></tr>
 {% endfor %}
 </tbody>
 </table>

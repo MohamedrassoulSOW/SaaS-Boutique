@@ -30,6 +30,10 @@ services:
         arguments:
             $platform: '%app.platform%'
 
+    App\Service\FiscalService:
+        arguments:
+            $platform: '%app.platform%'
+
     App\Controller\MarketingController:
         arguments:
             $platform: '%app.platform%'

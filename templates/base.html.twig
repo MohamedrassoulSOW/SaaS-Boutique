@@ -72,6 +72,7 @@
                 <a class="{{ route starts with 'admin_shop' ? 'active' }}" href="{{ path('admin_shops') }}"><i class="bi bi-shop"></i>Boutiques</a>
                 <a class="{{ route starts with 'admin_contract' ? 'active' }}" href="{{ path('admin_contracts') }}"><i class="bi bi-file-earmark-text"></i>Contrats</a>
                 <a class="{{ route == 'admin_subscriptions' ? 'active' }}" href="{{ path('admin_subscriptions') }}"><i class="bi bi-credit-card"></i>Abonnements</a>
+                <a class="{{ route == 'admin_fiscal' ? 'active' }}" href="{{ path('admin_fiscal') }}"><i class="bi bi-percent"></i>Fiscalité</a>
                 <a class="{{ route == 'admin_activity' ? 'active' }}" href="{{ path('admin_activity') }}"><i class="bi bi-journal-text"></i>Journal</a>
             {% else %}
                 <div class="nav-section">Pilot</div>

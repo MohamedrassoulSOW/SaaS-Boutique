@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CustomerRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
+use App\Service\FiscalService;
 use App\Service\InvoicePdfService;
 use App\Service\SaleService;
 use App\Service\ShopContext;
@@ -36,10 +37,12 @@ class SaleController extends ShopAwareController
         ProductRepository $products,
         CustomerRepository $customers,
         SaleService $saleService,
+        FiscalService $fiscal,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $productList = $products->findBy(['shop' => $shop, 'isActive' => true], ['name' => 'ASC']);
         $customerList = $customers->findBy(['shop' => $shop], ['lastName' => 'ASC']);
+        $taxConfig = $fiscal->resolveShopTax($shop);
 
         if ($request->isMethod('POST')) {
             /** @var User $user */
@@ -92,6 +95,7 @@ class SaleController extends ShopAwareController
         return $this->render('sale/new.html.twig', [
             'products' => $productList,
             'customers' => $customerList,
+            'taxConfig' => $taxConfig,
         ]);
     }
 

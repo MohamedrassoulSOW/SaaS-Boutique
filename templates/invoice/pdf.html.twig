@@ -18,6 +18,8 @@ th{background:#f3f3f3}
 {{ invoice ? invoice.number : sale.reference }}<br>
 Date : {{ sale.soldAt|date('d/m/Y H:i') }}<br>
 Client : {{ sale.customer ? sale.customer.fullName : 'Comptoir' }}<br>
+{% if sale.shop.merchant and sale.shop.merchant.taxId %}NINEA : {{ sale.shop.merchant.taxId }}<br>{% endif %}
+{% if sale.taxRate > 0 %}TVA : {{ sale.taxRate }} %{% if sale.pricesIncludeTax %} (prix TTC){% else %} (prix HT){% endif %}<br>{% endif %}
 Devise : FCFA (XOF)
 </p>
 <table>
@@ -35,7 +37,10 @@ Devise : FCFA (XOF)
 <tfoot>
 <tr><th colspan="3" class="right">Sous-total</th><th class="right">{{ sale.subtotal|money }}</th></tr>
 <tr><th colspan="3" class="right">Remise</th><th class="right">{{ sale.discount|money }}</th></tr>
-<tr><th colspan="3" class="right">Total</th><th class="right">{{ sale.total|money }}</th></tr>
+{% if sale.taxRate > 0 %}
+<tr><th colspan="3" class="right">TVA ({{ sale.taxRate }} %)</th><th class="right">{{ sale.taxAmount|money }}</th></tr>
+{% endif %}
+<tr><th colspan="3" class="right">Total TTC</th><th class="right">{{ sale.total|money }}</th></tr>
 </tfoot>
 </table>
 </body>

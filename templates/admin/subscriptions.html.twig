@@ -3,16 +3,23 @@
 {% block body %}
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <div>
-        <div class="text-muted small mb-1">Administration</div>
         <h1 class="page-title h3 mb-0">Abonnements</h1>
-        <p class="text-muted small mb-0">Échéances, paiements manuels, suspension / résiliation (15 j mensuel · 30 j annuel).</p>
+        <p class="text-muted small mb-0">Statut : payé, impayé ou résilié.</p>
     </div>
     <form method="post" action="{{ path('admin_subscriptions_enforce') }}" data-confirm="Lancer l’enforcement maintenant (suspendre / résilier les impayés) ?" data-confirm-title="Enforcement" data-confirm-label="Lancer">
         <input type="hidden" name="_token" value="{{ csrf_token('enforce_subs') }}">
         <button class="btn btn-outline-brand btn-sm">Appliquer les impayés</button>
     </form>
 </div>
-<div class="card stat-card">
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-sm {{ filter == 'all' ? 'btn-brand' : 'btn-outline-brand' }}" href="{{ path('admin_subscriptions') }}">Tous ({{ counts.all }})</a>
+    <a class="btn btn-sm {{ filter == 'paid' ? 'btn-brand' : 'btn-outline-brand' }}" href="{{ path('admin_subscriptions', {filter: 'paid'}) }}">Payés ({{ counts.paid }})</a>
+    <a class="btn btn-sm {{ filter == 'unpaid' ? 'btn-brand' : 'btn-outline-brand' }}" href="{{ path('admin_subscriptions', {filter: 'unpaid'}) }}">Impayés ({{ counts.unpaid }})</a>
+    <a class="btn btn-sm {{ filter == 'cancelled' ? 'btn-brand' : 'btn-outline-brand' }}" href="{{ path('admin_subscriptions', {filter: 'cancelled'}) }}">Résiliés ({{ counts.cancelled }})</a>
+</div>
+
+<div class="panel">
 <div class="table-responsive">
 <table class="table mb-0 align-middle">
 <thead>
@@ -22,35 +29,47 @@
     <th>Statut</th>
     <th>Échéance</th>
     <th>Retard</th>
-    <th>Paiement</th>
-    <th>Plan</th>
+    <th>Option</th>
+    <th>Formule</th>
 </tr>
 </thead>
 <tbody>
 {% for s in subscriptions %}
 {% set overdue = s.daysOverdue %}
 {% set grace = s.graceDays %}
+{% set is_cancelled = s.status == 'cancelled' %}
+{% set is_unpaid = s.billable and not is_cancelled and overdue > 0 %}
+{% set is_paid = not is_cancelled and (not s.billable or overdue <= 0) %}
 <tr>
     <td class="fw-semibold">{{ s.merchant.companyName }}</td>
     <td>{{ s.plan }} · {{ s.price|money }} <span class="text-muted small">{{ s.billingPeriod == 'annual' ? '/ an' : '/ mois' }}</span></td>
     <td>
-        {% if s.status == 'cancelled' %}<span class="badge-stock">{{ s.status }}</span>
-        {% elseif overdue > grace and s.billable %}<span class="badge-stock">impayé critique</span>
-        {% elseif overdue > 0 and s.billable %}<span class="badge-stock">retard {{ overdue }} j</span>
-        {% else %}<span class="badge-ok">{{ s.status }}</span>{% endif %}
+        {% if is_cancelled %}
+            <span class="badge-stock">Résilié</span>
+        {% elseif not s.billable %}
+            <span class="badge-ok">Gratuit</span>
+        {% elseif is_unpaid %}
+            <span class="badge-stock">Impayé</span>
+        {% else %}
+            <span class="badge-ok">Payé</span>
+        {% endif %}
     </td>
     <td>{{ s.nextDueAt ? s.nextDueAt|date('d/m/Y') : '—' }}</td>
     <td>
-        {% if not s.billable %}—{% elseif overdue <= 0 %}À jour{% else %}{{ overdue }} j / {{ grace }} j{% endif %}
+        {% if not s.billable or is_cancelled %}—{% elseif overdue <= 0 %}À jour{% else %}{{ overdue }} j / {{ grace }} j{% endif %}
     </td>
     <td>
-        {% if s.billable and s.status != 'cancelled' %}
-        <form method="post" action="{{ path('admin_subscription_payment', {id: s.id}) }}" class="d-flex flex-wrap gap-1">
+        <form method="post" action="{{ path('admin_subscription_payment', {id: s.id}) }}" class="d-flex flex-wrap gap-1 align-items-center">
             <input type="hidden" name="_token" value="{{ csrf_token('pay' ~ s.id) }}">
-            <input type="text" name="reference" class="form-control form-control-sm" placeholder="Réf." style="width:7rem">
-            <button class="btn btn-sm btn-brand">Payer</button>
+            <input type="hidden" name="filter" value="{{ filter }}">
+            <select name="payment_status" class="form-select form-select-sm" style="width:8.5rem">
+                <option value="paid" {{ is_paid ? 'selected' }}>Payé</option>
+                <option value="unpaid" {{ is_unpaid ? 'selected' }}>Impayé</option>
+                <option value="cancelled" {{ is_cancelled ? 'selected' }}>Résilié</option>
+            </select>
+            <input type="text" name="reference" class="form-control form-control-sm" placeholder="Réf." style="width:6.5rem">
+            <button class="btn btn-sm btn-brand">OK</button>
         </form>
-        {% else %}—{% endif %}
     </td>
     <td>
         <form method="post" action="{{ path('admin_subscription_plan', {id: s.id}) }}" class="d-flex gap-2">
@@ -65,7 +84,7 @@
     </td>
 </tr>
 {% else %}
-<tr><td colspan="7" class="text-muted p-4">Aucun abonnement</td></tr>
+<tr><td colspan="7" class="text-muted p-4">Aucun abonnement pour ce filtre.</td></tr>
 {% endfor %}
 </tbody>
 </table>

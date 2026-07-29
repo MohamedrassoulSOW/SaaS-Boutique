@@ -49,6 +49,18 @@ class Shop
     #[ORM\Column]
     private bool $isActive = true;
 
+    /** Activer la TVA sur les ventes de cette boutique */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $taxEnabled = false;
+
+    /** Taux TVA boutique (%) — null = taux plateforme */
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?string $vatRate = null;
+
+    /** true = prix TTC, false = prix HT */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $pricesIncludeTax = true;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -199,6 +211,42 @@ class Shop
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function isTaxEnabled(): bool
+    {
+        return $this->taxEnabled;
+    }
+
+    public function setTaxEnabled(bool $taxEnabled): static
+    {
+        $this->taxEnabled = $taxEnabled;
+
+        return $this;
+    }
+
+    public function getVatRate(): ?string
+    {
+        return $this->vatRate;
+    }
+
+    public function setVatRate(?string $vatRate): static
+    {
+        $this->vatRate = $vatRate;
+
+        return $this;
+    }
+
+    public function isPricesIncludeTax(): bool
+    {
+        return $this->pricesIncludeTax;
+    }
+
+    public function setPricesIncludeTax(bool $pricesIncludeTax): static
+    {
+        $this->pricesIncludeTax = $pricesIncludeTax;
 
         return $this;
     }

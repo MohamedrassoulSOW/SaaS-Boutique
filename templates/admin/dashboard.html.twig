@@ -11,7 +11,7 @@
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-xl-2">
         <div class="stat-card">
-            <div class="stat-label">À jour / payés</div>
+            <div class="stat-label">Payés</div>
             <div class="stat-value">{{ paidSubscribers }}</div>
             <div class="small text-muted mt-1">dont {{ freeSubscribers }} gratuits</div>
         </div>
@@ -148,7 +148,7 @@
 <thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
 <tbody>
 {% for p in payments %}
-<tr><td>{{ p.reference ?: '#' ~ p.id }}</td><td>{{ p.amount|money }}</td><td>{{ p.status }}</td><td>{{ p.createdAt|date('d/m/Y') }}</td></tr>
+<tr><td>{{ p.reference ?: '#' ~ p.id }}</td><td>{{ p.amount|money }}{% if p.taxAmount > 0 %}<div class="small text-muted">dont TVA {{ p.taxAmount|money }}</div>{% endif %}</td><td>{{ p.status }}</td><td>{{ p.createdAt|date('d/m/Y') }}</td></tr>
 {% else %}<tr><td colspan="4" class="text-muted p-3">Aucun paiement</td></tr>{% endfor %}
 </tbody>
 </table>

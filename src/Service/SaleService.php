@@ -17,6 +17,7 @@ class SaleService
         private StockService $stockService,
         private ActivityLogger $activityLogger,
         private InvoicePdfService $invoicePdfService,
+        private FiscalService $fiscalService,
     ) {
     }
 
@@ -38,6 +39,10 @@ class SaleService
         $sale->setDiscount(number_format($discount, 2, '.', ''));
         $sale->setPaymentMethod($paymentMethod);
         $sale->setCustomer($customer);
+
+        $tax = $this->fiscalService->resolveShopTax($shop);
+        $sale->setTaxRate(number_format($tax['rate'], 2, '.', ''));
+        $sale->setPricesIncludeTax($tax['pricesIncludeTax']);
 
         $productRepo = $this->em->getRepository(\App\Entity\Product::class);
 

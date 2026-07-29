@@ -26,6 +26,12 @@ class Payment
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $amount = '0.00';
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    private string $taxRate = '0.00';
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
+    private string $taxAmount = '0.00';
+
     #[ORM\Column(length: 30)]
     private string $status = self::STATUS_PENDING;
 
@@ -74,6 +80,30 @@ class Payment
     public function setAmount(string $amount): static
     {
         $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getTaxRate(): string
+    {
+        return $this->taxRate;
+    }
+
+    public function setTaxRate(string $taxRate): static
+    {
+        $this->taxRate = $taxRate;
+
+        return $this;
+    }
+
+    public function getTaxAmount(): string
+    {
+        return $this->taxAmount;
+    }
+
+    public function setTaxAmount(string $taxAmount): static
+    {
+        $this->taxAmount = $taxAmount;
 
         return $this;
     }

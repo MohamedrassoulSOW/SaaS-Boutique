@@ -89,8 +89,12 @@
 
             <div class="pos-totals mb-3">
                 <div class="d-flex justify-content-between small mb-1"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
-                <div class="d-flex justify-content-between small mb-2"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
-                <div class="d-flex justify-content-between fw-semibold fs-5"><span>Total</span><span id="totalDisplay">0 FCFA</span></div>
+                <div class="d-flex justify-content-between small mb-1"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
+                <div class="d-flex justify-content-between small mb-2 {% if not taxConfig.enabled %}d-none{% endif %}" id="taxRow">
+                    <span>TVA (<span id="taxRateLabel">{{ taxConfig.rate }}</span> %)</span>
+                    <span id="taxDisplay">0 FCFA</span>
+                </div>
+                <div class="d-flex justify-content-between fw-semibold fs-5"><span>Total{% if taxConfig.enabled %} TTC{% endif %}</span><span id="totalDisplay">0 FCFA</span></div>
             </div>
 
             <button class="btn btn-brand w-100 btn-lg" type="submit">Encaisser</button>
@@ -110,6 +114,9 @@
   const cartFields = document.getElementById('cartFields');
   const discountInput = document.getElementById('discountInput');
   const search = document.getElementById('posSearch');
+  const taxEnabled = {{ taxConfig.enabled ? 'true' : 'false' }};
+  const taxRate = {{ taxConfig.rate|default(0) }};
+  const pricesIncludeTax = {{ taxConfig.pricesIncludeTax ? 'true' : 'false' }};
 
   function addProduct(tile) {
     const id = tile.dataset.id;
@@ -181,9 +188,23 @@
     });
 
     const discount = Math.max(0, parseFloat(discountInput?.value || '0'));
-    const total = Math.max(0, subtotal - discount);
+    const afterDiscount = Math.max(0, subtotal - discount);
+    let tax = 0;
+    let total = afterDiscount;
+    if (taxEnabled && taxRate > 0) {
+      if (pricesIncludeTax) {
+        const net = afterDiscount / (1 + taxRate / 100);
+        tax = afterDiscount - net;
+        total = afterDiscount;
+      } else {
+        tax = afterDiscount * taxRate / 100;
+        total = afterDiscount + tax;
+      }
+    }
     document.getElementById('subtotalDisplay').textContent = money(subtotal);
     document.getElementById('discountDisplay').textContent = money(discount);
+    const taxDisplay = document.getElementById('taxDisplay');
+    if (taxDisplay) taxDisplay.textContent = money(tax);
     document.getElementById('totalDisplay').textContent = money(total);
     document.getElementById('lineCount').textContent = items.length + (items.length > 1 ? ' articles' : ' article');
   }

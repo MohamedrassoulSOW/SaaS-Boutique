@@ -1,5 +1,6 @@
 parameters:
-    app.name: 'BoutiqueSaaS'
+    app.name: 'NdamStore'
+    app.tagline: 'La réussite de votre commerce.'
     app.mail_from: '%env(MAIL_FROM)%'
     app.platform:
         name: '%env(PLATFORM_NAME)%'

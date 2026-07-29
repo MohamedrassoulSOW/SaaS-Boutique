@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ app_name }}{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}{{ app_name }} — gestion multi-boutiques pour commerçants en Afrique de l’Ouest.{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{{ app_name }} — {{ app_tagline }} Gestion multi-boutiques pour commerçants.{% endblock %}">
+    <link rel="icon" href="{{ asset(app_logo) }}" type="image/png">
     <script>
       (function () {
         try {
-          var key = 'boutiquesaas-theme';
-          var saved = localStorage.getItem(key);
+          var key = 'ndamstore-theme';
+          var saved = localStorage.getItem(key) || localStorage.getItem('boutiquesaas-theme');
           var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.setAttribute('data-bs-theme', theme);
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-bs-theme', 'light');
         }
       })();
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/marketing.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/marketing.css') }}?v=8" rel="stylesheet">
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="mkt-body{% block body_class %}{% endblock %}">
@@ -33,8 +36,7 @@
 
 <header class="mkt-nav" id="mktNav">
     <a class="mkt-nav-brand" href="{{ path('app_home') }}">
-        <span class="mkt-mark" aria-hidden="true">B</span>
-        <span class="mkt-brand-name">{{ app_name }}</span>
+        <img src="{{ asset(app_logo) }}" alt="{{ app_name }}" class="brand-logo brand-logo-nav">
     </a>
     <nav class="mkt-nav-links" id="mktNavLinks">
         <a class="{{ route == 'app_home' ? 'is-active' }}" href="{{ path('app_home') }}">Accueil</a>
@@ -47,7 +49,7 @@
         {% endif %}
     </nav>
     <div class="mkt-nav-end">
-        <button type="button" class="mkt-theme-toggle" id="mktThemeToggle" aria-label="Activer le mode sombre" title="Mode clair / sombre">
+        <button type="button" class="mkt-theme-toggle" id="mktThemeToggle" data-theme-toggle aria-label="Activer le mode sombre" title="Mode clair / sombre">
             <svg class="mkt-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
                 <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -74,7 +76,10 @@
 <footer class="mkt-footer">
     <div class="mkt-wrap mkt-footer-grid">
         <div>
-            <div class="mkt-footer-brand">{{ app_name }}</div>
+            <div class="mkt-footer-brand">
+                <img src="{{ asset(app_logo) }}" alt="{{ app_name }}" class="brand-logo brand-logo-footer">
+            </div>
+            <p>{{ app_tagline }}</p>
             <p>Logiciel de gestion pour boutiques et équipes commerciales.</p>
         </div>
         <div>
@@ -91,12 +96,13 @@
         </div>
     </div>
     <div class="mkt-wrap mkt-footer-copy">
-        © {{ "now"|date('Y') }} {{ platform.legal_name }}. Tous droits réservés.
+        <span>© {{ "now"|date('Y') }} {{ platform.legal_name }}. Tous droits réservés.</span>
+        <span class="mkt-credit">Réalisé par <a href="https://sowcoder.com/" target="_blank" rel="noopener noreferrer"><strong>SowCoder</strong></a></span>
     </div>
 </footer>
 
 <div class="mkt-toasts" id="mktToasts" aria-live="polite"></div>
-<script src="{{ asset('js/marketing.js') }}"></script>
+<script src="{{ asset('js/marketing.js') }}?v=2"></script>
 {% block javascripts %}{% endblock %}
 </body>
 </html>

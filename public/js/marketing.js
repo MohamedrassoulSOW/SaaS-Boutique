@@ -1,32 +1,34 @@
 (() => {
-  const THEME_KEY = 'boutiquesaas-theme';
+  const THEME_KEY = 'ndamstore-theme';
   const root = document.documentElement;
   const nav = document.getElementById('mktNav');
   const toggle = document.getElementById('mktNavToggle');
   const links = document.getElementById('mktNavLinks');
-  const themeBtn = document.getElementById('mktThemeToggle');
 
-  const getTheme = () => root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const getTheme = () => (root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
 
   const syncThemeButton = () => {
-    if (!themeBtn) return;
     const dark = getTheme() === 'dark';
-    themeBtn.setAttribute('aria-label', dark ? 'Activer le mode clair' : 'Activer le mode sombre');
-    themeBtn.title = dark ? 'Mode clair' : 'Mode sombre';
+    document.querySelectorAll('[data-theme-toggle], #mktThemeToggle').forEach((btn) => {
+      btn.setAttribute('aria-label', dark ? 'Activer le mode clair' : 'Activer le mode sombre');
+      btn.title = dark ? 'Mode clair' : 'Mode sombre';
+    });
   };
 
   const setTheme = (theme) => {
     root.setAttribute('data-theme', theme);
+    root.setAttribute('data-bs-theme', theme);
     try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
     syncThemeButton();
   };
 
-  if (themeBtn) {
-    syncThemeButton();
-    themeBtn.addEventListener('click', () => {
-      setTheme(getTheme() === 'dark' ? 'light' : 'dark');
-    });
-  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-theme-toggle], #mktThemeToggle');
+    if (!btn) return;
+    e.preventDefault();
+    setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+  });
+  syncThemeButton();
 
   const onScroll = () => {
     if (!nav) return;

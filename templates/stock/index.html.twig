@@ -22,7 +22,7 @@
         <div class="card stat-card">
             <div class="p-3 border-bottom"><strong>Historique des mouvements</strong></div>
             <table class="table mb-0">
-                <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th>Qté</th><th>Avant → Après</th></tr></thead>
+                <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th>Qté</th><th>Avant → Après</th><th>Par</th></tr></thead>
                 <tbody>
                 {% for m in movements %}
                 <tr>
@@ -31,9 +31,17 @@
                     <td>{{ m.type }}</td>
                     <td>{{ m.quantity }}</td>
                     <td>{{ m.quantityBefore }} → {{ m.quantityAfter }}</td>
+                    <td>
+                        {% if m.createdBy %}
+                            <div class="fw-semibold">{{ m.createdBy.fullName }}</div>
+                            <div class="small text-muted">{{ m.createdBy.email }}</div>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="text-muted p-3">Aucun mouvement</td></tr>
+                <tr><td colspan="6" class="text-muted p-3">Aucun mouvement</td></tr>
                 {% endfor %}
                 </tbody>
             </table>

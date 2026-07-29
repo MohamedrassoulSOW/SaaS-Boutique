@@ -6,6 +6,7 @@ use App\Entity\StockMovement;
 use App\Entity\User;
 use App\Repository\ProductRepository;
 use App\Repository\StockMovementRepository;
+use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use App\Service\StockService;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +35,7 @@ class StockController extends ShopAwareController
         ShopContext $shopContext,
         ProductRepository $products,
         StockService $stockService,
+        ActivityLogger $logger,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $productList = $products->findBy(['shop' => $shop, 'isActive' => true], ['name' => 'ASC']);
@@ -60,6 +62,13 @@ class StockController extends ShopAwareController
                 } else {
                     $stockService->adjust($product, $delta, $type, $user, $reason ?: null);
                 }
+
+                $logger->log(
+                    'stock.adjust',
+                    sprintf('%s — %s (%s %d)', $product->getName(), $type, $type === StockMovement::TYPE_ADJUSTMENT ? 'cible' : 'Δ', $type === StockMovement::TYPE_ADJUSTMENT ? $request->request->getInt('quantity') : $qty),
+                    $user,
+                    $shop
+                );
                 $this->addFlash('success', 'Stock mis à jour.');
 
                 return $this->redirectToRoute('app_stock_index');

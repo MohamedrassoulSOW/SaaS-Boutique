@@ -19,7 +19,7 @@
     <th>Boutique</th>
     <th>Abonnement</th>
     <th>Statut</th>
-    <th>Visible</th>
+    <th class="text-center" title="Visibilité"><i class="bi bi-eye" aria-hidden="true"></i><span class="visually-hidden">Visibilité</span></th>
     <th></th>
 </tr>
 </thead>
@@ -31,7 +31,19 @@
     <td>{{ c.displayShopName }}</td>
     <td class="small">{{ c.billingPeriodLabel }} · {{ c.price|money }} {{ c.pricePeriodLabel }}</td>
     <td>{{ c.statusLabel }}</td>
-    <td>{% if c.sharedWithMerchant %}<span class="badge-ok">Oui</span>{% else %}<span class="badge-stock">Non</span>{% endif %}</td>
+    <td class="text-center">
+        {% if c.sharedWithMerchant %}
+            <span class="visibility-icon is-on" title="Visible par le commerçant">
+                <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                <span class="visually-hidden">Oui</span>
+            </span>
+        {% else %}
+            <span class="visibility-icon is-off" title="Masqué pour le commerçant">
+                <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
+                <span class="visually-hidden">Non</span>
+            </span>
+        {% endif %}
+    </td>
     <td class="text-end text-nowrap">
         <a class="btn btn-sm btn-outline-brand" href="{{ path('admin_contract_show', {id: c.id}) }}">Ouvrir</a>
         {% if c.status != 'signed' %}

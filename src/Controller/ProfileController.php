@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ProfileType;
 use App\Repository\NotificationRepository;
+use App\Service\ActivityLogger;
+use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +23,8 @@ class ProfileController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher,
+        ActivityLogger $logger,
+        ShopContext $shopContext,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -29,11 +33,21 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $plain = $form->get('plainPassword')->getData();
+            $passwordChanged = false;
             if ($plain) {
                 $user->setPassword($hasher->hashPassword($user, $plain));
+                $passwordChanged = true;
             }
             $user->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
+
+            $shop = $shopContext->getCurrentShop($user);
+            $logger->log(
+                $passwordChanged ? 'profile.password' : 'profile.update',
+                $passwordChanged ? 'Mot de passe modifié' : 'Profil mis à jour',
+                $user,
+                $shop
+            );
             $this->addFlash('success', 'Profil mis à jour.');
 
             return $this->redirectToRoute('app_profile');

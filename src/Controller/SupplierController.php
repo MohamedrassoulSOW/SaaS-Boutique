@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Supplier;
-use App\Entity\User;
 use App\Form\SupplierType;
 use App\Repository\SupplierRepository;
+use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,8 +28,12 @@ class SupplierController extends ShopAwareController
     }
 
     #[Route('/new', name: 'app_supplier_new')]
-    public function new(Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $supplier = new Supplier();
         $supplier->setShop($shop);
@@ -39,6 +43,7 @@ class SupplierController extends ShopAwareController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($supplier);
             $em->flush();
+            $logger->log('supplier.create', 'Fournisseur créé : '.$supplier->getName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Fournisseur ajouté.');
 
             return $this->redirectToRoute('app_supplier_index');
@@ -50,15 +55,20 @@ class SupplierController extends ShopAwareController
     #[Route('/{id}', name: 'app_supplier_show')]
     public function show(Supplier $supplier, ShopContext $shopContext): Response
     {
-        $shop = $this->requireShop($shopContext);
+        $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $supplier->getShop());
 
         return $this->render('supplier/show.html.twig', ['supplier' => $supplier]);
     }
 
     #[Route('/{id}/edit', name: 'app_supplier_edit')]
-    public function edit(Supplier $supplier, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function edit(
+        Supplier $supplier,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $supplier->getShop());
 
@@ -66,6 +76,7 @@ class SupplierController extends ShopAwareController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
+            $logger->log('supplier.update', 'Fournisseur modifié : '.$supplier->getName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Fournisseur mis à jour.');
 
             return $this->redirectToRoute('app_supplier_index');
@@ -75,13 +86,20 @@ class SupplierController extends ShopAwareController
     }
 
     #[Route('/{id}/delete', name: 'app_supplier_delete', methods: ['POST'])]
-    public function delete(Supplier $supplier, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function delete(
+        Supplier $supplier,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $supplier->getShop());
         if ($this->isCsrfTokenValid('delete'.$supplier->getId(), $request->request->get('_token'))) {
+            $name = (string) $supplier->getName();
             $em->remove($supplier);
             $em->flush();
+            $logger->log('supplier.delete', 'Fournisseur supprimé : '.$name, $this->getShopUser(), $shop);
             $this->addFlash('success', 'Fournisseur supprimé.');
         }
 

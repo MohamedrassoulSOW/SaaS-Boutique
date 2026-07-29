@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Entity\User;
 use App\Form\CustomerType;
 use App\Repository\CustomerRepository;
+use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,8 +28,12 @@ class CustomerController extends ShopAwareController
     }
 
     #[Route('/new', name: 'app_customer_new')]
-    public function new(Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $customer = new Customer();
         $customer->setShop($shop);
@@ -39,6 +43,7 @@ class CustomerController extends ShopAwareController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($customer);
             $em->flush();
+            $logger->log('customer.create', 'Client créé : '.$customer->getFullName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Client ajouté.');
 
             return $this->redirectToRoute('app_customer_index');
@@ -50,15 +55,20 @@ class CustomerController extends ShopAwareController
     #[Route('/{id}', name: 'app_customer_show')]
     public function show(Customer $customer, ShopContext $shopContext): Response
     {
-        $shop = $this->requireShop($shopContext);
+        $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
 
         return $this->render('customer/show.html.twig', ['customer' => $customer]);
     }
 
     #[Route('/{id}/edit', name: 'app_customer_edit')]
-    public function edit(Customer $customer, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function edit(
+        Customer $customer,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
 
@@ -66,6 +76,7 @@ class CustomerController extends ShopAwareController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
+            $logger->log('customer.update', 'Client modifié : '.$customer->getFullName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Client mis à jour.');
 
             return $this->redirectToRoute('app_customer_index');
@@ -75,13 +86,20 @@ class CustomerController extends ShopAwareController
     }
 
     #[Route('/{id}/delete', name: 'app_customer_delete', methods: ['POST'])]
-    public function delete(Customer $customer, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function delete(
+        Customer $customer,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->request->get('_token'))) {
+            $label = $customer->getFullName();
             $em->remove($customer);
             $em->flush();
+            $logger->log('customer.delete', 'Client supprimé : '.$label, $this->getShopUser(), $shop);
             $this->addFlash('success', 'Client supprimé.');
         }
 

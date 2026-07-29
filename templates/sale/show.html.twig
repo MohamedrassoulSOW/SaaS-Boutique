@@ -14,6 +14,7 @@
             <div><strong>Boutique:</strong> {{ sale.shop.name }}</div>
             <div><strong>Client:</strong> {{ sale.customer ? sale.customer.fullName : 'Comptoir' }}</div>
             <div><strong>Date:</strong> {{ sale.soldAt|date('d/m/Y H:i') }}</div>
+            <div><strong>Vendeur:</strong> {{ sale.soldBy ? sale.soldBy.fullName ~ ' (' ~ sale.soldBy.email ~ ')' : '—' }}</div>
         </div>
         <div class="col-md-6 text-md-end">
             <div><strong>Facture:</strong> {{ sale.invoice ? sale.invoice.number : '—' }}</div>

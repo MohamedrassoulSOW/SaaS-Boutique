@@ -2,10 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Inventory;
 use App\Entity\Merchant;
 use App\Entity\Notification;
+use App\Entity\Payment;
+use App\Entity\PurchaseOrder;
+use App\Entity\Sale;
 use App\Entity\Shop;
 use App\Entity\ShopContract;
+use App\Entity\StockMovement;
 use App\Entity\Subscription;
 use App\Entity\User;
 use App\Form\AdminContractDraftType;
@@ -45,13 +50,138 @@ class AdminController extends AbstractController
         SubscriptionRepository $subscriptions,
         PaymentRepository $payments,
     ): Response {
+        $allSubs = $subscriptions->findAll();
+        $today = new \DateTimeImmutable('today');
+
+        $paidCount = 0;
+        $unpaidCount = 0;
+        $cancelledCount = 0;
+        $freeCount = 0;
+        $activeCount = 0;
+
+        foreach ($allSubs as $sub) {
+            if ($sub->getStatus() === Subscription::STATUS_CANCELLED) {
+                ++$cancelledCount;
+                continue;
+            }
+            if ($sub->getStatus() === Subscription::STATUS_ACTIVE) {
+                ++$activeCount;
+            }
+            if (!$sub->isBillable()) {
+                ++$freeCount;
+                ++$paidCount; // gratuit = à jour (pas de dette)
+
+                continue;
+            }
+            if ($sub->getDaysOverdue($today) > 0) {
+                ++$unpaidCount;
+            } else {
+                ++$paidCount;
+            }
+        }
+
+        $monthStart = $today->modify('first day of this month')->setTime(0, 0);
+        $prevMonthStart = $monthStart->modify('-1 month');
+        $prevMonthEnd = $monthStart->modify('-1 second');
+
+        $revenueThisMonth = $payments->sumPaidBetween($monthStart, $today->modify('+1 day'));
+        $revenuePrevMonth = $payments->sumPaidBetween($prevMonthStart, $monthStart);
+
+        $from12 = $today->modify('first day of this month')->modify('-11 months');
+        $paymentsPaid = $payments->findPaidSince($from12);
+        $revenueByMonth = $this->seriesByMonth($from12, 12, $paymentsPaid, static fn (Payment $p) => $p->getPaidAt() ?? $p->getCreatedAt(), static fn (Payment $p) => (float) $p->getAmount());
+
+        $cancelledByMonth = $this->seriesByMonth(
+            $from12,
+            12,
+            array_values(array_filter(
+                $allSubs,
+                static fn (Subscription $s) => $s->getStatus() === Subscription::STATUS_CANCELLED
+            )),
+            static fn (Subscription $s) => $s->getLastEnforcementAt() ?? $s->getEndsAt() ?? $s->getStartsAt(),
+            static fn () => 1.0
+        );
+
+        $planLabels = [
+            Subscription::PLAN_FREE => 'Gratuit',
+            Subscription::PLAN_BASIC => 'Basique',
+            Subscription::PLAN_PRO => 'Pro',
+        ];
+        $byPlan = $subscriptions->countByPlan();
+        $byStatus = $subscriptions->countByStatus();
+
+        $pendingPayments = $payments->count(['status' => Payment::STATUS_PENDING]);
+
         return $this->render('admin/dashboard.html.twig', [
             'userCount' => $users->count([]),
             'merchantCount' => $merchants->count([]),
             'shopCount' => $shops->count([]),
-            'activeSubscriptions' => $subscriptions->count(['status' => Subscription::STATUS_ACTIVE]),
+            'activeSubscriptions' => $activeCount,
+            'paidSubscribers' => $paidCount,
+            'unpaidSubscribers' => $unpaidCount,
+            'cancelledSubscribers' => $cancelledCount,
+            'freeSubscribers' => $freeCount,
+            'pendingPayments' => $pendingPayments,
+            'revenueThisMonth' => $revenueThisMonth,
+            'revenuePrevMonth' => $revenuePrevMonth,
             'payments' => $payments->findBy([], ['createdAt' => 'DESC'], 10),
+            'chartPayload' => [
+                'revenueByMonth' => $revenueByMonth,
+                'cancelledByMonth' => $cancelledByMonth,
+                'paymentHealth' => [
+                    'labels' => ['À jour / payés', 'Impayés', 'Résiliés'],
+                    'values' => [$paidCount, $unpaidCount, $cancelledCount],
+                ],
+                'plans' => [
+                    'labels' => array_values(array_map(static fn (string $k) => $planLabels[$k] ?? $k, array_keys($byPlan))),
+                    'values' => array_values($byPlan),
+                ],
+                'statuses' => [
+                    'labels' => ['Actif', 'Expiré', 'Résilié'],
+                    'values' => [
+                        $byStatus[Subscription::STATUS_ACTIVE] ?? 0,
+                        $byStatus[Subscription::STATUS_EXPIRED] ?? 0,
+                        $byStatus[Subscription::STATUS_CANCELLED] ?? 0,
+                    ],
+                ],
+            ],
         ]);
+    }
+
+    /**
+     * @template T
+     * @param list<T> $items
+     * @param callable(T): (?\DateTimeInterface) $dateGetter
+     * @param callable(T): float $valueGetter
+     * @return list<array{date: string, label: string, value: float}>
+     */
+    private function seriesByMonth(\DateTimeImmutable $from, int $months, array $items, callable $dateGetter, callable $valueGetter): array
+    {
+        $bucket = [];
+        $cursor = $from->modify('first day of this month')->setTime(0, 0);
+        for ($i = 0; $i < $months; ++$i) {
+            $key = $cursor->format('Y-m');
+            $bucket[$key] = [
+                'date' => $key,
+                'label' => $cursor->format('m/Y'),
+                'value' => 0.0,
+            ];
+            $cursor = $cursor->modify('+1 month');
+        }
+
+        foreach ($items as $item) {
+            $date = $dateGetter($item);
+            if (!$date instanceof \DateTimeInterface) {
+                continue;
+            }
+            $key = $date->format('Y-m');
+            if (!isset($bucket[$key])) {
+                continue;
+            }
+            $bucket[$key]['value'] += $valueGetter($item);
+        }
+
+        return array_values($bucket);
     }
 
     #[Route('/users', name: 'admin_users')]
@@ -79,7 +209,10 @@ class AdminController extends AbstractController
         ActivityLogger $logger,
         NotificationService $notifications,
     ): Response {
-        $form = $this->createForm(AdminMerchantType::class);
+        $form = $this->createForm(AdminMerchantType::class, null, [
+            'is_edit' => false,
+            'merchant' => null,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -142,7 +275,235 @@ class AdminController extends AbstractController
         return $this->render('admin/merchant_form.html.twig', [
             'form' => $form,
             'title' => 'Créer un compte commerçant',
+            'merchant' => null,
+            'is_edit' => false,
         ]);
+    }
+
+    #[Route('/merchants/{id}/edit', name: 'admin_merchant_edit')]
+    public function editMerchant(
+        Merchant $merchant,
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+        UserRepository $users,
+        ActivityLogger $logger,
+    ): Response {
+        $user = $merchant->getUser();
+        if (!$user) {
+            throw $this->createNotFoundException('Compte utilisateur introuvable.');
+        }
+
+        $form = $this->createForm(AdminMerchantType::class, null, [
+            'is_edit' => true,
+            'merchant' => $merchant,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = strtolower(trim((string) $form->get('email')->getData()));
+            $existing = $users->findOneBy(['email' => $email]);
+            if ($existing && $existing->getId() !== $user->getId()) {
+                $this->addFlash('danger', 'Cet email est déjà utilisé.');
+            } else {
+                $user->setEmail($email);
+                $user->setFirstName((string) $form->get('firstName')->getData());
+                $user->setLastName((string) $form->get('lastName')->getData());
+                $user->setPhone($form->get('phone')->getData());
+                $user->setIsActive((bool) $form->get('isActive')->getData());
+                $user->setUpdatedAt(new \DateTimeImmutable());
+
+                $plainPassword = $form->get('plainPassword')->getData();
+                if (\is_string($plainPassword) && $plainPassword !== '') {
+                    $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+                }
+
+                $merchant->setCompanyName((string) $form->get('companyName')->getData());
+                $merchant->setLegalForm($form->get('legalForm')->getData());
+                $merchant->setTaxId($form->get('taxId')->getData());
+                $merchant->setRegistrationNumber($form->get('registrationNumber')->getData());
+                $merchant->setRepresentativeTitle($form->get('representativeTitle')->getData());
+                $merchant->setAddress($form->get('address')->getData());
+                $merchant->setCity($form->get('city')->getData());
+                $merchant->setCountry($form->get('country')->getData() ?: 'Sénégal');
+
+                $plan = (string) $form->get('plan')->getData();
+                $subscription = $merchant->getSubscription();
+                if (!$subscription) {
+                    $subscription = new Subscription();
+                    $subscription->setMerchant($merchant);
+                    $merchant->setSubscription($subscription);
+                    $em->persist($subscription);
+                }
+                $subscription->setPlan($plan);
+                $subscription->setPrice(match ($plan) {
+                    Subscription::PLAN_BASIC => '15000',
+                    Subscription::PLAN_PRO => '25000',
+                    default => '0',
+                });
+
+                $em->flush();
+
+                /** @var User $admin */
+                $admin = $this->getUser();
+                $logger->log('admin.merchant_update', 'Commerçant modifié : '.$user->getEmail(), $admin);
+
+                $this->addFlash('success', 'Commerçant enregistré.');
+
+                return $this->redirectToRoute('admin_merchants');
+            }
+        }
+
+        return $this->render('admin/merchant_form.html.twig', [
+            'form' => $form,
+            'title' => 'Modifier le commerçant',
+            'merchant' => $merchant,
+            'is_edit' => true,
+        ]);
+    }
+
+    #[Route('/merchants/{id}/delete', name: 'admin_merchant_delete', methods: ['POST'])]
+    public function deleteMerchant(
+        Merchant $merchant,
+        Request $request,
+        EntityManagerInterface $em,
+        ActivityLogger $logger,
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_merchant'.$merchant->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('admin_merchants');
+        }
+
+        $user = $merchant->getUser();
+        $label = $user?->getEmail() ?? $merchant->getCompanyName() ?? 'inconnu';
+
+        try {
+            $this->purgeMerchant($em, $merchant);
+            $em->flush();
+
+            /** @var User $admin */
+            $admin = $this->getUser();
+            $logger->log('admin.merchant_delete', 'Commerçant supprimé : '.$label, $admin);
+
+            $this->addFlash('success', 'Commerçant supprimé.');
+        } catch (\Throwable $e) {
+            $this->addFlash('danger', 'Impossible de supprimer ce commerçant : '.$e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_merchants');
+    }
+
+    /**
+     * Supprime un commerçant et ses données liées (boutiques, ventes, abonnement…).
+     */
+    private function purgeMerchant(EntityManagerInterface $em, Merchant $merchant): void
+    {
+        $user = $merchant->getUser();
+        $shops = $merchant->getShops()->toArray();
+
+        foreach ($shops as $shop) {
+            $this->purgeShop($em, $shop);
+        }
+
+        $subscription = $merchant->getSubscription();
+        if ($subscription) {
+            foreach ($subscription->getPayments()->toArray() as $payment) {
+                $em->remove($payment);
+            }
+            $em->remove($subscription);
+            $merchant->setSubscription(null);
+        }
+
+        if ($user) {
+            $em->createQuery('DELETE FROM App\Entity\Notification n WHERE n.user = :user')
+                ->setParameter('user', $user)
+                ->execute();
+            $em->createQuery('UPDATE App\Entity\ActivityLog a SET a.user = NULL WHERE a.user = :user')
+                ->setParameter('user', $user)
+                ->execute();
+
+            $em->remove($user);
+        } else {
+            $em->remove($merchant);
+        }
+    }
+
+    private function purgeShop(EntityManagerInterface $em, Shop $shop): void
+    {
+        if ($shop->getId() === null) {
+            return;
+        }
+
+        $em->createQuery('DELETE FROM App\Entity\Notification n WHERE n.shop = :shop')
+            ->setParameter('shop', $shop)
+            ->execute();
+        $em->createQuery('UPDATE App\Entity\ActivityLog a SET a.shop = NULL WHERE a.shop = :shop')
+            ->setParameter('shop', $shop)
+            ->execute();
+
+        foreach ($em->getRepository(Sale::class)->findBy(['shop' => $shop]) as $sale) {
+            $em->remove($sale);
+        }
+
+        foreach ($em->getRepository(StockMovement::class)->findBy(['shop' => $shop]) as $movement) {
+            $em->remove($movement);
+        }
+
+        foreach ($em->getRepository(Inventory::class)->findBy(['shop' => $shop]) as $inventory) {
+            $em->remove($inventory);
+        }
+
+        foreach ($em->getRepository(PurchaseOrder::class)->findBy(['shop' => $shop]) as $order) {
+            $em->remove($order);
+        }
+
+        $memberUsers = [];
+        foreach ($shop->getMembers()->toArray() as $member) {
+            $memberUser = $member->getUser();
+            if ($memberUser && $memberUser->isEmployee()) {
+                $memberUsers[$memberUser->getId()] = $memberUser;
+            }
+            $em->remove($member);
+        }
+
+        $contract = $shop->getContract();
+        if ($contract) {
+            $em->remove($contract);
+        }
+
+        foreach ($shop->getProducts()->toArray() as $product) {
+            $em->remove($product);
+        }
+        foreach ($shop->getCategories()->toArray() as $category) {
+            $em->remove($category);
+        }
+        foreach ($shop->getSuppliers()->toArray() as $supplier) {
+            $em->remove($supplier);
+        }
+        foreach ($shop->getCustomers()->toArray() as $customer) {
+            $em->remove($customer);
+        }
+
+        $em->remove($shop);
+
+        foreach ($memberUsers as $memberUser) {
+            $remaining = 0;
+            foreach ($memberUser->getShopMemberships() as $membership) {
+                if ($membership->getShop()?->getId() !== $shop->getId()) {
+                    ++$remaining;
+                }
+            }
+            if ($remaining === 0) {
+                $em->createQuery('DELETE FROM App\Entity\Notification n WHERE n.user = :user')
+                    ->setParameter('user', $memberUser)
+                    ->execute();
+                $em->createQuery('UPDATE App\Entity\ActivityLog a SET a.user = NULL WHERE a.user = :user')
+                    ->setParameter('user', $memberUser)
+                    ->execute();
+                $em->remove($memberUser);
+            }
+        }
     }
 
     #[Route('/shops', name: 'admin_shops')]
@@ -565,6 +926,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         SubscriptionBillingService $billing,
+        ActivityLogger $logger,
     ): Response {
         if ($this->isCsrfTokenValid('plan'.$subscription->getId(), $request->request->get('_token'))) {
             $plan = (string) $request->request->get('plan', Subscription::PLAN_FREE);
@@ -578,6 +940,12 @@ class AdminController extends AbstractController
             $subscription->setStatus(Subscription::STATUS_ACTIVE);
             $billing->ensureNextDueAt($subscription);
             $em->flush();
+
+            /** @var User $admin */
+            $admin = $this->getUser();
+            $merchantEmail = $subscription->getMerchant()?->getUser()?->getEmail() ?? 'n/a';
+            $logger->log('admin.plan_update', 'Formule '.$plan.' pour '.$merchantEmail, $admin);
+
             $this->addFlash('success', 'Abonnement mis à jour.');
         }
 

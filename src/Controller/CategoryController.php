@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Category;
-use App\Entity\User;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
+use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,8 +28,12 @@ class CategoryController extends ShopAwareController
     }
 
     #[Route('/new', name: 'app_category_new')]
-    public function new(Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $category = new Category();
         $category->setShop($shop);
@@ -39,6 +43,7 @@ class CategoryController extends ShopAwareController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($category);
             $em->flush();
+            $logger->log('category.create', 'Catégorie créée : '.$category->getName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Catégorie créée.');
 
             return $this->redirectToRoute('app_category_index');
@@ -48,8 +53,13 @@ class CategoryController extends ShopAwareController
     }
 
     #[Route('/{id}/edit', name: 'app_category_edit')]
-    public function edit(Category $category, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function edit(
+        Category $category,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $category->getShop());
 
@@ -57,6 +67,7 @@ class CategoryController extends ShopAwareController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
+            $logger->log('category.update', 'Catégorie modifiée : '.$category->getName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Catégorie mise à jour.');
 
             return $this->redirectToRoute('app_category_index');
@@ -66,14 +77,21 @@ class CategoryController extends ShopAwareController
     }
 
     #[Route('/{id}/delete', name: 'app_category_delete', methods: ['POST'])]
-    public function delete(Category $category, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
+    public function delete(
+        Category $category,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $category->getShop());
 
         if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
+            $name = (string) $category->getName();
             $em->remove($category);
             $em->flush();
+            $logger->log('category.delete', 'Catégorie supprimée : '.$name, $this->getShopUser(), $shop);
             $this->addFlash('success', 'Catégorie supprimée.');
         }
 

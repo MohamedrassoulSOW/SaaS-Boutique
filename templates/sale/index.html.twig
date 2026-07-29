@@ -7,19 +7,27 @@
 </div>
 <div class="card stat-card">
 <table class="table mb-0 align-middle">
-<thead><tr><th>Réf.</th><th>Date</th><th>Client</th><th>Total</th><th>Paiement</th><th></th></tr></thead>
+<thead><tr><th>Réf.</th><th>Date</th><th>Vendeur</th><th>Client</th><th>Total</th><th>Paiement</th><th></th></tr></thead>
 <tbody>
 {% for s in sales %}
 <tr>
     <td>{{ s.reference }}</td>
     <td>{{ s.soldAt|date('d/m/Y H:i') }}</td>
+    <td>
+        {% if s.soldBy %}
+            <div class="fw-semibold">{{ s.soldBy.fullName }}</div>
+            <div class="small text-muted">{{ s.soldBy.email }}</div>
+        {% else %}
+            <span class="text-muted">—</span>
+        {% endif %}
+    </td>
     <td>{{ s.customer ? s.customer.fullName : 'Comptoir' }}</td>
     <td>{{ s.total|money }}</td>
     <td>{{ s.paymentMethod }}</td>
     <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_sale_show', {id: s.id}) }}">Voir</a></td>
 </tr>
 {% else %}
-<tr><td colspan="6" class="text-muted p-4">Aucune vente</td></tr>
+<tr><td colspan="7" class="text-muted p-4">Aucune vente</td></tr>
 {% endfor %}
 </tbody>
 </table>

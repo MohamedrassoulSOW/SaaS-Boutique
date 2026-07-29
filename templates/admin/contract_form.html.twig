@@ -26,7 +26,28 @@
             <div class="col-md-3">{{ form_row(form.durationMonths) }}</div>
         </div>
         {{ form_row(form.discussionNotes) }}
-        {{ form_row(form.sharedWithMerchant) }}
+        <div class="mb-3">
+            <div class="form-label">{{ form_label(form.sharedWithMerchant) }}</div>
+            <div class="visibility-choice d-flex flex-wrap gap-2 mt-1" role="group" aria-label="Visibilité commerçant">
+                {% for child in form.sharedWithMerchant %}
+                    {% set isYes = child.vars.value == '1' %}
+                    <label class="visibility-option {{ isYes ? 'is-visible' : 'is-hidden' }}">
+                        {{ form_widget(child, { attr: { class: 'visibility-option-input' } }) }}
+                        <span class="visibility-option-face">
+                            {% if isYes %}
+                                <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                                <span>Oui — visible</span>
+                            {% else %}
+                                <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
+                                <span>Non — masqué</span>
+                            {% endif %}
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_help(form.sharedWithMerchant) }}
+            {{ form_errors(form.sharedWithMerchant) }}
+        </div>
 
         <div class="mt-4 d-flex gap-2">
             <button class="btn btn-brand">Enregistrer et générer le PDF</button>

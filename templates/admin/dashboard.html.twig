@@ -1,16 +1,139 @@
 {% extends 'base.html.twig' %}
-{% block title %}Admin{% endblock %}
+{% block title %}Vue d'ensemble — Admin{% endblock %}
 {% block body %}
-<div class="mb-4">
-    <div class="text-muted small mb-1">Plateforme</div>
-    <h1 class="page-title h2 mb-0">Administration</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <h1 class="page-title h2 mb-0">Vue d'ensemble</h1>
+    </div>
+    <a href="{{ path('admin_subscriptions') }}" class="btn btn-brand">Gérer les abonnements</a>
 </div>
+
 <div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Utilisateurs</div><div class="stat-value">{{ userCount }}</div></div></div>
-    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Commerçants</div><div class="stat-value">{{ merchantCount }}</div></div></div>
-    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Boutiques</div><div class="stat-value">{{ shopCount }}</div></div></div>
-    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Abonnements actifs</div><div class="stat-value">{{ activeSubscriptions }}</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">À jour / payés</div>
+            <div class="stat-value">{{ paidSubscribers }}</div>
+            <div class="small text-muted mt-1">dont {{ freeSubscribers }} gratuits</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">Impayés</div>
+            <div class="stat-value">{{ unpaidSubscribers }}</div>
+            <div class="small text-muted mt-1">{{ pendingPayments }} paiement(s) en attente</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">Résiliés</div>
+            <div class="stat-value">{{ cancelledSubscribers }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">Actifs</div>
+            <div class="stat-value">{{ activeSubscriptions }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">Reçu ce mois</div>
+            <div class="stat-value" style="font-size:1.25rem">{{ revenueThisMonth|money }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div class="stat-label">Mois précédent</div>
+            <div class="stat-value" style="font-size:1.25rem">{{ revenuePrevMonth|money }}</div>
+        </div>
+    </div>
 </div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Commerçants</div><div class="stat-value">{{ merchantCount }}</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Boutiques</div><div class="stat-value">{{ shopCount }}</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Utilisateurs</div><div class="stat-value">{{ userCount }}</div></div></div>
+</div>
+
+<div class="panel mb-4 admin-chart-controls">
+    <div class="panel-head">
+        <h2>Contrôles des diagrammes</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-outline-brand" id="adminChartReset">Réinitialiser</button>
+            <button type="button" class="btn btn-sm btn-outline-brand" id="adminChartExport">Exporter PNG</button>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="adminChartPeriod">Période (mois)</label>
+                <select id="adminChartPeriod" class="form-select form-select-sm">
+                    <option value="6">6 mois</option>
+                    <option value="12" selected>12 mois</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="adminChartMetric">Série</label>
+                <select id="adminChartMetric" class="form-select form-select-sm">
+                    <option value="revenue" selected>Sommes reçues (abonnements)</option>
+                    <option value="cancelled">Résiliations</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="adminChartType">Type de courbe</label>
+                <select id="adminChartType" class="form-select form-select-sm">
+                    <option value="bar" selected>Barres</option>
+                    <option value="line">Ligne</option>
+                    <option value="area">Aire</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="adminPieType">Répartitions</label>
+                <select id="adminPieType" class="form-select form-select-sm">
+                    <option value="doughnut" selected>Anneau</option>
+                    <option value="pie">Camembert</option>
+                    <option value="bar">Barres</option>
+                </select>
+            </div>
+        </div>
+        <div class="small text-muted mt-3" id="adminChartSummary">—</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div class="panel-head">
+                <h2 id="adminTrendTitle">Recettes mensuelles</h2>
+                <span class="badge-ok" id="adminTrendTotal">0</span>
+            </div>
+            <div class="panel-body">
+                <canvas id="adminTrendChart" height="140" aria-label="Recettes abonnements par mois"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel mb-3">
+            <div class="panel-head"><h2>Payés / Impayés / Résiliés</h2></div>
+            <div class="panel-body">
+                <canvas id="adminHealthChart" height="180" aria-label="Santé des abonnements"></canvas>
+            </div>
+        </div>
+        <div class="panel mb-3">
+            <div class="panel-head"><h2>Formules</h2></div>
+            <div class="panel-body">
+                <canvas id="adminPlanChart" height="160" aria-label="Répartition par formule"></canvas>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head"><h2>Statuts</h2></div>
+            <div class="panel-body">
+                <canvas id="adminStatusChart" height="160" aria-label="Répartition par statut"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="d-flex flex-wrap gap-2 mb-4">
     <a class="btn btn-outline-brand" href="{{ path('admin_users') }}">Utilisateurs</a>
     <a class="btn btn-outline-brand" href="{{ path('admin_merchants') }}">Commerçants</a>
@@ -18,9 +141,9 @@
     <a class="btn btn-outline-brand" href="{{ path('admin_subscriptions') }}">Abonnements</a>
     <a class="btn btn-outline-brand" href="{{ path('admin_activity') }}">Journal d'activités</a>
 </div>
-<a href="{{ path('admin_shop_new') }}" class="btn btn-brand mb-4">Créer une boutique (demande commerçant)</a>
+
 <div class="panel">
-<div class="panel-head"><h2>Derniers paiements</h2></div>
+<div class="panel-head"><h2>Derniers paiements d'abonnement</h2></div>
 <table class="table mb-0">
 <thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
 <tbody>
@@ -30,4 +153,10 @@
 </tbody>
 </table>
 </div>
+
+<script type="application/json" id="admin-chart-data">{{ chartPayload|json_encode|raw }}</script>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('js/admin-dashboard.js') }}?v=2"></script>
 {% endblock %}

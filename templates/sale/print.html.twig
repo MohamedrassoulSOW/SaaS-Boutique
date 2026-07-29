@@ -9,6 +9,7 @@
     <h1 class="h4">{{ sale.shop.name }}</h1>
     <p>Facture {{ sale.invoice ? sale.invoice.number : sale.reference }} — {{ sale.soldAt|date('d/m/Y H:i') }}</p>
     <p>Client : {{ sale.customer ? sale.customer.fullName : 'Comptoir' }}</p>
+    <p>Vendeur : {{ sale.soldBy ? sale.soldBy.fullName : '—' }}{% if sale.soldBy %} ({{ sale.soldBy.email }}){% endif %}</p>
     <table class="table">
         <thead><tr><th>Produit</th><th>Qté</th><th>P.U.</th><th>Total</th></tr></thead>
         <tbody>

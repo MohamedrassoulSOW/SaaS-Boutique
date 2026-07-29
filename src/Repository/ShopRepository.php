@@ -16,6 +16,26 @@ class ShopRepository extends ServiceEntityRepository
         parent::__construct($registry, Shop::class);
     }
 
+    /** @return list<Shop> */
+    public function findCreatedSince(\DateTimeImmutable $from): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.createdAt >= :from')
+            ->setParameter('from', $from)
+            ->orderBy('s.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countActive(): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->andWhere('s.isActive = true')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function save(Shop $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

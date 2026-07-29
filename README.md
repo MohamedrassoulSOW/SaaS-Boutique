@@ -1,4 +1,6 @@
-# BoutiqueSaaS — Gestion des boutiques
+# NdamStore — Gestion des boutiques
+
+**NdamStore** — *La réussite de votre commerce.*
 
 Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + **MySQL**) pour gérer boutiques, produits, stocks, ventes, factures, inventaires et rapports.
 

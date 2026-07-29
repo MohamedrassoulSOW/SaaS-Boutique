@@ -16,6 +16,42 @@ class SubscriptionRepository extends ServiceEntityRepository
         parent::__construct($registry, Subscription::class);
     }
 
+    /** @return array<string, int> */
+    public function countByPlan(): array
+    {
+        $rows = $this->createQueryBuilder('s')
+            ->select('s.plan AS plan')
+            ->addSelect('COUNT(s.id) AS total')
+            ->groupBy('s.plan')
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[(string) $row['plan']] = (int) $row['total'];
+        }
+
+        return $out;
+    }
+
+    /** @return array<string, int> */
+    public function countByStatus(): array
+    {
+        $rows = $this->createQueryBuilder('s')
+            ->select('s.status AS status')
+            ->addSelect('COUNT(s.id) AS total')
+            ->groupBy('s.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[(string) $row['status']] = (int) $row['total'];
+        }
+
+        return $out;
+    }
+
     public function save(Subscription $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

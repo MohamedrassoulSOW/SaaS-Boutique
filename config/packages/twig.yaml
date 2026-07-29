@@ -2,7 +2,9 @@ twig:
     file_name_pattern: '*.twig'
     form_themes: ['bootstrap_5_layout.html.twig']
     globals:
-        app_name: 'BoutiqueSaaS'
+        app_name: 'NdamStore'
+        app_tagline: 'La réussite de votre commerce.'
+        app_logo: 'images/ndamstore-logo.png'
         currency: 'FCFA'
         currency_code: 'XOF'
 

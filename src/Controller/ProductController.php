@@ -84,6 +84,7 @@ class ProductController extends ShopAwareController
         Request $request,
         EntityManagerInterface $em,
         ShopContext $shopContext,
+        ActivityLogger $logger,
         BinaryUploadService $uploader,
     ): Response {
         $shop = $this->requireShop($shopContext);
@@ -96,6 +97,7 @@ class ProductController extends ShopAwareController
             $product->setShop($shop);
             $product->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
+            $logger->log('product.update', 'Produit modifié : '.$product->getName(), $this->getShopUser(), $shop);
             $this->addFlash('success', 'Produit mis à jour.');
 
             return $this->redirectToRoute('app_product_index');
@@ -110,14 +112,21 @@ class ProductController extends ShopAwareController
 
     #[Route('/{id}/delete', name: 'app_product_delete', methods: ['POST'])]
     #[IsGranted('MODULE_PRODUCTS_MANAGE')]
-    public function delete(Product $product, Request $request, EntityManagerInterface $em, ShopContext $shopContext): Response
-    {
-        $this->requireShop($shopContext);
+    public function delete(
+        Product $product,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
+        $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $product->getShop());
 
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
+            $name = (string) $product->getName();
             $em->remove($product);
             $em->flush();
+            $logger->log('product.delete', 'Produit supprimé : '.$name, $this->getShopUser(), $shop);
             $this->addFlash('success', 'Produit supprimé.');
         }
 

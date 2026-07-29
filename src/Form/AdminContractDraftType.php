@@ -8,7 +8,6 @@ use App\Entity\ShopContract;
 use App\Entity\Subscription;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -88,9 +87,18 @@ class AdminContractDraftType extends AbstractType
                 'required' => false,
                 'attr' => ['rows' => 3],
             ])
-            ->add('sharedWithMerchant', CheckboxType::class, [
-                'label' => 'Montrer ce contrat au commerçant (dashboard)',
-                'required' => false,
+            ->add('sharedWithMerchant', ChoiceType::class, [
+                'label' => 'Visibilité commerçant',
+                'choices' => [
+                    'Oui' => true,
+                    'Non' => false,
+                ],
+                'expanded' => true,
+                'multiple' => false,
+                'required' => true,
+                'empty_data' => false,
+                'choice_value' => static fn (?bool $choice): string => null === $choice ? '' : ($choice ? '1' : '0'),
+                'help' => 'Œil ouvert = visible sur le dashboard commerçant. Œil barré = brouillon interne.',
             ]);
     }
 

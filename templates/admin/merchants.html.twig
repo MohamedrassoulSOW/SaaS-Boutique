@@ -10,8 +10,19 @@
     <a href="{{ path('admin_merchant_new') }}" class="btn btn-brand">Nouveau commerçant</a>
 </div>
 <div class="panel">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
-<thead><tr><th>Entreprise</th><th>Contact</th><th>Boutiques</th><th>Abonnement</th><th>Créé</th></tr></thead>
+<thead>
+<tr>
+    <th>Entreprise</th>
+    <th>Contact</th>
+    <th>Boutiques</th>
+    <th>Abonnement</th>
+    <th>Statut</th>
+    <th>Créé</th>
+    <th></th>
+</tr>
+</thead>
 <tbody>
 {% for m in merchants %}
 <tr>
@@ -22,12 +33,27 @@
     </td>
     <td>{{ m.shops|length }}</td>
     <td>{{ m.subscription ? m.subscription.plan ~ ' / ' ~ m.subscription.status : '—' }}</td>
+    <td>
+        {% if m.user and m.user.active %}
+            <span class="badge-ok">Actif</span>
+        {% else %}
+            <span class="badge-stock">Inactif</span>
+        {% endif %}
+    </td>
     <td>{{ m.createdAt|date('d/m/Y') }}</td>
+    <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-brand" href="{{ path('admin_merchant_edit', {id: m.id}) }}">Modifier</a>
+        <form class="d-inline" method="post" action="{{ path('admin_merchant_delete', {id: m.id}) }}" data-confirm="Supprimer ce commerçant et toutes ses données (boutiques, ventes…) ?" data-confirm-title="Supprimer le commerçant" data-confirm-label="Supprimer">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_merchant' ~ m.id) }}">
+            <button class="btn btn-sm btn-outline-danger">Suppr.</button>
+        </form>
+    </td>
 </tr>
 {% else %}
-<tr><td colspan="5" class="text-muted p-4">Aucun commerçant</td></tr>
+<tr><td colspan="7" class="text-muted p-4">Aucun commerçant</td></tr>
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

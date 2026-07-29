@@ -4,7 +4,13 @@
 <div class="mb-4">
     <div class="text-muted small mb-1">Administration</div>
     <h1 class="page-title h2 mb-1">{{ title }}</h1>
-    <p class="text-muted mb-0">Les commerçants ne s'inscrivent plus seuls : vous créez leur accès ici. Ils créeront ensuite les vendeurs.</p>
+    <p class="text-muted mb-0">
+        {% if is_edit %}
+            Modifiez les informations du commerçant, puis enregistrez.
+        {% else %}
+            Les commerçants ne s'inscrivent plus seuls : vous créez leur accès ici. Ils créeront ensuite les vendeurs.
+        {% endif %}
+    </p>
 </div>
 <div class="panel p-4" style="max-width:860px">
     {{ form_start(form) }}
@@ -16,6 +22,9 @@
             <div class="col-md-6">{{ form_row(form.phone) }}</div>
             <div class="col-md-6">{{ form_row(form.plainPassword.first) }}</div>
             <div class="col-md-6">{{ form_row(form.plainPassword.second) }}</div>
+            {% if form.isActive is defined %}
+                <div class="col-md-12">{{ form_row(form.isActive) }}</div>
+            {% endif %}
         </div>
 
         <h2 class="h5 page-title mt-4 mb-3">Entreprise</h2>
@@ -32,7 +41,7 @@
         </div>
 
         <div class="mt-4 d-flex gap-2">
-            <button class="btn btn-brand">Créer le compte</button>
+            <button class="btn btn-brand">{{ is_edit ? 'Enregistrer' : 'Créer le compte' }}</button>
             <a class="btn btn-outline-brand" href="{{ path('admin_merchants') }}">Annuler</a>
         </div>
     {{ form_end(form) }}

@@ -1,5 +1,5 @@
 /**
- * BoutiqueSaaS — UI dynamique (toasts, popups, interactions)
+ * NdamStore — UI dynamique (toasts, popups, interactions)
  */
 (() => {
   'use strict';
@@ -205,7 +205,7 @@
       });
     },
 
-    bindLiveClock() {
+    .bindLiveClock() {
       const el = document.getElementById('liveClock');
       if (!el) return;
       const tick = () => {

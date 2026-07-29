@@ -92,7 +92,12 @@ class SaleService
         // PDF facture stocké en base (pas de fichier disque)
         $this->invoicePdfService->generate($sale);
 
-        $this->activityLogger->log('sale.create', 'Vente '.$sale->getReference(), $user, $shop);
+        $this->activityLogger->log(
+            'sale.create',
+            sprintf('Vente %s par %s (total %s)', $sale->getReference(), $user->getFullName() ?: $user->getEmail(), $sale->getTotal()),
+            $user,
+            $shop
+        );
 
         return $sale;
     }

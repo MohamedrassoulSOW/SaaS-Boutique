@@ -1,74 +1,73 @@
 {% extends 'base.html.twig' %}
 {% block title %}Nouvelle vente{% endblock %}
 {% block body %}
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
     <div>
         <div class="text-muted small mb-1">Point de vente</div>
         <h1 class="page-title h2 mb-0">Nouvelle vente</h1>
-        <p class="text-muted mb-0">Ajoutez autant d'articles différents que nécessaire.</p>
+        <p class="text-muted mb-0">Touchez l’image du produit pour l’ajouter au panier.</p>
     </div>
     <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand">Historique</a>
 </div>
 
 <form method="post" id="saleForm">
-<div class="row g-3">
-    <div class="col-lg-8">
-        <div class="panel">
-            <div class="panel-head">
-                <h2>Articles de la vente</h2>
-                <button type="button" class="btn btn-brand btn-sm" id="btnAddLine">
-                    <i class="bi bi-plus-lg me-1"></i>Ajouter un article
-                </button>
-            </div>
-            <div class="table-responsive">
-            <table class="table align-middle mb-0" id="lines">
-                <thead>
-                    <tr>
-                        <th>Article / produit</th>
-                        <th style="width:110px">Qté</th>
-                        <th style="width:130px">P.U.</th>
-                        <th style="width:140px">Total ligne</th>
-                        <th style="width:56px"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                <tr class="sale-line">
-                    <td>
-                        <select name="product_id[]" class="form-select product-select" required>
-                            <option value="">Choisir un article…</option>
-                            {% for p in products %}
-                                <option value="{{ p.id }}" data-price="{{ p.salePrice }}" data-stock="{{ p.quantity }}">
-                                    {{ p.name }} — stock {{ p.quantity }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control qty-input" required></td>
-                    <td><span class="unit-price text-muted">—</span></td>
-                    <td><strong class="line-total">—</strong></td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-line" title="Retirer">×</button></td>
-                </tr>
-                </tbody>
-            </table>
-            </div>
-            <div class="p-3 border-top d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                <button type="button" class="btn btn-outline-brand btn-sm" id="btnAddLineBottom">
-                    <i class="bi bi-plus-lg me-1"></i>Ajouter un autre article
-                </button>
-                <div class="small text-muted" id="lineCount">1 article</div>
+<div class="pos-layout">
+    <section class="pos-catalog panel">
+        <div class="panel-head">
+            <h2>Choisir un produit</h2>
+            <input type="search" id="posSearch" class="form-control form-control-sm" placeholder="Rechercher…" style="max-width:14rem" autocomplete="off">
+        </div>
+        <div class="pos-grid" id="posGrid">
+            {% for p in products %}
+            <button
+                type="button"
+                class="pos-tile"
+                data-id="{{ p.id }}"
+                data-name="{{ p.name|e('html_attr') }}"
+                data-price="{{ p.salePrice }}"
+                data-stock="{{ p.quantity }}"
+                data-photo="{% if p.hasPhoto %}{{ path('app_media_product_photo', {id: p.id}) }}{% endif %}"
+                data-search="{{ (p.name ~ ' ' ~ (p.reference ?? '') ~ ' ' ~ (p.barcode ?? ''))|lower|e('html_attr') }}"
+            >
+                <span class="pos-tile-photo">
+                    {% if p.hasPhoto %}
+                        <img src="{{ path('app_media_product_photo', {id: p.id}) }}" alt="" loading="lazy">
+                    {% else %}
+                        <span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>
+                    {% endif %}
+                </span>
+                <span class="pos-tile-name">{{ p.name }}</span>
+                <span class="pos-tile-price">{{ p.salePrice|money }}</span>
+                <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">{{ p.quantity }}</span>
+            </button>
+            {% else %}
+            <div class="text-muted p-4">Aucun produit actif</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <aside class="pos-cart panel">
+        <div class="panel-head">
+            <h2>Panier</h2>
+            <span class="small text-muted" id="lineCount">0 article</span>
+        </div>
+
+        <div class="pos-cart-list" id="cartList">
+            <div class="pos-cart-empty text-muted" id="cartEmpty">
+                <i class="bi bi-hand-index-thumb d-block mb-2 fs-3"></i>
+                Touchez une image pour commencer
             </div>
         </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="panel p-3 sticky-top" style="top:1rem">
-            <h2 class="h5 page-title mb-3">Encaissement</h2>
+
+        <div id="cartFields" class="d-none" aria-hidden="true"></div>
+
+        <div class="pos-cart-footer">
             <div class="mb-3">
                 <label class="form-label">Client <span class="text-muted fw-normal">(optionnel)</span></label>
                 <select name="customer_id" class="form-select">
                     <option value="">Comptoir / sans client</option>
                     {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
                 </select>
-                <div class="form-text">Vous pouvez encaisser sans renseigner de client.</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Remise (FCFA)</label>
@@ -88,125 +87,151 @@
                 <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" value="0" class="form-control" placeholder="0 = total">
             </div>
 
-            <div class="p-3 mb-3 rounded-3" style="background:rgba(12,92,80,.06)">
+            <div class="pos-totals mb-3">
                 <div class="d-flex justify-content-between small mb-1"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
                 <div class="d-flex justify-content-between small mb-2"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
-                <div class="d-flex justify-content-between fw-semibold"><span>Total</span><span id="totalDisplay" class="text-brand">0 FCFA</span></div>
+                <div class="d-flex justify-content-between fw-semibold fs-5"><span>Total</span><span id="totalDisplay">0 FCFA</span></div>
             </div>
 
-            <button class="btn btn-brand w-100" type="submit">Encaisser &amp; facturer</button>
+            <button class="btn btn-brand w-100 btn-lg" type="submit">Encaisser</button>
         </div>
-    </div>
+    </aside>
 </div>
 </form>
-
-<template id="lineTpl">
-<tr class="sale-line">
-    <td>
-        <select name="product_id[]" class="form-select product-select" required>
-            <option value="">Choisir un article…</option>
-            {% for p in products %}
-                <option value="{{ p.id }}" data-price="{{ p.salePrice }}" data-stock="{{ p.quantity }}">
-                    {{ p.name }} — stock {{ p.quantity }}
-                </option>
-            {% endfor %}
-        </select>
-    </td>
-    <td><input type="number" min="1" value="1" name="quantity[]" class="form-control qty-input" required></td>
-    <td><span class="unit-price text-muted">—</span></td>
-    <td><strong class="line-total">—</strong></td>
-    <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-line" title="Retirer">×</button></td>
-</tr>
-</template>
 {% endblock %}
 
 {% block javascripts %}
 <script>
 (() => {
   const money = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n || 0)) + ' FCFA';
-  const tbody = document.querySelector('#lines tbody');
-  const tpl = document.getElementById('lineTpl');
+  const cart = new Map(); // id -> {id, name, price, stock, photo, qty}
+  const cartList = document.getElementById('cartList');
+  const cartEmpty = document.getElementById('cartEmpty');
+  const cartFields = document.getElementById('cartFields');
   const discountInput = document.getElementById('discountInput');
+  const search = document.getElementById('posSearch');
 
-  function addLine() {
-    tbody.appendChild(tpl.content.cloneNode(true));
-    bindRow();
-    updateTotals();
-    const selects = tbody.querySelectorAll('.product-select');
-    selects[selects.length - 1]?.focus();
-  }
-
-  function bindRow(row) {
-    const rows = row ? [row] : tbody.querySelectorAll('.sale-line');
-    rows.forEach((tr) => {
-      if (tr.dataset.bound === '1') return;
-      tr.dataset.bound = '1';
-      tr.querySelector('.product-select')?.addEventListener('change', updateTotals);
-      tr.querySelector('.qty-input')?.addEventListener('input', updateTotals);
-      tr.querySelector('.btn-remove-line')?.addEventListener('click', async () => {
-        if (tbody.querySelectorAll('.sale-line').length <= 1) {
-          if (window.AppUI) AppUI.toast('Gardez au moins un article, ou changez-le.', 'warning');
-          return;
-        }
-        const ok = window.AppUI
-          ? await AppUI.confirm('Retirer cet article de la vente ?', { title: 'Retirer l\'article', confirmLabel: 'Retirer' })
-          : true;
-        if (ok) {
-          tr.remove();
-          updateTotals();
-        }
-      });
-    });
-  }
-
-  function updateTotals() {
-    let subtotal = 0;
-    let count = 0;
-    tbody.querySelectorAll('.sale-line').forEach((tr) => {
-      const select = tr.querySelector('.product-select');
-      const qty = Math.max(0, parseInt(tr.querySelector('.qty-input')?.value || '0', 10));
-      const opt = select?.selectedOptions?.[0];
-      const price = parseFloat(opt?.dataset?.price || '0');
-      const stock = parseInt(opt?.dataset?.stock || '0', 10);
-      const line = (select?.value && qty > 0) ? price * qty : 0;
-      if (select?.value) count += 1;
-      tr.querySelector('.unit-price').textContent = select?.value ? money(price) : '—';
-      tr.querySelector('.line-total').textContent = select?.value ? money(line) : '—';
-      if (select?.value && qty > stock) {
-        tr.classList.add('table-warning');
-      } else {
-        tr.classList.remove('table-warning');
+  function addProduct(tile) {
+    const id = tile.dataset.id;
+    const stock = parseInt(tile.dataset.stock || '0', 10);
+    const existing = cart.get(id);
+    if (existing) {
+      if (existing.qty >= stock) {
+        if (window.AppUI) AppUI.toast('Stock insuffisant pour cet article.', 'warning');
+        return;
       }
-      subtotal += line;
+      existing.qty += 1;
+    } else {
+      if (stock < 1) {
+        if (window.AppUI) AppUI.toast('Produit en rupture de stock.', 'warning');
+        return;
+      }
+      cart.set(id, {
+        id,
+        name: tile.dataset.name,
+        price: parseFloat(tile.dataset.price || '0'),
+        stock,
+        photo: tile.dataset.photo || '',
+        qty: 1,
+      });
+    }
+    renderCart();
+  }
+
+  function renderCart() {
+    const items = [...cart.values()];
+    cartList.querySelectorAll('.pos-cart-item').forEach((el) => el.remove());
+    cartEmpty.style.display = items.length ? 'none' : 'block';
+    cartFields.innerHTML = '';
+
+    let subtotal = 0;
+    items.forEach((item) => {
+      subtotal += item.price * item.qty;
+      const row = document.createElement('div');
+      row.className = 'pos-cart-item' + (item.qty > item.stock ? ' is-over' : '');
+      row.innerHTML = `
+        <div class="pos-cart-photo">
+          ${item.photo
+            ? `<img src="${item.photo}" alt="">`
+            : `<span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>`}
+        </div>
+        <div class="pos-cart-info">
+          <div class="pos-cart-name">${item.name}</div>
+          <div class="pos-cart-line">${money(item.price)} × ${item.qty} = <strong>${money(item.price * item.qty)}</strong></div>
+          <div class="pos-qty">
+            <button type="button" class="pos-qty-btn" data-act="minus" data-id="${item.id}" aria-label="Moins">−</button>
+            <span class="pos-qty-val">${item.qty}</span>
+            <button type="button" class="pos-qty-btn" data-act="plus" data-id="${item.id}" aria-label="Plus">+</button>
+            <button type="button" class="pos-qty-btn pos-qty-remove" data-act="remove" data-id="${item.id}" aria-label="Retirer">×</button>
+          </div>
+        </div>
+      `;
+      cartList.appendChild(row);
+
+      const pid = document.createElement('input');
+      pid.type = 'hidden';
+      pid.name = 'product_id[]';
+      pid.value = item.id;
+      const qty = document.createElement('input');
+      qty.type = 'hidden';
+      qty.name = 'quantity[]';
+      qty.value = String(item.qty);
+      cartFields.appendChild(pid);
+      cartFields.appendChild(qty);
     });
+
     const discount = Math.max(0, parseFloat(discountInput?.value || '0'));
     const total = Math.max(0, subtotal - discount);
     document.getElementById('subtotalDisplay').textContent = money(subtotal);
     document.getElementById('discountDisplay').textContent = money(discount);
     document.getElementById('totalDisplay').textContent = money(total);
-    document.getElementById('lineCount').textContent = count + (count > 1 ? ' articles' : ' article');
+    document.getElementById('lineCount').textContent = items.length + (items.length > 1 ? ' articles' : ' article');
   }
 
-  document.getElementById('btnAddLine')?.addEventListener('click', addLine);
-  document.getElementById('btnAddLineBottom')?.addEventListener('click', addLine);
-  discountInput?.addEventListener('input', updateTotals);
+  document.getElementById('posGrid')?.addEventListener('click', (e) => {
+    const tile = e.target.closest('.pos-tile');
+    if (!tile) return;
+    addProduct(tile);
+  });
+
+  cartList?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const item = cart.get(btn.dataset.id);
+    if (!item) return;
+    if (btn.dataset.act === 'plus') {
+      if (item.qty >= item.stock) {
+        if (window.AppUI) AppUI.toast('Stock insuffisant.', 'warning');
+        return;
+      }
+      item.qty += 1;
+    } else if (btn.dataset.act === 'minus') {
+      item.qty -= 1;
+      if (item.qty <= 0) cart.delete(item.id);
+    } else if (btn.dataset.act === 'remove') {
+      cart.delete(item.id);
+    }
+    renderCart();
+  });
+
+  search?.addEventListener('input', () => {
+    const q = (search.value || '').trim().toLowerCase();
+    document.querySelectorAll('.pos-tile').forEach((tile) => {
+      const hay = tile.dataset.search || '';
+      tile.hidden = q !== '' && !hay.includes(q);
+    });
+  });
+
+  discountInput?.addEventListener('input', renderCart);
 
   document.getElementById('saleForm')?.addEventListener('submit', (e) => {
-    const products = [...tbody.querySelectorAll('.product-select')].map((s) => s.value).filter(Boolean);
-    if (products.length === 0) {
+    if (cart.size === 0) {
       e.preventDefault();
-      if (window.AppUI) AppUI.toast('Ajoutez au moins un article.', 'danger');
-      return;
-    }
-    const unique = new Set(products);
-    if (unique.size !== products.length) {
-      e.preventDefault();
-      if (window.AppUI) AppUI.toast('Un même article est sélectionné plusieurs fois. Regroupez les quantités sur une seule ligne.', 'warning');
+      if (window.AppUI) AppUI.toast('Ajoutez au moins un produit (touchez une image).', 'danger');
     }
   });
 
-  bindRow();
-  updateTotals();
+  renderCart();
 })();
 </script>
 {% endblock %}

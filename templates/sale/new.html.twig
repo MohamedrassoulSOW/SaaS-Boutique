@@ -32,28 +32,28 @@
                 data-photo="{% if p.hasPhoto %}{{ path('app_media_product_photo', {id: p.id}) }}{% endif %}"
                 data-search="{{ (p.name ~ ' ' ~ (p.reference ?? '') ~ ' ' ~ (p.barcode ?? '') ~ ' ' ~ (p.brand ?? '') ~ ' ' ~ (p.category ? p.category.name : ''))|lower|e('html_attr') }}"
             >
-                <span class="pos-tile-name">{{ p.name }}</span>
                 <span class="pos-tile-photo">
                     {% if p.hasPhoto %}
                         <img src="{{ path('app_media_product_photo', {id: p.id}) }}" alt="{{ p.name }}" loading="lazy">
                     {% else %}
                         <span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>
                     {% endif %}
-                    <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">Stock {{ p.quantity }}</span>
                 </span>
-                <span class="pos-tile-body">
-                    {% set metaParts = [] %}
-                    {% if p.category %}{% set metaParts = metaParts|merge([p.category.name]) %}{% endif %}
-                    {% if p.brand %}{% set metaParts = metaParts|merge([p.brand]) %}{% endif %}
-                    {% if p.reference %}{% set metaParts = metaParts|merge(['Réf. ' ~ p.reference]) %}{% endif %}
-                    {% if metaParts|length %}
-                        <span class="pos-tile-meta">{{ metaParts|join(' · ') }}</span>
-                    {% endif %}
-                    {% if p.barcode %}
-                        <span class="pos-tile-meta pos-tile-barcode">{{ p.barcode }}</span>
-                    {% endif %}
-                    <span class="pos-tile-price">{{ p.salePrice|money }}</span>
+                <span class="pos-tile-name">{{ p.name }}</span>
+                {% if p.category or p.brand or p.reference %}
+                <span class="pos-tile-meta">
+                    {%- if p.category %}{{ p.category.name }}{% endif -%}
+                    {%- if p.category and p.brand %} · {% endif -%}
+                    {%- if p.brand %}{{ p.brand }}{% endif -%}
+                    {%- if (p.category or p.brand) and p.reference %} · {% endif -%}
+                    {%- if p.reference %}Réf. {{ p.reference }}{% endif -%}
                 </span>
+                {% endif %}
+                {% if p.barcode %}
+                <span class="pos-tile-meta">{{ p.barcode }}</span>
+                {% endif %}
+                <span class="pos-tile-price">{{ p.salePrice|money }}</span>
+                <span class="pos-tile-stock {% if p.lowStock %}is-low{% endif %}">Stock {{ p.quantity }}</span>
             </button>
             {% else %}
             <div class="text-muted p-4">Aucun produit actif</div>

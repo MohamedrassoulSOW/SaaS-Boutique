@@ -259,16 +259,16 @@ class AdminController extends AbstractController
 
                 /** @var User $admin */
                 $admin = $this->getUser();
-                $logger->log('admin.merchant_create', 'Commerçant créé : '.$user->getEmail(), $admin);
+                $logger->log('admin.merchant_create', 'Entrepreneur créé : '.$user->getEmail(), $admin);
 
                 $notifications->notify(
                     $user,
                     Notification::TYPE_INFO,
                     'Compte créé',
-                    'Votre compte commerçant a été créé par l\'administration. Connectez-vous avec l\'email fourni.',
+                    'Votre compte entrepreneur a été créé par l\'administration. Connectez-vous avec l\'email fourni.',
                 );
 
-                $this->addFlash('success', 'Compte commerçant créé. Il peut se connecter avec son email.');
+                $this->addFlash('success', 'Compte entrepreneur créé. Il peut se connecter avec son email.');
 
                 return $this->redirectToRoute('admin_merchants');
             }
@@ -276,7 +276,7 @@ class AdminController extends AbstractController
 
         return $this->render('admin/merchant_form.html.twig', [
             'form' => $form,
-            'title' => 'Créer un compte commerçant',
+            'title' => 'Créer un compte entrepreneur',
             'merchant' => null,
             'is_edit' => false,
         ]);
@@ -348,9 +348,9 @@ class AdminController extends AbstractController
 
                 /** @var User $admin */
                 $admin = $this->getUser();
-                $logger->log('admin.merchant_update', 'Commerçant modifié : '.$user->getEmail(), $admin);
+                $logger->log('admin.merchant_update', 'Entrepreneur modifié : '.$user->getEmail(), $admin);
 
-                $this->addFlash('success', 'Commerçant enregistré.');
+                $this->addFlash('success', 'Entrepreneur enregistré.');
 
                 return $this->redirectToRoute('admin_merchants');
             }
@@ -358,7 +358,7 @@ class AdminController extends AbstractController
 
         return $this->render('admin/merchant_form.html.twig', [
             'form' => $form,
-            'title' => 'Modifier le commerçant',
+            'title' => 'Modifier l\'entrepreneur',
             'merchant' => $merchant,
             'is_edit' => true,
         ]);
@@ -386,18 +386,18 @@ class AdminController extends AbstractController
 
             /** @var User $admin */
             $admin = $this->getUser();
-            $logger->log('admin.merchant_delete', 'Commerçant supprimé : '.$label, $admin);
+            $logger->log('admin.merchant_delete', 'Entrepreneur supprimé : '.$label, $admin);
 
-            $this->addFlash('success', 'Commerçant supprimé.');
+            $this->addFlash('success', 'Entrepreneur supprimé.');
         } catch (\Throwable $e) {
-            $this->addFlash('danger', 'Impossible de supprimer ce commerçant : '.$e->getMessage());
+            $this->addFlash('danger', 'Impossible de supprimer cet entrepreneur : '.$e->getMessage());
         }
 
         return $this->redirectToRoute('admin_merchants');
     }
 
     /**
-     * Supprime un commerçant et ses données liées (boutiques, ventes, abonnement…).
+     * Supprime un entrepreneur et ses données liées (entreprises, ventes, abonnement…).
      */
     private function purgeMerchant(EntityManagerInterface $em, Merchant $merchant): void
     {
@@ -541,7 +541,7 @@ class AdminController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $merchant = $shop->getMerchant();
             if (!$merchant || !$merchant->getUser()) {
-                $this->addFlash('danger', 'Commerçant invalide.');
+                $this->addFlash('danger', 'Entrepreneur invalide.');
 
                 return $this->redirectToRoute('admin_shop_new');
             }
@@ -590,7 +590,7 @@ class AdminController extends AbstractController
 
             $logger->log(
                 'admin.shop_create',
-                sprintf('Boutique "%s" créée avec contrat %s', $shop->getName(), $contract->getNumber()),
+                sprintf('Entreprise "%s" créée avec contrat %s', $shop->getName(), $contract->getNumber()),
                 $admin,
                 $shop
             );
@@ -598,23 +598,23 @@ class AdminController extends AbstractController
             $notifications->notify(
                 $user,
                 Notification::TYPE_INFO,
-                'Boutique et contrat créés',
+                'Entreprise et contrat créés',
                 sprintf(
-                    'Votre boutique "%s" a été créée. Un contrat (%s) est prêt à être signé.',
+                    'Votre entreprise "%s" a été créée. Un contrat (%s) est prêt à être signé.',
                     $shop->getName(),
                     $contract->getNumber()
                 ),
                 $shop
             );
 
-            $this->addFlash('success', 'Boutique créée. Contrat généré — imprimez-le et faites-le signer.');
+            $this->addFlash('success', 'Entreprise créée. Contrat généré — imprimez-le et faites-le signer.');
 
             return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
         }
 
         return $this->render('admin/shop_form.html.twig', [
             'form' => $form,
-            'title' => 'Créer une boutique + contrat',
+            'title' => 'Créer une entreprise + contrat',
         ]);
     }
 
@@ -656,7 +656,7 @@ class AdminController extends AbstractController
                         $contract->getShop()
                     );
                 }
-                $this->addFlash('success', 'Contrat préparé. Vous pouvez l\'imprimer et le présenter au commerçant.');
+                $this->addFlash('success', 'Contrat préparé. Vous pouvez l\'imprimer et le présenter à l\'entrepreneur.');
 
                 return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
             } catch (\InvalidArgumentException $e) {
@@ -726,7 +726,7 @@ class AdminController extends AbstractController
                     $contract->getShop()
                 );
             }
-            $this->addFlash('success', 'Contrat visible sur le dashboard du commerçant.');
+            $this->addFlash('success', 'Contrat visible sur le dashboard de l\'entrepreneur.');
         }
 
         return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
@@ -841,8 +841,8 @@ class AdminController extends AbstractController
             $em->flush();
             /** @var User $admin */
             $admin = $this->getUser();
-            $logger->log('admin.shop_toggle', 'Boutique '.$shop->getName().' '.($shop->isActive() ? 'activée' : 'désactivée'), $admin, $shop);
-            $this->addFlash('success', 'Statut boutique mis à jour.');
+            $logger->log('admin.shop_toggle', 'Entreprise '.$shop->getName().' '.($shop->isActive() ? 'activée' : 'désactivée'), $admin, $shop);
+            $this->addFlash('success', 'Statut entreprise mis à jour.');
         }
 
         return $this->redirectToRoute('admin_shops');

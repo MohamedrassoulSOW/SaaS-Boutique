@@ -9,7 +9,7 @@
             {{ contract.displayShopName }} — {{ contract.merchant.companyName }}
             · <strong>{{ contract.statusLabel }}</strong>
             {% if contract.sharedWithMerchant %}
-                · <span class="visibility-icon is-on" title="Visible commerçant"><i class="bi bi-eye-fill"></i> Visible</span>
+                · <span class="visibility-icon is-on" title="Visibl'entrepreneur"><i class="bi bi-eye-fill"></i> Visible</span>
             {% else %}
                 · <span class="visibility-icon is-off" title="Masqué"><i class="bi bi-eye-slash-fill"></i> Masqué</span>
             {% endif %}
@@ -37,10 +37,10 @@
             {% if not contract.sharedWithMerchant %}
             <form method="post" action="{{ path('admin_contract_share', {id: contract.id}) }}" class="mb-2">
                 <input type="hidden" name="_token" value="{{ csrf_token('share_contract' ~ contract.id) }}">
-                <button class="btn btn-brand w-100"><i class="bi bi-eye-fill me-1"></i>Rendre visible au commerçant</button>
+                <button class="btn btn-brand w-100"><i class="bi bi-eye-fill me-1"></i>Rendre visible à l'entrepreneur</button>
             </form>
             {% else %}
-            <p class="small text-muted mb-2"><i class="bi bi-eye-fill me-1"></i>Déjà visible sur le dashboard du commerçant.</p>
+            <p class="small text-muted mb-2"><i class="bi bi-eye-fill me-1"></i>Déjà visible sur le dashboard de l'entrepreneur.</p>
             {% endif %}
             {% if contract.draft or contract.status == 'pending_signature' %}
             {% if not contract.fullySigned %}
@@ -65,7 +65,7 @@
                     {% endif %}
                 </li>
                 <li>
-                    Commerçant :
+                    Entrepreneur :
                     {% if contract.merchantSignedAt %}
                         <span class="badge-ok">Signé</span>
                         <div class="small text-muted">{{ contract.merchantSignedBy }} ({{ contract.merchantSignedTitle }}) — {{ contract.merchantSignedAt|date('d/m/Y H:i') }}</div>

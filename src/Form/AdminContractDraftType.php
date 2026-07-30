@@ -31,19 +31,19 @@ class AdminContractDraftType extends AbstractType
                     $m->getUser()?->getFullName(),
                     $m->getUser()?->getEmail()
                 ),
-                'label' => 'Commerçant',
-                'placeholder' => 'Choisir un commerçant',
+                'label' => 'Entrepreneur',
+                'placeholder' => 'Choisir un entrepreneur',
             ])
             ->add('shop', EntityType::class, [
                 'class' => Shop::class,
                 'choice_label' => static fn (Shop $s) => sprintf('%s (%s)', $s->getName(), $s->getMerchant()?->getCompanyName()),
-                'label' => 'Boutique existante (optionnel)',
+                'label' => 'Entreprise existante (optionnel)',
                 'required' => false,
                 'placeholder' => 'Aucune — discuter avant création',
-                'help' => 'Laissez vide pour un contrat de discussion (boutique proposée ci-dessous).',
+                'help' => 'Laissez vide pour un contrat de discussion (entreprise proposée ci-dessous).',
             ])
             ->add('proposedShopName', TextType::class, [
-                'label' => 'Nom de boutique proposé',
+                'label' => 'Nom d\'entreprise proposé',
                 'required' => false,
             ])
             ->add('proposedShopAddress', TextType::class, [
@@ -55,7 +55,7 @@ class AdminContractDraftType extends AbstractType
                 'required' => false,
             ])
             ->add('proposedShopEmail', EmailType::class, [
-                'label' => 'Email boutique proposé',
+                'label' => 'Email entreprise proposé',
                 'required' => false,
             ])
             ->add('plan', ChoiceType::class, [
@@ -88,7 +88,7 @@ class AdminContractDraftType extends AbstractType
                 'attr' => ['rows' => 3],
             ])
             ->add('sharedWithMerchant', ChoiceType::class, [
-                'label' => 'Visibilité commerçant',
+                'label' => 'Visibilité entrepreneur',
                 'choices' => [
                     'Oui' => true,
                     'Non' => false,
@@ -98,7 +98,7 @@ class AdminContractDraftType extends AbstractType
                 'required' => true,
                 'empty_data' => false,
                 'choice_value' => static fn (?bool $choice): string => null === $choice ? '' : ($choice ? '1' : '0'),
-                'help' => 'Œil ouvert = visible sur le dashboard commerçant. Œil barré = brouillon interne.',
+                'help' => 'Œil ouvert = visible sur le dashboard entrepreneur. Œil barré = brouillon interne.',
             ]);
     }
 

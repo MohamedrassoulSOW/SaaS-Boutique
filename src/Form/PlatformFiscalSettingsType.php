@@ -64,7 +64,7 @@ class PlatformFiscalSettingsType extends AbstractType
                 ],
             ])
             ->add('defaultPricesIncludeTax', CheckboxType::class, [
-                'label' => 'Prix catalogue TTC par défaut (boutiques)',
+                'label' => 'Prix catalogue TTC par défaut (entreprises)',
                 'required' => false,
             ])
             ->add('taxOnSubscriptions', CheckboxType::class, [

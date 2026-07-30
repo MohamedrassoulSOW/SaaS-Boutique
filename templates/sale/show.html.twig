@@ -11,7 +11,7 @@
 <div class="card stat-card p-4">
     <div class="row mb-3">
         <div class="col-md-6">
-            <div><strong>Boutique:</strong> {{ sale.shop.name }}</div>
+            <div><strong>Entreprise:</strong> {{ sale.shop.name }}</div>
             <div><strong>Client:</strong> {{ sale.customer ? sale.customer.fullName : 'Comptoir' }}</div>
             <div><strong>Date:</strong> {{ sale.soldAt|date('d/m/Y H:i') }}</div>
             <div><strong>Vendeur:</strong> {{ sale.soldBy ? sale.soldBy.fullName ~ ' (' ~ sale.soldBy.email ~ ')' : '—' }}</div>

@@ -76,15 +76,15 @@ class ShopController extends ShopAwareController
             }
 
             $em->flush();
-            $logger->log('shop.update', 'Modification boutique '.$shop->getName(), $user, $shop);
-            $this->addFlash('success', 'Boutique et paramètres fiscaux mis à jour.');
+            $logger->log('shop.update', 'Modification entreprise '.$shop->getName(), $user, $shop);
+            $this->addFlash('success', 'Entreprise et paramètres fiscaux mis à jour.');
 
             return $this->redirectToRoute('app_shop_index');
         }
 
         return $this->render('shop/form.html.twig', [
             'form' => $form,
-            'title' => 'Modifier la boutique',
+            'title' => 'Modifier l\'entreprise',
             'shop' => $shop,
         ]);
     }
@@ -99,7 +99,7 @@ class ShopController extends ShopAwareController
         $this->denyAccessUnlessGranted(ShopVoter::MANAGE, $shop);
         $contract = $shop->getContract();
         if (!$contract) {
-            throw $this->createNotFoundException('Aucun contrat pour cette boutique.');
+            throw $this->createNotFoundException('Aucun contrat pour cette entreprise.');
         }
 
         $form = null;

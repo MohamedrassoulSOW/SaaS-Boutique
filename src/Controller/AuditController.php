@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Journal d'audit de la boutique courante (traçabilité des actions).
+ * Journal d'audit de l'entreprise courante (traçabilité des actions).
  */
 #[Route('/audit')]
 #[IsGranted('MODULE_REPORTS')]

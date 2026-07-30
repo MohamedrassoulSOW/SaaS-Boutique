@@ -33,20 +33,20 @@ class AdminShopType extends AbstractType
                     $m->getUser()?->getFullName(),
                     $m->getUser()?->getEmail()
                 ),
-                'label' => 'Commerçant demandeur',
-                'placeholder' => 'Choisir un commerçant',
+                'label' => 'Entrepreneur demandeur',
+                'placeholder' => 'Choisir un entrepreneur',
                 'attr' => [
                     'onchange' => 'if (this.value) { window.location = "?merchant=" + this.value; }',
                 ],
             ])
-            // Infos personnelles commerçant
+            // Infos personnelles entrepreneur
             ->add('personFirstName', TextType::class, [
-                'label' => 'Prénom du commerçant',
+                'label' => 'Prénom de l\'entrepreneur',
                 'mapped' => false,
                 'constraints' => [new Assert\NotBlank()],
             ])
             ->add('personLastName', TextType::class, [
-                'label' => 'Nom du commerçant',
+                'label' => 'Nom de l\'entrepreneur',
                 'mapped' => false,
                 'constraints' => [new Assert\NotBlank()],
             ])
@@ -117,14 +117,14 @@ class AdminShopType extends AbstractType
                 'data' => 'Sénégal',
                 'constraints' => [new Assert\NotBlank()],
             ])
-            // Boutique
-            ->add('name', TextType::class, ['label' => 'Nom de la boutique'])
+            // Entreprise
+            ->add('name', TextType::class, ['label' => 'Nom de l\'entreprise'])
             ->add('address', TextType::class, [
-                'label' => 'Adresse de la boutique',
+                'label' => 'Adresse de l\'entreprise',
                 'constraints' => [new Assert\NotBlank()],
             ])
-            ->add('phone', TextType::class, ['label' => 'Téléphone boutique', 'required' => false])
-            ->add('email', EmailType::class, ['label' => 'Email boutique', 'required' => false])
+            ->add('phone', TextType::class, ['label' => 'Téléphone entreprise', 'required' => false])
+            ->add('email', EmailType::class, ['label' => 'Email entreprise', 'required' => false])
             ->add('logoFile', FileType::class, [
                 'label' => 'Logo (stocké en base)',
                 'mapped' => false,

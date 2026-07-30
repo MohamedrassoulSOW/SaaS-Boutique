@@ -18,20 +18,20 @@
             <p class="auth-quote">{{ app_tagline }}</p>
             <p class="small opacity-75 mb-0">Pilotez vos ventes, stocks et équipes depuis un seul espace.</p>
         </div>
-        <div class="small opacity-75">Commerçants · caissiers · gestionnaires de stock</div>
+        <div class="small opacity-75">Entrepreneurs · caissiers · gestionnaires de stock</div>
         <div class="small opacity-75 mt-2" style="white-space:nowrap">Réalisé par <a href="https://sowcoder.com/" target="_blank" rel="noopener noreferrer" class="link-light text-decoration-underline">SowCoder</a></div>
     </section>
 
     <section class="auth-panel">
         <div class="auth-card">
             <div class="brand-line text-center">Bon retour</div>
-            <p class="text-muted mb-4 text-center">Connectez-vous avec le compte fourni par l'administration ou votre commerçant.</p>
+            <p class="text-muted mb-4 text-center">Connectez-vous avec le compte fourni par l'administration ou votre entrepreneur.</p>
             <p class="text-center mb-4"><a href="{{ path('app_home') }}">← Retour au site</a></p>
 
             <form method="post" id="loginForm">
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" name="_username" value="{{ last_username }}" class="form-control" required autofocus placeholder="vous@boutique.com">
+                    <input type="email" name="_username" value="{{ last_username }}" class="form-control" required autofocus placeholder="vous@entreprise.com">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Mot de passe</label>

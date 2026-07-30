@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
-{% block title %}Boutiques{% endblock %}
+{% block title %}Entreprises{% endblock %}
 {% block body %}
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <div>
         <div class="text-muted small mb-1">Organisation</div>
-        <h1 class="page-title h2 mb-0">Mes boutiques</h1>
-        <p class="text-muted mb-0">Les boutiques sont créées par l'administration sur demande.</p>
+        <h1 class="page-title h2 mb-0">Mes entreprises</h1>
+        <p class="text-muted mb-0">Les entreprises sont créées par l'administration sur demande.</p>
     </div>
 </div>
 <div class="row g-3">
@@ -34,7 +34,7 @@
 {% else %}
     <div class="col-12">
         <div class="alert alert-info">
-            Aucune boutique pour le moment. Contactez l'administrateur pour en faire créer une.
+            Aucune entreprise pour le moment. Contactez l'administrateur pour en faire créer une.
         </div>
     </div>
 {% endfor %}

@@ -5,7 +5,7 @@
     <a href="{{ path('app_sale_index') }}" class="btn btn-outline-brand btn-sm topbar-icon-btn" title="Historique" aria-label="Historique">
         <i class="bi bi-clock-history" aria-hidden="true"></i>
     </a>
-    <button type="button" class="btn btn-brand btn-sm pos-cart-toggle topbar-icon-btn" id="posCartToggle" aria-controls="posCartDrawer" aria-expanded="false" title="Panier" aria-label="Panier">
+    <button type="button" class="btn btn-brand btn-sm pos-cart-toggle topbar-icon-btn" id="posCartToggle" data-bs-toggle="modal" data-bs-target="#posCartModal" title="Panier" aria-label="Panier">
         <i class="bi bi-cart3" aria-hidden="true"></i>
         <span class="pos-cart-badge js-cart-count">0</span>
     </button>
@@ -13,11 +13,6 @@
 
 {% block body %}
 <div class="pos-page">
-<div class="mb-3">
-    <h1 class="page-title h2 mb-0">Nouvelle vente</h1>
-    <p class="text-muted small mb-0">Touchez un produit pour l’ajouter au panier.</p>
-</div>
-
 <form method="post" id="saleForm" class="pos-form">
 <div class="pos-layout">
     <section class="pos-catalog panel">
@@ -69,78 +64,84 @@
         </div>
     </section>
 </div>
-
-<div class="pos-cart-backdrop" id="posCartBackdrop" hidden></div>
-
-<aside class="pos-cart panel" id="posCartDrawer" aria-hidden="true" aria-labelledby="posCartTitle">
-    <div class="panel-head pos-cart-head">
-        <div>
-            <h2 id="posCartTitle">Panier</h2>
-            <p class="pos-cart-subtitle mb-0"><span class="js-cart-count">0</span> article(s)</p>
-        </div>
-        <button type="button" class="btn btn-sm btn-outline-brand pos-cart-close" id="posCartClose" aria-label="Fermer le panier">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-    </div>
-
-    <div class="pos-cart-body">
-        <div class="pos-cart-list" id="cartList">
-            <div class="pos-cart-empty text-muted" id="cartEmpty">
-                <span class="pos-cart-empty-icon"><i class="bi bi-bag-plus"></i></span>
-                <strong>Panier vide</strong>
-                <span>Touchez un produit pour commencer la vente.</span>
-            </div>
-        </div>
-        <div id="cartFields" class="d-none" aria-hidden="true"></div>
-    </div>
-
-    <div class="pos-cart-footer">
-        <div class="pos-fields">
-            <div class="pos-field">
-                <label class="form-label" for="posCustomer">Client</label>
-                <select name="customer_id" id="posCustomer" class="form-select form-select-sm">
-                    <option value="">Comptoir</option>
-                    {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
-                </select>
-            </div>
-            <div class="pos-field">
-                <label class="form-label" for="discountInput">Remise</label>
-                <input type="number" step="1" min="0" name="discount" id="discountInput" value="0" class="form-control form-control-sm" inputmode="numeric">
-            </div>
-            <div class="pos-field">
-                <label class="form-label" for="posPayment">Paiement</label>
-                <select name="payment_method" id="posPayment" class="form-select form-select-sm">
-                    <option value="cash">Espèces</option>
-                    <option value="card">Carte</option>
-                    <option value="mobile">Mobile</option>
-                    <option value="credit">Crédit</option>
-                </select>
-            </div>
-            <div class="pos-field">
-                <label class="form-label" for="amountPaid">Encaissé</label>
-                <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" value="0" class="form-control form-control-sm" placeholder="= total" inputmode="numeric">
-            </div>
-        </div>
-
-        <div class="pos-totals">
-            <div class="pos-total-row"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
-            <div class="pos-total-row"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
-            <div class="pos-total-row {% if not taxConfig.enabled %}d-none{% endif %}" id="taxRow">
-                <span>TVA (<span id="taxRateLabel">{{ taxConfig.rate }}</span> %)</span>
-                <span id="taxDisplay">0 FCFA</span>
-            </div>
-            <div class="pos-total-row pos-total-main">
-                <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
-                <span id="totalDisplay">0 FCFA</span>
-            </div>
-        </div>
-
-        <button class="btn btn-brand w-100 pos-checkout-btn" type="submit" id="posCheckoutBtn">
-            <i class="bi bi-cash-coin me-1"></i>Encaisser
-        </button>
-    </div>
-</aside>
+<div id="cartFields" class="d-none" aria-hidden="true"></div>
 </form>
+</div>
+
+<div class="modal fade pos-cart-modal" id="posCartModal" tabindex="-1" aria-labelledby="posCartTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header pos-cart-head">
+                <div>
+                    <h2 class="modal-title" id="posCartTitle">Panier</h2>
+                    <p class="pos-cart-subtitle mb-0"><span class="js-cart-count">0</span> article(s)</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-brand pos-cart-close" data-bs-dismiss="modal" aria-label="Fermer le panier">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="modal-body pos-cart-body">
+                <div class="pos-cart-list" id="cartList">
+                    <div class="pos-cart-empty text-muted" id="cartEmpty">
+                        <span class="pos-cart-empty-icon"><i class="bi bi-bag-plus"></i></span>
+                        <strong>Panier vide</strong>
+                        <span>Touchez un produit pour commencer la vente.</span>
+                    </div>
+                </div>
+
+                <div class="pos-cart-options">
+                    <div class="pos-options-title">Paiement</div>
+                    <div class="pos-fields">
+                        <div class="pos-field pos-field-wide">
+                            <label class="form-label" for="posCustomer">Client</label>
+                            <select name="customer_id" id="posCustomer" form="saleForm" class="form-select form-select-sm">
+                                <option value="">Comptoir</option>
+                                {% for c in customers %}<option value="{{ c.id }}">{{ c.fullName }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="pos-field">
+                            <label class="form-label" for="posPayment">Mode</label>
+                            <select name="payment_method" id="posPayment" form="saleForm" class="form-select form-select-sm">
+                                <option value="cash">Espèces</option>
+                                <option value="card">Carte</option>
+                                <option value="mobile">Mobile</option>
+                                <option value="credit">Crédit</option>
+                            </select>
+                        </div>
+                        <div class="pos-field">
+                            <label class="form-label" for="discountInput">Remise</label>
+                            <input type="number" step="1" min="0" name="discount" id="discountInput" form="saleForm" value="0" class="form-control form-control-sm" inputmode="numeric">
+                        </div>
+                        <div class="pos-field">
+                            <label class="form-label" for="amountPaid">Encaissé</label>
+                            <input type="number" step="1" min="0" name="amount_paid" id="amountPaid" form="saleForm" value="0" class="form-control form-control-sm" placeholder="= total" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="pos-totals">
+                        <div class="pos-total-row"><span>Sous-total</span><span id="subtotalDisplay">0 FCFA</span></div>
+                        <div class="pos-total-row"><span>Remise</span><span id="discountDisplay">0 FCFA</span></div>
+                        <div class="pos-total-row {% if not taxConfig.enabled %}d-none{% endif %}" id="taxRow">
+                            <span>TVA (<span id="taxRateLabel">{{ taxConfig.rate }}</span> %)</span>
+                            <span id="taxDisplay">0 FCFA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer pos-cart-footer">
+                <div class="pos-cart-paybar w-100">
+                    <div class="pos-cart-paybar-total">
+                        <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
+                        <strong id="totalDisplay">0 FCFA</strong>
+                    </div>
+                    <button class="btn btn-brand pos-checkout-btn" type="submit" form="saleForm" id="posCheckoutBtn">
+                        <i class="bi bi-cash-coin me-1"></i>Encaisser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -157,10 +158,7 @@
   const paymentSelect = document.getElementById('posPayment');
   const amountPaidInput = document.getElementById('amountPaid');
   const search = document.getElementById('posSearch');
-  const cartDrawer = document.getElementById('posCartDrawer');
-  const cartBackdrop = document.getElementById('posCartBackdrop');
-  const cartToggle = document.getElementById('posCartToggle');
-  const cartClose = document.getElementById('posCartClose');
+  const cartModalEl = document.getElementById('posCartModal');
   const saleForm = document.getElementById('saleForm');
   const taxEnabled = {{ taxConfig.enabled ? 'true' : 'false' }};
   const taxRate = {{ taxConfig.rate|default(0) }};
@@ -168,23 +166,24 @@
   const shopId = {{ current_shop ? current_shop.id : 'null' }};
   const storageKey = shopId ? `ndamstore.pos.cart.${shopId}` : 'ndamstore.pos.cart';
 
-  function setCartOpen(open) {
-    if (!cartDrawer) return;
-    cartDrawer.classList.toggle('is-open', open);
-    cartDrawer.setAttribute('aria-hidden', open ? 'false' : 'true');
-    cartToggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (cartBackdrop) {
-      cartBackdrop.hidden = !open;
-      cartBackdrop.classList.toggle('is-open', open);
-    }
-    document.body.classList.toggle('pos-cart-open', open);
+  // Sortir le modal du conteneur animé pour éviter le blocage des clics
+  if (cartModalEl && cartModalEl.parentElement !== document.body) {
+    document.body.appendChild(cartModalEl);
   }
 
-  function openCart() { setCartOpen(true); }
-  function closeCart() { setCartOpen(false); }
-  function toggleCart() {
-    setCartOpen(!cartDrawer?.classList.contains('is-open'));
-  }
+  const cartModal = cartModalEl && window.bootstrap
+    ? bootstrap.Modal.getOrCreateInstance(cartModalEl, { backdrop: true, keyboard: true, focus: true })
+    : null;
+
+  function openCart() { cartModal?.show(); }
+  function closeCart() { cartModal?.hide(); }
+
+  cartModalEl?.addEventListener('hidden.bs.modal', () => {
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+  });
 
   function productTileById(id) {
     const want = String(id);
@@ -294,21 +293,19 @@
             ? `<img src="${item.photo}" alt="">`
             : `<span class="pos-tile-placeholder"><i class="bi bi-box-seam"></i></span>`}
         </div>
-        <div class="pos-cart-info">
-          <div class="pos-cart-top">
-            <div class="pos-cart-name">${item.name}</div>
-            <button type="button" class="pos-qty-btn pos-qty-remove" data-act="remove" data-id="${item.id}" aria-label="Retirer"><i class="bi bi-trash3"></i></button>
-          </div>
-          <div class="pos-cart-line">${money(item.price)} · Stock ${item.stock}</div>
-          <div class="pos-cart-bottom">
-            <div class="pos-qty">
-              <button type="button" class="pos-qty-btn" data-act="minus" data-id="${item.id}" aria-label="Moins">−</button>
-              <span class="pos-qty-val">${item.qty}</span>
-              <button type="button" class="pos-qty-btn" data-act="plus" data-id="${item.id}" aria-label="Plus">+</button>
-            </div>
-            <div class="pos-cart-sum">${money(item.price * item.qty)}</div>
+        <div class="pos-cart-main">
+          <div class="pos-cart-name">${item.name}</div>
+          <div class="pos-cart-line">${money(item.price)} <span>· stock ${item.stock}</span></div>
+        </div>
+        <div class="pos-cart-side">
+          <div class="pos-cart-sum">${money(item.price * item.qty)}</div>
+          <div class="pos-qty">
+            <button type="button" class="pos-qty-btn" data-act="minus" data-id="${item.id}" aria-label="Moins">−</button>
+            <span class="pos-qty-val">${item.qty}</span>
+            <button type="button" class="pos-qty-btn" data-act="plus" data-id="${item.id}" aria-label="Plus">+</button>
           </div>
         </div>
+        <button type="button" class="pos-qty-btn pos-qty-remove" data-act="remove" data-id="${item.id}" aria-label="Retirer"><i class="bi bi-trash3"></i></button>
       `;
       cartList.appendChild(row);
 
@@ -386,13 +383,6 @@
   customerSelect?.addEventListener('change', saveCart);
   paymentSelect?.addEventListener('change', saveCart);
   amountPaidInput?.addEventListener('input', saveCart);
-
-  cartToggle?.addEventListener('click', toggleCart);
-  cartClose?.addEventListener('click', closeCart);
-  cartBackdrop?.addEventListener('click', closeCart);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeCart();
-  });
 
   saleForm?.addEventListener('submit', (e) => {
     if (cart.size === 0) {

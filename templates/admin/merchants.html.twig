@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
-{% block title %}Commerçants{% endblock %}
+{% block title %}Entrepreneurs{% endblock %}
 {% block body %}
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <div>
         <div class="text-muted small mb-1">Plateforme</div>
-        <h1 class="page-title h2 mb-0">Commerçants</h1>
+        <h1 class="page-title h2 mb-0">Entrepreneurs</h1>
         <p class="text-muted mb-0">Comptes créés uniquement par l'administration.</p>
     </div>
-    <a href="{{ path('admin_merchant_new') }}" class="btn btn-brand">Nouveau commerçant</a>
+    <a href="{{ path('admin_merchant_new') }}" class="btn btn-brand">Nouvel entrepreneur</a>
 </div>
 <div class="panel">
 <div class="table-responsive">
@@ -16,7 +16,7 @@
 <tr>
     <th>Entreprise</th>
     <th>Contact</th>
-    <th>Boutiques</th>
+    <th>Entreprises</th>
     <th>Abonnement</th>
     <th>Statut</th>
     <th>Créé</th>
@@ -43,14 +43,14 @@
     <td>{{ m.createdAt|date('d/m/Y') }}</td>
     <td class="text-end text-nowrap">
         <a class="btn btn-sm btn-outline-brand" href="{{ path('admin_merchant_edit', {id: m.id}) }}">Modifier</a>
-        <form class="d-inline" method="post" action="{{ path('admin_merchant_delete', {id: m.id}) }}" data-confirm="Supprimer ce commerçant et toutes ses données (boutiques, ventes…) ?" data-confirm-title="Supprimer le commerçant" data-confirm-label="Supprimer">
+        <form class="d-inline" method="post" action="{{ path('admin_merchant_delete', {id: m.id}) }}" data-confirm="Supprimer cet entrepreneur et toutes ses données (entreprises, ventes…) ?" data-confirm-title="Supprimer l'entrepreneur" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete_merchant' ~ m.id) }}">
             <button class="btn btn-sm btn-outline-danger">Suppr.</button>
         </form>
     </td>
 </tr>
 {% else %}
-<tr><td colspan="7" class="text-muted p-4">Aucun commerçant</td></tr>
+<tr><td colspan="7" class="text-muted p-4">Aucun entrepreneur</td></tr>
 {% endfor %}
 </tbody>
 </table>

@@ -15,8 +15,8 @@
 <thead>
 <tr>
     <th>N°</th>
-    <th>Commerçant</th>
-    <th>Boutique</th>
+    <th>Entrepreneur</th>
+    <th>Entreprise</th>
     <th>Abonnement</th>
     <th>Statut</th>
     <th class="text-center" title="Visibilité"><i class="bi bi-eye" aria-hidden="true"></i><span class="visually-hidden">Visibilité</span></th>
@@ -33,12 +33,12 @@
     <td>{{ c.statusLabel }}</td>
     <td class="text-center">
         {% if c.sharedWithMerchant %}
-            <span class="visibility-icon is-on" title="Visible par le commerçant">
+            <span class="visibility-icon is-on" title="Visible par l'entrepreneur">
                 <i class="bi bi-eye-fill" aria-hidden="true"></i>
                 <span class="visually-hidden">Oui</span>
             </span>
         {% else %}
-            <span class="visibility-icon is-off" title="Masqué pour le commerçant">
+            <span class="visibility-icon is-off" title="Masqué pour l'entrepreneur">
                 <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
                 <span class="visually-hidden">Non</span>
             </span>

@@ -64,7 +64,7 @@ Email : {{ platform.email }} — Tél. : {{ platform.phone }}<br>
 Représenté par : {{ platform.representative }}
 </td>
 <td>
-<strong>LE COMMERÇANT</strong><br>
+<strong>L'ENTREPRENEUR</strong><br>
 {{ merchant.companyName }}
 {% if merchant.legalForm %} ({{ merchant.legalForm }}){% endif %}<br>
 Représenté par : {{ user ? user.fullName : '—' }}
@@ -78,7 +78,7 @@ Email : {{ user ? user.email : '—' }} — Tél. : {{ user and user.phone ? use
 </tr>
 </table>
 
-<p><strong>Boutique concernée :</strong> {{ contract.displayShopName }}
+<p><strong>Entreprise concernée :</strong> {{ contract.displayShopName }}
 {% if contract.displayShopAddress %} — {{ contract.displayShopAddress }}{% endif %}
 {% if contract.displayShopPhone %} — {{ contract.displayShopPhone }}{% endif %}
 {% if contract.displayShopEmail %} — {{ contract.displayShopEmail }}{% endif %}
@@ -92,23 +92,23 @@ Email : {{ user ? user.email : '—' }} — Tél. : {{ user and user.phone ? use
 
 <h2>Article 1 — Objet</h2>
 <p>
-Le présent contrat a pour objet de définir les conditions dans lesquelles le Prestataire met à disposition du Commerçant
-un accès à la plateforme logicielle {{ platform.name }} (SaaS) permettant la gestion de boutique(s) :
+Le présent contrat a pour objet de définir les conditions dans lesquelles le Prestataire met à disposition de l'Entrepreneur
+un accès à la plateforme logicielle {{ platform.name }} (SaaS) permettant la gestion d'entreprise(s) :
 catalogue produits, stocks, ventes, clients, fournisseurs, facturation, inventaires, rapports et gestion des accès vendeurs.
 </p>
 
 <h2>Article 2 — Définitions</h2>
 <ul>
 <li><strong>Plateforme :</strong> application web et services associés édités par le Prestataire.</li>
-<li><strong>Boutique :</strong> établissement digital/physique configuré pour le Commerçant sur la Plateforme.</li>
-<li><strong>Données :</strong> informations saisies ou générées par le Commerçant et ses utilisateurs (produits, ventes, clients, etc.).</li>
-<li><strong>Utilisateur :</strong> toute personne autorisée (commerçant, vendeur) à accéder à la Boutique.</li>
+<li><strong>Entreprise :</strong> établissement digital/physique configuré pour l'Entrepreneur sur la Plateforme.</li>
+<li><strong>Données :</strong> informations saisies ou générées par l'Entrepreneur et ses utilisateurs (produits, ventes, clients, etc.).</li>
+<li><strong>Utilisateur :</strong> toute personne autorisée (entrepreneur, vendeur) à accéder à l'Entreprise.</li>
 </ul>
 
 <h2>Article 3 — Description des services</h2>
 <p>Le Prestataire fournit un droit d'accès non exclusif et non cessible à la Plateforme, incluant notamment :</p>
 <ul>
-<li>gestion multi-utilisateurs (commerçant et vendeurs) ;</li>
+<li>gestion multi-utilisateurs (entrepreneur et vendeurs) ;</li>
 <li>gestion du catalogue, stocks, achats et inventaires ;</li>
 <li>point de vente, factures/reçus PDF, rapports ;</li>
 <li>hébergement des données en base (y compris logos, photos et PDF) ;</li>
@@ -137,7 +137,7 @@ La périodicité retenue pour le présent contrat est : <strong>{{ contract.bill
 
 <h2>Article 5 — Conditions financières</h2>
 <p>
-En contrepartie des services, le Commerçant s'acquitte d'une redevance de
+En contrepartie des services, l'Entrepreneur s'acquitte d'une redevance de
 <strong>{{ contract.price|money }} {{ contract.pricePeriodLabel }}</strong>
 ({% if contract.billingPeriod == 'annual' %}abonnement annuel{% else %}abonnement mensuel{% endif %}), hors éventuelles taxes applicables,
 selon les modalités communiquées par le Prestataire (espèces, mobile money, virement).
@@ -145,20 +145,20 @@ selon les modalités communiquées par le Prestataire (espèces, mobile money, v
 <ul>
 <li>L'abonnement est strictement <strong>mensuel</strong> ou <strong>annuel</strong>, conformément à l'Article 4.</li>
 <li>Tout retard de paiement expose à suspension puis, le cas échéant, à la rupture prévue à l'Article 11.</li>
-<li>Les montants déjà perçus restent acquis en cas de résiliation pour manquement du Commerçant.</li>
+<li>Les montants déjà perçus restent acquis en cas de résiliation pour manquement de l'Entrepreneur.</li>
 </ul>
 
 <h2>Article 6 — Obligations du Prestataire</h2>
 <ul>
 <li>Mettre en œuvre les moyens raisonnables pour assurer la disponibilité et la sécurité de la Plateforme.</li>
 <li>Assurer la sauvegarde et l'intégrité des Données dans la base de données.</li>
-<li>Informer le Commerçant des maintenances planifiées majeures.</li>
+<li>Informer l'Entrepreneur des maintenances planifiées majeures.</li>
 <li>Ne pas exploiter les Données à des fins commerciales tierces sans accord.</li>
 </ul>
 
-<h2>Article 7 — Obligations du Commerçant</h2>
+<h2>Article 7 — Obligations de l'Entrepreneur</h2>
 <ul>
-<li>Fournir des informations exactes (identité, entreprise, boutique) et les tenir à jour.</li>
+<li>Fournir des informations exactes (identité, entreprise) et les tenir à jour.</li>
 <li>Veiller à la confidentialité des identifiants et à la gestion de ses vendeurs.</li>
 <li>Utiliser la Plateforme conformément aux lois en vigueur et aux présentes conditions.</li>
 <li>Ne pas tenter de contourner les mesures de sécurité ni de reverse-engineer la Plateforme.</li>
@@ -168,13 +168,13 @@ selon les modalités communiquées par le Prestataire (espèces, mobile money, v
 <h2>Article 8 — Propriété intellectuelle</h2>
 <p>
 La Plateforme, ses marques, codes, interfaces et documentation restent la propriété exclusive du Prestataire.
-Le présent contrat ne transfère aucun droit de propriété intellectuelle au Commerçant, hors le droit d'usage temporaire prévu.
+Le présent contrat ne transfère aucun droit de propriété intellectuelle à l'Entrepreneur, hors le droit d'usage temporaire prévu.
 </p>
 
 <h2>Article 9 — Données personnelles et confidentialité</h2>
 <p>
 Les Parties s'engagent à traiter les données personnelles conformément à la réglementation applicable.
-Le Commerçant demeure responsable des traitements qu'il effectue sur ses clients et collaborateurs.
+L'Entrepreneur demeure responsable des traitements qu'il effectue sur ses clients et collaborateurs.
 Chaque Partie s'engage à garder confidentielles les informations commerciales et techniques de l'autre Partie
 pendant la durée du contrat et trois (3) ans après son terme.
 </p>
@@ -182,15 +182,15 @@ pendant la durée du contrat et trois (3) ans après son terme.
 <h2>Article 10 — Responsabilité</h2>
 <p>
 Le Prestataire est tenu à une obligation de moyens. Sa responsabilité totale, toutes causes confondues,
-est limitée au montant des redevances payées par le Commerçant au cours des trois (3) derniers mois.
+est limitée au montant des redevances payées par l'Entrepreneur au cours des trois (3) derniers mois.
 Sont exclus les dommages indirects (perte de chiffre d'affaires, atteinte à l'image, etc.).
-Le Commerçant reste responsable de ses opérations de caisse, stocks et obligations fiscales.
+L'Entrepreneur reste responsable de ses opérations de caisse, stocks et obligations fiscales.
 </p>
 
 <h2>Article 11 — Suspension et résiliation — Impayés</h2>
 <p><strong>11.1 — Suspension</strong></p>
 <ul>
-<li>Le Prestataire peut suspendre l'accès en cas de non-paiement d'une échéance ou d'usage abusif, après information du Commerçant.</li>
+<li>Le Prestataire peut suspendre l'accès en cas de non-paiement d'une échéance ou d'usage abusif, après information de l'Entrepreneur.</li>
 </ul>
 <p><strong>11.2 — Rupture immédiate pour impayés</strong></p>
 <p>
@@ -203,14 +203,14 @@ en cas de retard de paiement au-delà des délais suivants après la date d'éch
 </ul>
 <p>
 Dans ces cas, la résiliation intervient <strong>sans préavis ni formalité judiciaire</strong>,
-et l'accès à la Plateforme ainsi qu'à la Boutique est coupé immédiatement.
+et l'accès à la Plateforme ainsi qu'à l'Entreprise est coupé immédiatement.
 Le Prestataire conserve le droit de réclamer les sommes dues. Les Données restent consultables pour export pendant trente (30) jours
 sur demande écrite, sauf obligation légale contraire.
 </p>
 <p><strong>11.3 — Autres cas de résiliation</strong></p>
 <ul>
 <li>Chaque Partie peut résilier de plein droit en cas de manquement grave non réparé sous quinze (15) jours après mise en demeure.</li>
-<li>À la fin normale du contrat, le Commerçant peut demander une exportation de ses Données dans un délai de trente (30) jours.</li>
+<li>À la fin normale du contrat, l'Entrepreneur peut demander une exportation de ses Données dans un délai de trente (30) jours.</li>
 </ul>
 
 <h2>Article 12 — Force majeure</h2>
@@ -250,7 +250,7 @@ Le {{ contract.platformSignedAt|date('d/m/Y à H:i') }}
 {% endif %}
 </td>
 <td>
-<strong>Pour le Commerçant</strong><br>
+<strong>Pour l'Entrepreneur</strong><br>
 {{ merchant.companyName }}<br>
 {% if contract.merchantSignedAt %}
 <div class="sign-box">

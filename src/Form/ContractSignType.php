@@ -24,7 +24,7 @@ class ContractSignType extends AbstractType
         if ($options['sign_merchant']) {
             $builder
                 ->add('merchantSignedBy', TextType::class, [
-                    'label' => 'Nom du signataire commerçant',
+                    'label' => 'Nom du signataire entrepreneur',
                     'constraints' => [new Assert\NotBlank()],
                     'data' => $options['default_merchant_signer'],
                 ])

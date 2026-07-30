@@ -4,13 +4,13 @@
 <div class="mb-4">
     <div class="text-muted small mb-1">Administration</div>
     <h1 class="page-title h2 mb-1">{{ title }}</h1>
-    <p class="text-muted mb-0">Renseignez la boutique et les informations du commerçant. Un contrat multi-pages sera généré pour impression et signature.</p>
+    <p class="text-muted mb-0">Renseignez l'entreprise et les informations de l'entrepreneur. Un contrat multi-pages sera généré pour impression et signature.</p>
 </div>
 <div class="panel p-4" style="max-width:860px">
     {{ form_start(form, {attr: {enctype: 'multipart/form-data'}}) }}
-        <h2 class="h5 page-title mb-3">1. Commerçant</h2>
+        <h2 class="h5 page-title mb-3">1. Entrepreneur</h2>
         {{ form_row(form.merchant) }}
-        <p class="small text-muted">Choisissez le commerçant pour préremplir ses informations, puis vérifiez-les.</p>
+        <p class="small text-muted">Choisissez l'entrepreneur pour préremplir ses informations, puis vérifiez-les.</p>
 
         <h2 class="h5 page-title mt-4 mb-3">2. Informations personnelles</h2>
         <div class="row g-2">
@@ -33,7 +33,7 @@
             <div class="col-md-4">{{ form_row(form.country) }}</div>
         </div>
 
-        <h2 class="h5 page-title mt-4 mb-3">4. Boutique</h2>
+        <h2 class="h5 page-title mt-4 mb-3">4. Entreprise</h2>
         <div class="row g-2">
             <div class="col-md-12">{{ form_row(form.name) }}</div>
             <div class="col-md-12">{{ form_row(form.address) }}</div>

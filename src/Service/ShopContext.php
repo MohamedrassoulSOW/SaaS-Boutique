@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Contexte boutique persisté en base (preferredShopId), sans dépendance fichier.
+ * Contexte entreprise persisté en base (preferredShopId), sans dépendance fichier.
  */
 class ShopContext
 {
@@ -52,7 +52,7 @@ class ShopContext
         }
 
         if (!$this->userCanAccess($user, $shop)) {
-            throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette boutique.');
+            throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette entreprise.');
         }
 
         $user->setPreferredShopId($shop->getId());
@@ -146,17 +146,17 @@ class ShopContext
     public function requireAccessibleShop(User $user): Shop
     {
         if ($user->isAdmin()) {
-            throw new AccessDeniedHttpException('L\'administrateur n\'a pas accès aux boutiques.');
+            throw new AccessDeniedHttpException('L\'administrateur n\'a pas accès aux entreprises.');
         }
 
         $shop = $this->getCurrentShop($user);
         if (!$shop) {
-            throw new NotFoundHttpException('Aucune boutique accessible. Contactez l\'administrateur pour en créer une.');
+            throw new NotFoundHttpException('Aucune entreprise accessible. Contactez l\'administrateur pour en créer une.');
         }
 
         if (!$this->userCanAccess($user, $shop)) {
             $this->clearCurrentShop($user);
-            throw new AccessDeniedHttpException('Accès refusé à cette boutique.');
+            throw new AccessDeniedHttpException('Accès refusé à cette entreprise.');
         }
 
         return $shop;
@@ -165,7 +165,7 @@ class ShopContext
     public function assertOwnsShopData(User $user, ?Shop $dataShop): void
     {
         if ($user->isAdmin() || !$dataShop || !$this->userCanAccess($user, $dataShop)) {
-            throw new AccessDeniedHttpException('Ces données n\'appartiennent pas à votre boutique.');
+            throw new AccessDeniedHttpException('Ces données n\'appartiennent pas à votre entreprise.');
         }
     }
 }

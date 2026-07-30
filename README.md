@@ -1,8 +1,8 @@
-# NdamStore — Gestion des boutiques
+# NdamStore — Gestion des entreprises
 
 **NdamStore** — *La réussite de votre commerce.*
 
-Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + **MySQL**) pour gérer boutiques, produits, stocks, ventes, factures, inventaires et rapports.
+Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + **MySQL**) pour gérer entreprises, produits, stocks, ventes, factures, inventaires et rapports.
 
 ## Principe stockage (web + mobile)
 
@@ -12,9 +12,9 @@ Plateforme SaaS multi-tenant (Symfony 8 + Twig + Bootstrap 5 + **MySQL**) pour g
 |--------|----------|
 | Produits, stocks, ventes, clients… | Tables Doctrine / MySQL |
 | Photos produits | BLOB (`products.photo_data`) |
-| Logos boutiques | BLOB (`shops.logo_data`) |
+| Logos entreprises | BLOB (`shops.logo_data`) |
 | Factures PDF | BLOB (`invoices.pdf_data`) |
-| Boutique active | `users.preferred_shop_id` |
+| Entreprise active | `users.preferred_shop_id` |
 | Sessions PHP | Table `sessions` (PDO) |
 
 Ainsi une future **app mobile** consommera la même base (ou la même API) sans dépendre des fichiers du serveur web.
@@ -43,19 +43,19 @@ Ouvrir : http://127.0.0.1:8080
 
 ## Comptes de démo
 
-| Rôle | Email | Mot de passe | Boutique |
+| Rôle | Email | Mot de passe | Entreprise |
 |------|-------|--------------|----------|
-| Admin | admin@boutiquesaas.test | admin123 | (aucune boutique opérationnelle) |
-| Commerçant | commercant@demo.test | demo1234 | Plateau |
-| Commerçant | almadies@demo.test | demo1234 | Almadies |
-| Commerçant | guediawaye@demo.test | demo1234 | Guédiawaye |
-| Commerçant | thies@demo.test | demo1234 | Thiès |
-| Commerçant | mbour@demo.test | demo1234 | Mbour |
-| Vendeur | vendeur@demo.test | demo1234 | Plateau (accès créé par le commerçant) |
+| Admin | admin@boutiquesaas.test | admin123 | (aucune entreprise opérationnelle) |
+| Entrepreneur | commercant@demo.test | demo1234 | Plateau |
+| Entrepreneur | almadies@demo.test | demo1234 | Almadies |
+| Entrepreneur | guediawaye@demo.test | demo1234 | Guédiawaye |
+| Entrepreneur | thies@demo.test | demo1234 | Thiès |
+| Entrepreneur | mbour@demo.test | demo1234 | Mbour |
+| Vendeur | vendeur@demo.test | demo1234 | Plateau (accès créé par l'entrepreneur) |
 
-Chaque commerçant n’accède **qu’à sa propre boutique**. L’admin crée les boutiques sur demande, sans accès aux ventes / stocks.
+Chaque entrepreneur n’accède **qu’à sa propre entreprise**. L’admin crée les entreprises sur demande, sans accès aux ventes / stocks.
 
-Le commerçant gère les **accès vendeurs** (créer / modifier / supprimer) via le menu **Vendeurs**.
+L'entrepreneur gère les **accès vendeurs** (créer / modifier / supprimer) via le menu **Vendeurs**.
 
 ## Emails (réinitialisation mot de passe)
 
@@ -63,15 +63,15 @@ Par défaut : `MAILER_DSN=smtp://127.0.0.1:1025` (Mailpit).
 
 ## Modules livrés
 
-- Authentification (connexion, reset, profil) — comptes créés par l'admin (commerçants) et par les commerçants (vendeurs)
-- Multi-boutiques + contexte boutique en BDD
+- Authentification (connexion, reset, profil) — comptes créés par l'admin (entrepreneurs) et par les entrepreneurs (vendeurs)
+- Multi-entreprises + contexte entreprise en BDD
 - Produits (photo en BDD), catégories, fournisseurs, clients
 - Achats + réception stock
 - Ventes POS, remises, paiements, factures PDF en BDD
 - Stock, inventaires, rapports, notifications, journal
-- Admin plateforme (users, commerçants, création boutique, abonnements)
-- Accès vendeurs (création / modification / suppression par le commerçant)
-- Création boutique admin avec infos commerçant + **contrat multi-pages** (PDF en BDD, impression, signature électronique)
+- Admin plateforme (users, entrepreneurs, création entreprise, abonnements)
+- Accès vendeurs (création / modification / suppression par l'entrepreneur)
+- Création entreprise admin avec infos entrepreneur + **contrat multi-pages** (PDF en BDD, impression, signature électronique)
 
 ## App mobile
 

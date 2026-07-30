@@ -7,6 +7,8 @@ use App\Repository\CustomerRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
 use App\Repository\ShopContractRepository;
+use App\Security\ShopPermission;
+use App\Service\FiscalService;
 use App\Service\ShopContext;
 use App\Service\StockService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +27,8 @@ class DashboardController extends AbstractController
         CustomerRepository $customers,
         StockService $stockService,
         ShopContractRepository $contractRepo,
+        FiscalService $fiscalService,
+        ShopPermission $shopPermission,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -89,6 +93,19 @@ class DashboardController extends AbstractController
             $merchantContracts = $contractRepo->findVisibleForMerchant($user->getMerchant());
         }
 
+        $fiscalSummary = null;
+        if ($shopPermission->can($user, ShopPermission::FISCAL, $shop)) {
+            $monthEnd = $monthStart->modify('+1 month');
+            $taxMonth = $sales->summarizeTaxForShop($shop, $monthStart, $monthEnd);
+            $fiscalSummary = [
+                'taxConfig' => $fiscalService->resolveShopTax($shop),
+                'monthTax' => $taxMonth['tax'],
+                'monthNet' => $taxMonth['net'],
+                'monthGross' => $taxMonth['gross'],
+                'taxId' => $shop->getMerchant()?->getTaxId(),
+            ];
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'shop' => $shop,
             'contract' => $shop->getContract(),
@@ -101,6 +118,7 @@ class DashboardController extends AbstractController
             'lowStock' => $lowStock,
             'topProducts' => $topProducts,
             'salesByDay' => $salesByDay,
+            'fiscalSummary' => $fiscalSummary,
         ]);
     }
 
@@ -118,13 +136,13 @@ class DashboardController extends AbstractController
         }
 
         if (!$target) {
-            $this->addFlash('danger', 'Boutique inaccessible.');
+            $this->addFlash('danger', 'Entreprise inaccessible.');
 
             return $this->redirectToRoute('app_dashboard');
         }
 
         $shopContext->setCurrentShop($target, $user);
-        $this->addFlash('success', 'Boutique active : '.$target->getName());
+        $this->addFlash('success', 'Entreprise active : '.$target->getName());
 
         return $this->redirectToRoute('app_dashboard');
     }

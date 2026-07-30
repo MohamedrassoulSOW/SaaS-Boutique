@@ -8,10 +8,10 @@ use App\Entity\User;
 use App\Service\ShopContext;
 
 /**
- * Droits métier par rôle boutique.
+ * Droits métier par rôle entreprise.
  *
- * - commerçant : tout
- * - manager : opérations boutique (sauf vendeurs / contrats / réglages boutique)
+ * - entrepreneur : tout
+ * - manager : opérations entreprise (sauf vendeurs / contrats / réglages entreprise)
  * - cashier : caisse, clients, consultation catalogue
  * - stock : stock, catalogue, achats, inventaires
  */
@@ -28,6 +28,7 @@ class ShopPermission
     public const PURCHASES = 'purchases';
     public const INVENTORIES = 'inventories';
     public const REPORTS = 'reports';
+    public const FISCAL = 'fiscal';
     public const SHOPS = 'shops';
     public const STAFF = 'staff';
     public const CONTRACTS = 'contracts';
@@ -46,6 +47,7 @@ class ShopPermission
             self::PURCHASES,
             self::INVENTORIES,
             self::REPORTS,
+            self::FISCAL,
             self::SHOPS,
         ],
         ShopMember::ROLE_CASHIER => [

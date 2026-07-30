@@ -45,7 +45,7 @@ class StockController extends ShopAwareController
             $user = $this->getUser();
             $product = $products->find($request->request->getInt('product_id'));
             if (!$product || !$shopContext->userCanAccess($user, $product->getShop()) || $product->getShop()?->getId() !== $shop->getId()) {
-                $this->addFlash('danger', 'Produit invalide ou hors de votre boutique.');
+                $this->addFlash('danger', 'Produit invalide ou hors de votre entreprise.');
             } else {
                 $type = (string) $request->request->get('type', StockMovement::TYPE_ADJUSTMENT);
                 $qty = abs($request->request->getInt('quantity'));

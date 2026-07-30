@@ -49,7 +49,7 @@ class ContractService
     ): ShopContract {
         $merchant = $shop->getMerchant();
         if (!$merchant) {
-            throw new \InvalidArgumentException('Boutique sans commerçant.');
+            throw new \InvalidArgumentException('Entreprise sans entrepreneur.');
         }
 
         if (!\in_array($billingPeriod, [ShopContract::BILLING_MONTHLY, ShopContract::BILLING_ANNUAL], true)) {
@@ -114,7 +114,7 @@ class ContractService
     public function saveDraft(ShopContract $contract, User $admin, bool $share = false): ShopContract
     {
         if (!$contract->getMerchant()) {
-            throw new \InvalidArgumentException('Commerçant obligatoire.');
+            throw new \InvalidArgumentException('Entrepreneur obligatoire.');
         }
 
         $duration = max(1, $contract->getDurationMonths());
@@ -128,10 +128,10 @@ class ContractService
         if ($contract->getShop()) {
             $shop = $contract->getShop();
             if ($shop->getMerchant()?->getId() !== $contract->getMerchant()->getId()) {
-                throw new \InvalidArgumentException('La boutique ne correspond pas au commerçant.');
+                throw new \InvalidArgumentException('L\'entreprise ne correspond pas à l\'entrepreneur.');
             }
             if ($shop->getContract() && $shop->getContract()->getId() !== $contract->getId()) {
-                throw new \InvalidArgumentException('Cette boutique a déjà un autre contrat.');
+                throw new \InvalidArgumentException('Cette entreprise a déjà un autre contrat.');
             }
             $shop->setContract($contract);
             $contract->setProposedShopName($shop->getName());
@@ -167,14 +167,14 @@ class ContractService
     {
         $contract->setSharedWithMerchant(true);
         if ($contract->isDraft()) {
-            // reste en draft = "En discussion" côté commerçant
+            // reste en draft = "En discussion" côté entrepreneur
         }
         $this->em->flush();
         $this->generatePdf($contract);
 
         $this->activityLogger->log(
             'contract.share',
-            sprintf('Contrat %s partagé avec le commerçant', $contract->getNumber()),
+            sprintf('Contrat %s partagé avec l\'entrepreneur', $contract->getNumber()),
             $admin,
             $contract->getShop()
         );
@@ -254,7 +254,7 @@ class ContractService
 
         $this->activityLogger->log(
             'contract.sign_merchant',
-            sprintf('Signature commerçant sur %s', $contract->getNumber()),
+            sprintf('Signature entrepreneur sur %s', $contract->getNumber()),
             $actor,
             $contract->getShop()
         );

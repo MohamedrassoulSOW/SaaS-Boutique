@@ -32,7 +32,7 @@ class ShopVoter extends Voter
     {
         $user = $token->getUser();
         if (!$user instanceof User || $user->isAdmin()) {
-            // Admin plateforme : pas d'accès opérationnel boutique
+            // Admin plateforme : pas d'accès opérationnel entreprise
             return false;
         }
 

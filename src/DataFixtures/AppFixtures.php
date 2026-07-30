@@ -48,7 +48,7 @@ class AppFixtures extends Fixture
                 'taxId' => 'SN-DKR-001',
                 'city' => 'Dakar',
                 'shop' => [
-                    'name' => 'Boutique Plateau',
+                    'name' => 'Entreprise Plateau',
                     'address' => '12 Avenue de la République, Plateau',
                     'phone' => '+221338001001',
                     'email' => 'plateau@demo.test',
@@ -81,7 +81,7 @@ class AppFixtures extends Fixture
                 'taxId' => 'SN-DKR-002',
                 'city' => 'Dakar',
                 'shop' => [
-                    'name' => 'Boutique Almadies',
+                    'name' => 'Entreprise Almadies',
                     'address' => 'Route des Almadies, près du phare',
                     'phone' => '+221338001002',
                     'email' => 'boutique.almadies@demo.test',
@@ -113,7 +113,7 @@ class AppFixtures extends Fixture
                 'taxId' => 'SN-GDW-003',
                 'city' => 'Guédiawaye',
                 'shop' => [
-                    'name' => 'Boutique Guédiawaye',
+                    'name' => 'Entreprise Guédiawaye',
                     'address' => 'Marché de Guédiawaye, allée 4',
                     'phone' => '+221338001003',
                     'email' => 'boutique.guediawaye@demo.test',
@@ -142,7 +142,7 @@ class AppFixtures extends Fixture
                 'taxId' => 'SN-THS-004',
                 'city' => 'Thiès',
                 'shop' => [
-                    'name' => 'Boutique Thiès Centre',
+                    'name' => 'Entreprise Thiès Centre',
                     'address' => 'Rue Malick Sy, Thiès',
                     'phone' => '+221339001004',
                     'email' => 'boutique.thies@demo.test',
@@ -171,7 +171,7 @@ class AppFixtures extends Fixture
                 'taxId' => 'SN-MBR-005',
                 'city' => 'Mbour',
                 'shop' => [
-                    'name' => 'Boutique Mbour Plage',
+                    'name' => 'Entreprise Mbour Plage',
                     'address' => 'Corniche de Mbour, face à la plage',
                     'phone' => '+221339001005',
                     'email' => 'boutique.mbour@demo.test',

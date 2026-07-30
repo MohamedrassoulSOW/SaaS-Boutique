@@ -271,7 +271,7 @@ class ShopContract
 
     public function getDisplayShopName(): string
     {
-        return (string) ($this->shop?->getName() ?: $this->proposedShopName ?: 'Boutique à définir');
+        return (string) ($this->shop?->getName() ?: $this->proposedShopName ?: 'Entreprise à définir');
     }
 
     public function getDisplayShopAddress(): ?string

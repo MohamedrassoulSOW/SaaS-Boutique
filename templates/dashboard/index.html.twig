@@ -7,11 +7,49 @@
         <h1 class="page-title h2 mb-1">Tableau de bord</h1>
         <div class="text-muted">{{ shop.name }} · activité en direct</div>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        {% if can_module('fiscal') %}
+        <a href="{{ path('app_fiscal_index') }}" class="btn btn-outline-brand"><i class="bi bi-percent me-1"></i>Impôts</a>
+        {% endif %}
         <a href="{{ path('app_report_index') }}" class="btn btn-outline-brand">Rapports</a>
         <a href="{{ path('app_sale_new') }}" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Nouvelle vente</a>
     </div>
 </div>
+
+{% if fiscalSummary %}
+<div class="panel mb-4" id="impots">
+    <div class="panel-head">
+        <h2>Impôts & fiscalité</h2>
+        <a href="{{ path('app_fiscal_index') }}" class="small">Gérer</a>
+    </div>
+    <div class="panel-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-sm-6 col-lg-3">
+                <div class="text-muted small">TVA collectée (mois)</div>
+                <div class="fs-4 fw-semibold">{{ fiscalSummary.monthTax|money }}</div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="text-muted small">CA HT du mois</div>
+                <div class="fs-5 fw-semibold">{{ fiscalSummary.monthNet|money }}</div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="text-muted small">TVA ventes</div>
+                <div>
+                    {% if fiscalSummary.taxConfig.enabled %}
+                        <span class="badge-ok">{{ fiscalSummary.taxConfig.rate }}% · {{ fiscalSummary.taxConfig.pricesIncludeTax ? 'TTC' : 'HT' }}</span>
+                    {% else %}
+                        <span class="badge-stock">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="text-muted small">NINEA</div>
+                <div class="fw-semibold text-break">{{ fiscalSummary.taxId ?: 'Non renseigné' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3 reveal reveal-delay-1">
@@ -68,7 +106,7 @@
     </div>
     <div class="table-responsive">
         <table class="table align-middle mb-0">
-            <thead><tr><th>N°</th><th>Boutique</th><th>Offre</th><th>Statut</th><th></th></tr></thead>
+            <thead><tr><th>N°</th><th>Entreprise</th><th>Offre</th><th>Statut</th><th></th></tr></thead>
             <tbody>
             {% for c in merchantContracts %}
                 <tr>

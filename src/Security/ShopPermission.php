@@ -29,6 +29,9 @@ class ShopPermission
     public const INVENTORIES = 'inventories';
     public const REPORTS = 'reports';
     public const FISCAL = 'fiscal';
+    public const CASH = 'cash';
+    public const SALE_CANCEL = 'sale_cancel';
+    public const VIEW_MARGIN = 'view_margin';
     public const SHOPS = 'shops';
     public const STAFF = 'staff';
     public const CONTRACTS = 'contracts';
@@ -48,6 +51,9 @@ class ShopPermission
             self::INVENTORIES,
             self::REPORTS,
             self::FISCAL,
+            self::CASH,
+            self::SALE_CANCEL,
+            self::VIEW_MARGIN,
             self::SHOPS,
         ],
         ShopMember::ROLE_CASHIER => [
@@ -55,6 +61,7 @@ class ShopPermission
             self::SALES,
             self::PRODUCTS_VIEW,
             self::CUSTOMERS,
+            self::CASH,
         ],
         ShopMember::ROLE_STOCK => [
             self::DASHBOARD,

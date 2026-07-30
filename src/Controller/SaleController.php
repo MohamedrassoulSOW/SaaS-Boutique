@@ -45,10 +45,27 @@ class SaleController extends ShopAwareController
         $taxConfig = $fiscal->resolveShopTax($shop);
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('sale_new', (string) $request->request->get('_token'))) {
+                $this->addFlash('sale_error', 'Session expirée. Rechargez la page et réessayez.');
+
+                return $this->render('sale/new.html.twig', [
+                    'products' => $productList,
+                    'customers' => $customerList,
+                    'taxConfig' => $taxConfig,
+                ]);
+            }
+
             /** @var User $user */
             $user = $this->getUser();
-            $productIds = $request->request->all('product_id') ?: [];
-            $quantities = $request->request->all('quantity') ?: [];
+            $payload = $request->request->all();
+            $productIds = $payload['product_id'] ?? [];
+            $quantities = $payload['quantity'] ?? [];
+            if (!\is_array($productIds)) {
+                $productIds = $productIds !== null && $productIds !== '' ? [$productIds] : [];
+            }
+            if (!\is_array($quantities)) {
+                $quantities = $quantities !== null && $quantities !== '' ? [$quantities] : [];
+            }
             $lines = [];
             foreach ($productIds as $i => $productId) {
                 $pid = (int) $productId;
@@ -66,28 +83,48 @@ class SaleController extends ShopAwareController
             $lines = array_values($lines);
 
             if ($lines === []) {
-                $this->addFlash('danger', 'Ajoutez au moins un produit.');
+                $this->addFlash('sale_error', 'Ajoutez au moins un produit au panier avant d\'encaisser.');
             } else {
                 try {
-                    $customerId = $request->request->getInt('customer_id') ?: null;
+                    $customerRaw = $request->request->get('customer_id');
+                    $customerId = null;
+                    if ($customerRaw !== null && $customerRaw !== '' && ctype_digit((string) $customerRaw)) {
+                        $customerId = (int) $customerRaw;
+                    }
                     $customer = $customerId ? $customers->find($customerId) : null;
                     if ($customer) {
                         $this->assertShopData($shopContext, $customer->getShop());
                     }
+                    $amountPaidRaw = $request->request->get('amount_paid');
+                    $amountPaid = ($amountPaidRaw === null || $amountPaidRaw === '')
+                        ? null
+                        : (float) $amountPaidRaw;
+
                     $sale = $saleService->createSale(
                         $shop,
                         $user,
                         $lines,
-                        (float) $request->request->get('discount', 0),
-                        (string) $request->request->get('payment_method', Sale::PAYMENT_CASH),
-                        (float) $request->request->get('amount_paid', 0),
+                        (float) ($request->request->get('discount') ?: 0),
+                        (string) ($request->request->get('payment_method') ?: Sale::PAYMENT_CASH),
+                        $amountPaid,
                         $customer,
                     );
-                    $this->addFlash('success', 'Vente enregistrée : '.$sale->getReference());
+                    $saleService->generateInvoicePdfSafe($sale);
+                    $this->addFlash(
+                        'sale_success',
+                        sprintf(
+                            "Vente %s enregistrée.\nTotal : %s FCFA\nPayé : %s FCFA",
+                            $sale->getReference(),
+                            number_format((float) $sale->getTotal(), 0, ',', ' '),
+                            number_format((float) $sale->getAmountPaid(), 0, ',', ' ')
+                        )
+                    );
 
                     return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
+                } catch (\InvalidArgumentException|\RuntimeException $e) {
+                    $this->addFlash('sale_error', $e->getMessage() ?: 'L\'encaissement a été refusé.');
                 } catch (\Throwable $e) {
-                    $this->addFlash('danger', $e->getMessage());
+                    $this->addFlash('sale_error', 'L\'encaissement a échoué. Réessayez ou contactez le support.');
                 }
             }
         }
@@ -99,19 +136,45 @@ class SaleController extends ShopAwareController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_sale_show')]
+    #[Route('/{id}/cancel', name: 'app_sale_cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('MODULE_SALE_CANCEL')]
+    public function cancel(
+        Sale $sale,
+        Request $request,
+        ShopContext $shopContext,
+        SaleService $saleService,
+    ): Response {
+        $this->requireShop($shopContext);
+        $this->assertShopData($shopContext, $sale->getShop());
+        if (!$this->isCsrfTokenValid('sale_cancel'.$sale->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
+        }
+
+        try {
+            $saleService->cancelSale($sale, $this->getShopUser());
+            $this->addFlash('success', 'Vente annulée. Stock et crédit client recalculés.');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
+    }
+
+    #[Route('/{id}', name: 'app_sale_show', requirements: ['id' => '\d+'])]
     public function show(Sale $sale, ShopContext $shopContext): Response
     {
-        $shop = $this->requireShop($shopContext);
+        $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $sale->getShop());
 
         return $this->render('sale/show.html.twig', ['sale' => $sale]);
     }
 
-    #[Route('/{id}/invoice.pdf', name: 'app_sale_invoice_pdf')]
+    #[Route('/{id}/invoice.pdf', name: 'app_sale_invoice_pdf', requirements: ['id' => '\d+'])]
     public function invoicePdf(Sale $sale, ShopContext $shopContext, InvoicePdfService $pdf): Response
     {
-        $shop = $this->requireShop($shopContext);
+        $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $sale->getShop());
 
         $content = $pdf->generate($sale);
@@ -123,10 +186,10 @@ class SaleController extends ShopAwareController
         ]);
     }
 
-    #[Route('/{id}/print', name: 'app_sale_print')]
+    #[Route('/{id}/print', name: 'app_sale_print', requirements: ['id' => '\d+'])]
     public function print(Sale $sale, ShopContext $shopContext): Response
     {
-        $shop = $this->requireShop($shopContext);
+        $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $sale->getShop());
 
         return $this->render('sale/print.html.twig', ['sale' => $sale]);

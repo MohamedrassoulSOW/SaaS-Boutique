@@ -57,7 +57,10 @@ class ProductController extends ShopAwareController
         $shop = $this->requireShop($shopContext);
         $product = new Product();
         $product->setShop($shop);
-        $form = $this->createForm(ProductType::class, $product, ['shop' => $shop]);
+        $form = $this->createForm(ProductType::class, $product, [
+            'shop' => $shop,
+            'show_margin' => $this->isGranted('MODULE_VIEW_MARGIN'),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -90,7 +93,10 @@ class ProductController extends ShopAwareController
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $product->getShop());
 
-        $form = $this->createForm(ProductType::class, $product, ['shop' => $shop]);
+        $form = $this->createForm(ProductType::class, $product, [
+            'shop' => $shop,
+            'show_margin' => $this->isGranted('MODULE_VIEW_MARGIN'),
+        ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $this->applyPhoto($form->get('photoFile')->getData(), $product, $uploader);
@@ -124,10 +130,31 @@ class ProductController extends ShopAwareController
 
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
             $name = (string) $product->getName();
-            $em->remove($product);
-            $em->flush();
-            $logger->log('product.delete', 'Produit supprimé : '.$name, $this->getShopUser(), $shop);
-            $this->addFlash('success', 'Produit supprimé.');
+
+            $hasHistory = (int) $em->createQueryBuilder()
+                ->select('COUNT(si.id)')
+                ->from(\App\Entity\SaleItem::class, 'si')
+                ->andWhere('si.product = :p')
+                ->setParameter('p', $product)
+                ->getQuery()->getSingleScalarResult() > 0
+                || (int) $em->createQueryBuilder()
+                    ->select('COUNT(m.id)')
+                    ->from(\App\Entity\StockMovement::class, 'm')
+                    ->andWhere('m.product = :p')
+                    ->setParameter('p', $product)
+                    ->getQuery()->getSingleScalarResult() > 0;
+
+            if ($hasHistory) {
+                $product->setIsActive(false);
+                $em->flush();
+                $logger->log('product.deactivate', 'Produit désactivé (historique conservé) : '.$name, $this->getShopUser(), $shop);
+                $this->addFlash('warning', 'Produit désactivé : il a un historique et ne peut pas être effacé définitivement.');
+            } else {
+                $em->remove($product);
+                $em->flush();
+                $logger->log('product.delete', 'Produit supprimé : '.$name, $this->getShopUser(), $shop);
+                $this->addFlash('success', 'Produit supprimé.');
+            }
         }
 
         return $this->redirectToRoute('app_product_index');

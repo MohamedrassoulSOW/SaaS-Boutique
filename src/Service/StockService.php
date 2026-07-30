@@ -22,6 +22,7 @@ class StockService
         string $type,
         ?User $user = null,
         ?string $reason = null,
+        bool $flush = true,
     ): StockMovement {
         $before = $product->getQuantity();
         $after = max(0, $before + $delta);
@@ -39,7 +40,9 @@ class StockService
         $movement->setCreatedBy($user);
 
         $this->em->persist($movement);
-        $this->em->flush();
+        if ($flush) {
+            $this->em->flush();
+        }
 
         if ($user && $product->isLowStock()) {
             $this->notificationService->notifyLowStock($product, $user);

@@ -223,6 +223,11 @@ class Product
 
     public function getPhotoData(): ?string
     {
+        // Les BLOB Doctrine arrivent parfois en stream : on mémorise après lecture.
+        if (\is_resource($this->photoData)) {
+            $this->photoData = $this->readBinary($this->photoData);
+        }
+
         return $this->readBinary($this->photoData);
     }
 
@@ -259,7 +264,7 @@ class Product
 
     public function hasPhoto(): bool
     {
-        return $this->getPhotoData() !== null && $this->getPhotoData() !== '';
+        return $this->getPhotoData() !== null;
     }
 
     public function isActive(): bool

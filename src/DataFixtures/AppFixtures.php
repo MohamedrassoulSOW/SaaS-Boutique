@@ -16,14 +16,17 @@ use App\Entity\StockMovement;
 use App\Entity\Subscription;
 use App\Entity\Supplier;
 use App\Entity\User;
+use App\Service\ProductPhotoGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
-    public function __construct(private UserPasswordHasherInterface $hasher)
-    {
+    public function __construct(
+        private UserPasswordHasherInterface $hasher,
+        private ProductPhotoGenerator $photoGenerator,
+    ) {
     }
 
     public function load(ObjectManager $manager): void
@@ -303,6 +306,7 @@ class AppFixtures extends Fixture
                 $product->setQuantity($qty);
                 $product->setMinStock($min);
                 $product->setIsActive(true);
+                $this->photoGenerator->applyPlaceholder($product);
                 $manager->persist($product);
                 $products[] = $product;
             }

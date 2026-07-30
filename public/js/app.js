@@ -65,7 +65,24 @@
       try {
         const flashes = JSON.parse(node.textContent || '[]');
         flashes.forEach((item, i) => {
-          setTimeout(() => this.toast(item.message, item.type || 'info'), 80 + i * 120);
+          const type = item.type || 'info';
+          const isSalePopup = type === 'sale_success' || type === 'sale_error' || item.popup;
+          if (isSalePopup) {
+            setTimeout(() => {
+              const ok = type === 'sale_success' || type === 'success';
+              this.result({
+                type: ok ? 'success' : 'danger',
+                title: ok ? 'Encaissement validé' : 'Encaissement refusé',
+                message: item.message,
+                primaryLabel: ok ? (item.primaryLabel || 'Nouvelle vente') : 'Réessayer',
+                primaryHref: item.primaryHref || (ok ? (window.AppRoutes?.saleNew || null) : null),
+                secondaryLabel: ok ? (item.secondaryLabel || null) : null,
+                secondaryHref: item.secondaryHref || null,
+              });
+            }, 120);
+            return;
+          }
+          setTimeout(() => this.toast(item.message, type), 80 + i * 120);
         });
       } catch (_) { /* ignore */ }
     },
@@ -119,7 +136,6 @@
         const msg = form.getAttribute('data-confirm');
         if (!msg) return;
         if (form.dataset.confirmed === '1') {
-          delete form.dataset.confirmed;
           return;
         }
         e.preventDefault();
@@ -132,6 +148,8 @@
         if (ok) {
           form.dataset.confirmed = '1';
           form.requestSubmit();
+          // Remettre le flag après le cycle de submit pour le spinner
+          setTimeout(() => { delete form.dataset.confirmed; }, 0);
         }
       }, true);
 
@@ -205,7 +223,7 @@
       });
     },
 
-    .bindLiveClock() {
+    bindLiveClock() {
       const el = document.getElementById('liveClock');
       if (!el) return;
       const tick = () => {
@@ -217,6 +235,101 @@
       };
       tick();
       setInterval(tick, 30000);
+    },
+
+    result(options = {}) {
+      const modal = document.getElementById('appResultModal');
+      if (!modal || typeof bootstrap === 'undefined') {
+        window.alert(options.message || '');
+        return;
+      }
+
+      const type = options.type === 'danger' || options.type === 'error' || options.type === 'sale_error'
+        ? 'danger'
+        : 'success';
+      const isOk = type === 'success';
+      const icon = isOk ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+      const title = options.title || (isOk ? 'Encaissement validé' : 'Encaissement refusé');
+      const message = options.message || '';
+      const primaryLabel = options.primaryLabel || 'OK';
+      const secondaryLabel = options.secondaryLabel || null;
+      const primaryHref = options.primaryHref || null;
+      const secondaryHref = options.secondaryHref || null;
+
+      modal.dataset.resultType = type;
+      modal.classList.toggle('is-success', isOk);
+      modal.classList.toggle('is-danger', !isOk);
+
+      document.getElementById('appResultIcon').className = `bi ${icon}`;
+      document.getElementById('appResultTitle').textContent = title;
+      document.getElementById('appResultMessage').textContent = message;
+
+      const instance = bootstrap.Modal.getOrCreateInstance(modal, {
+        backdrop: true,
+        keyboard: true,
+        focus: true,
+      });
+
+      let done = false;
+      const cleanupAndRun = (action) => {
+        if (done) return;
+        done = true;
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+          if (typeof action === 'function') action();
+        };
+        modal.addEventListener('hidden.bs.modal', finish, { once: true });
+        instance.hide();
+        setTimeout(finish, 350);
+      };
+
+      const bindButton = (id, label, className, visible, action) => {
+        const oldBtn = document.getElementById(id);
+        if (!oldBtn) return;
+        const btn = oldBtn.cloneNode(true);
+        oldBtn.replaceWith(btn);
+        btn.id = id;
+        btn.type = 'button';
+        btn.textContent = label;
+        btn.className = className;
+        btn.classList.toggle('d-none', !visible);
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          cleanupAndRun(action);
+        });
+      };
+
+      bindButton('appResultPrimary', primaryLabel, isOk ? 'btn btn-brand' : 'btn btn-danger', true, () => {
+        if (primaryHref) {
+          window.location.href = primaryHref;
+          return;
+        }
+        if (typeof options.onPrimary === 'function') {
+          options.onPrimary();
+          return;
+        }
+        document.dispatchEvent(new CustomEvent('app:checkout-retry', { detail: { type } }));
+      });
+
+      bindButton(
+        'appResultSecondary',
+        secondaryLabel || 'Fermer',
+        'btn btn-outline-secondary',
+        Boolean(secondaryLabel),
+        () => {
+          if (secondaryHref) window.location.href = secondaryHref;
+          else if (typeof options.onSecondary === 'function') options.onSecondary();
+        }
+      );
+
+      instance.show();
     },
   };
 

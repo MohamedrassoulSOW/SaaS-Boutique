@@ -1,17 +1,26 @@
 {% extends 'base.html.twig' %}
 {% block title %}Rapports{% endblock %}
 {% block body %}
-<h1 class="page-title h3 mb-4">Rapports — {{ shop.name }}</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <h1 class="page-title h3 mb-0">Rapports — {{ shop.name }}</h1>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_sales', {from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}">Export ventes</a>
+        <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_tax', {from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}">Export TVA</a>
+        <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_credits') }}">Export crédits</a>
+    </div>
+</div>
 <div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes journalières</div><div class="fs-4 fw-bold">{{ daily|money }}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Ventes mensuelles</div><div class="fs-4 fw-bold">{{ monthly|money }}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Achats du mois</div><div class="fs-4 fw-bold">{{ purchaseTotal|money }}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Bénéfice estimé</div><div class="fs-4 fw-bold">{{ profit|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">CA jour</div><div class="stat-value fs-4">{{ daily|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">CA mois</div><div class="stat-value fs-4">{{ monthly|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">TVA mois</div><div class="stat-value fs-4">{{ monthTax|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Achats mois</div><div class="stat-value fs-4">{{ purchaseTotal|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Bénéfice estimé</div><div class="stat-value fs-4">{{ profit|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Crédits dus</div><div class="stat-value fs-4">{{ debtTotal|money }}</div><div class="small text-muted">{{ debtorsCount }} client(s)</div></div></div>
 </div>
 <div class="row g-3">
 <div class="col-lg-7">
-<div class="card stat-card">
-<div class="p-3 border-bottom"><strong>Produits vendus (mois)</strong></div>
+<div class="panel">
+<div class="panel-head"><h2>Produits vendus (mois)</h2></div>
 <table class="table mb-0"><thead><tr><th>Produit</th><th>Qté</th><th>CA</th></tr></thead>
 <tbody>
 {% for row in soldProducts %}
@@ -21,13 +30,15 @@
 </div>
 </div>
 <div class="col-lg-5">
-<div class="card stat-card p-3">
-<strong>Produits en rupture / stock faible</strong>
-<ul class="list-group list-group-flush mt-2">
+<div class="panel">
+<div class="panel-head"><h2>Stock faible</h2><a class="small" href="{{ path('app_customer_debts') }}">Voir crédits</a></div>
+<div class="panel-body">
+<ul class="list-group list-group-flush list-quiet">
 {% for p in lowStock %}
-<li class="list-group-item px-0 d-flex justify-content-between"><span>{{ p.name }}</span><span class="badge text-bg-danger">{{ p.quantity }}</span></li>
+<li class="list-group-item px-0 d-flex justify-content-between"><span>{{ p.name }}</span><span class="badge-stock">{{ p.quantity }}</span></li>
 {% else %}<li class="list-group-item px-0 text-muted">Aucun</li>{% endfor %}
 </ul>
+</div>
 </div>
 </div>
 </div>

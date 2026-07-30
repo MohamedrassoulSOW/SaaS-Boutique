@@ -16,6 +16,47 @@
     </div>
 </div>
 
+{% if onboarding %}
+<div class="panel mb-4" id="demarrage">
+    <div class="panel-head">
+        <h2>Démarrage rapide</h2>
+        <form method="post" action="{{ path('app_onboarding_complete') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('onboarding_complete') }}">
+            <button class="btn btn-sm btn-outline-secondary">Masquer</button>
+        </form>
+    </div>
+    <div class="panel-body">
+        <ul class="list-unstyled mb-0">
+            <li class="mb-2">{% if onboarding.hasShop %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} Entreprise prête</li>
+            <li class="mb-2">{% if onboarding.hasProducts %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_product_new') }}">Ajouter des produits</a></li>
+            <li class="mb-2">{% if onboarding.taxReady %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_fiscal_index') }}">Configurer NINEA / TVA</a></li>
+            <li class="mb-0">{% if onboarding.hasSale %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_sale_new') }}">Réaliser une première vente</a></li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% if alerts is defined and alerts|length > 0 %}
+<div class="panel mb-4">
+    <div class="panel-head"><h2>Alertes</h2></div>
+    <div class="panel-body">
+        <ul class="list-unstyled mb-0">
+            {% for a in alerts %}
+            <li class="mb-2 d-flex justify-content-between gap-2">
+                <span>
+                    {% if a.type == 'danger' %}<span class="badge-stock">Urgent</span>
+                    {% elseif a.type == 'warning' %}<span class="badge-stock">Attention</span>
+                    {% else %}<span class="badge-ok">Info</span>{% endif %}
+                    {{ a.text }}
+                </span>
+                <a class="small" href="{{ path(a.href) }}{% if a.anchor is defined %}#{{ a.anchor }}{% endif %}">Voir</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 {% if fiscalSummary %}
 <div class="panel mb-4" id="impots">
     <div class="panel-head">

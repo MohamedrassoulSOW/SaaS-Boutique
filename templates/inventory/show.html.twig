@@ -4,6 +4,7 @@
 <h1 class="page-title h3 mb-3">Inventaire {{ inventory.reference }}</h1>
 <p class="text-muted">Type: {{ inventory.type }} — Statut: {{ inventory.status }}</p>
 <form method="post" action="{{ path('app_inventory_complete', {id: inventory.id}) }}">
+<input type="hidden" name="_token" value="{{ csrf_token('inventory_complete' ~ inventory.id) }}">
 <div class="card stat-card">
 <table class="table mb-0 align-middle">
 <thead><tr><th>Produit</th><th>Théorique</th><th>Réel</th><th>Écart</th></tr></thead>

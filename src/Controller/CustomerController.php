@@ -27,6 +27,55 @@ class CustomerController extends ShopAwareController
         ]);
     }
 
+    #[Route('/credits', name: 'app_customer_debts')]
+    public function debts(CustomerRepository $repo, ShopContext $shopContext): Response
+    {
+        $shop = $this->requireShop($shopContext);
+
+        return $this->render('customer/debts.html.twig', [
+            'shop' => $shop,
+            'customers' => $repo->findWithDebt($shop),
+        ]);
+    }
+
+    #[Route('/{id}/paiement', name: 'app_customer_pay', methods: ['POST'])]
+    public function pay(
+        Customer $customer,
+        Request $request,
+        EntityManagerInterface $em,
+        ShopContext $shopContext,
+        ActivityLogger $logger,
+    ): Response {
+        $shop = $this->requireShop($shopContext);
+        $this->assertShopData($shopContext, $customer->getShop());
+        if (!$this->isCsrfTokenValid('customer_pay'.$customer->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
+        }
+
+        $amount = max(0, (float) $request->request->get('amount', 0));
+        if ($amount <= 0) {
+            $this->addFlash('warning', 'Indiquez un montant valide.');
+
+            return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
+        }
+
+        $balance = (float) $customer->getBalance();
+        $paid = min($amount, $balance);
+        $customer->setBalance(number_format(max(0, $balance - $paid), 2, '.', ''));
+        $em->flush();
+        $logger->log(
+            'customer.payment',
+            sprintf('Paiement crédit %s FCFA — %s', number_format($paid, 0, ',', ' '), $customer->getFullName()),
+            $this->getShopUser(),
+            $shop
+        );
+        $this->addFlash('success', sprintf('Paiement de %s FCFA enregistré.', number_format($paid, 0, ',', ' ')));
+
+        return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
+    }
+
     #[Route('/new', name: 'app_customer_new')]
     public function new(
         Request $request,

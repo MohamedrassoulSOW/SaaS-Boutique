@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+{% block title %}Caisse{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <div class="text-muted small mb-1">{{ shop.name }}</div>
+        <h1 class="page-title h2 mb-0">Session de caisse</h1>
+    </div>
+    <a href="{{ path('app_sale_new') }}" class="btn btn-brand">Nouvelle vente</a>
+</div>
+
+{% if openSession %}
+<div class="panel mb-4">
+    <div class="panel-head"><h2>Session ouverte</h2></div>
+    <div class="panel-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-3"><div class="text-muted small">Ouverte le</div><div class="fw-semibold">{{ openSession.openedAt|date('d/m/Y H:i') }}</div></div>
+            <div class="col-md-3"><div class="text-muted small">Fond de caisse</div><div class="fw-semibold">{{ openSession.openingFloat|money }}</div></div>
+            <div class="col-md-3"><div class="text-muted small">Espèces encaissées</div><div class="fw-semibold">{{ cashSinceOpen|money }}</div></div>
+            <div class="col-md-3"><div class="text-muted small">Attendu</div><div class="fw-semibold">{{ expectedCash|money }}</div></div>
+        </div>
+        <form method="post" action="{{ path('app_cash_close', {id: openSession.id}) }}" class="row g-2 align-items-end" data-confirm="Fermer la caisse maintenant ?" data-confirm-title="Fermeture de caisse" data-confirm-label="Fermer" data-confirm-danger="0">
+            <input type="hidden" name="_token" value="{{ csrf_token('cash_close' ~ openSession.id) }}">
+            <div class="col-md-4">
+                <label class="form-label" for="closingCounted">Montant compté</label>
+                <input type="number" min="0" step="1" class="form-control" id="closingCounted" name="closing_counted" value="{{ expectedCash|round(0) }}" required>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="cashNotes">Notes</label>
+                <input type="text" class="form-control" id="cashNotes" name="notes" maxlength="500" placeholder="Optionnel">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-brand w-100">Fermer la caisse</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="panel mb-4">
+    <div class="panel-head"><h2>Ouvrir la caisse</h2></div>
+    <div class="panel-body">
+        <form method="post" action="{{ path('app_cash_open') }}" class="row g-2 align-items-end">
+            <input type="hidden" name="_token" value="{{ csrf_token('cash_open') }}">
+            <div class="col-md-4">
+                <label class="form-label" for="openingFloat">Fond de caisse (FCFA)</label>
+                <input type="number" min="0" step="1" class="form-control" id="openingFloat" name="opening_float" value="0" required>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-brand w-100">Ouvrir</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-head"><h2>Historique</h2></div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>Ouverture</th><th>Fermeture</th><th>Fond</th><th>Attendu</th><th>Compté</th><th>Écart</th><th>Statut</th></tr></thead>
+            <tbody>
+            {% for s in sessions %}
+                <tr>
+                    <td>{{ s.openedAt|date('d/m/Y H:i') }}</td>
+                    <td>{{ s.closedAt ? s.closedAt|date('d/m/Y H:i') : '—' }}</td>
+                    <td>{{ s.openingFloat|money }}</td>
+                    <td>{{ s.expectedCash ? s.expectedCash|money : '—' }}</td>
+                    <td>{{ s.closingCounted ? s.closingCounted|money : '—' }}</td>
+                    <td>{% if s.difference is not null %}<span class="{{ s.difference == '0.00' ? 'badge-ok' : 'badge-stock' }}">{{ s.difference|money }}</span>{% else %}—{% endif %}</td>
+                    <td>{{ s.open ? 'Ouverte' : 'Fermée' }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted p-4">Aucune session</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

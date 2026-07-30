@@ -30,80 +30,164 @@ class SaleService
         array $lines,
         float $discount = 0,
         string $paymentMethod = Sale::PAYMENT_CASH,
-        float $amountPaid = 0,
+        ?float $amountPaid = null,
         ?\App\Entity\Customer $customer = null,
     ): Sale {
-        $sale = new Sale();
-        $sale->setShop($shop);
-        $sale->setSoldBy($user);
-        $sale->setDiscount(number_format($discount, 2, '.', ''));
-        $sale->setPaymentMethod($paymentMethod);
-        $sale->setCustomer($customer);
+        return $this->em->wrapInTransaction(function () use ($shop, $user, $lines, $discount, $paymentMethod, $amountPaid, $customer) {
+            $sale = new Sale();
+            $sale->setShop($shop);
+            $sale->setSoldBy($user);
+            $sale->setDiscount(number_format($discount, 2, '.', ''));
+            $sale->setPaymentMethod($paymentMethod);
+            $sale->setCustomer($customer);
 
-        $tax = $this->fiscalService->resolveShopTax($shop);
-        $sale->setTaxRate(number_format($tax['rate'], 2, '.', ''));
-        $sale->setPricesIncludeTax($tax['pricesIncludeTax']);
+            $tax = $this->fiscalService->resolveShopTax($shop);
+            $sale->setTaxRate(number_format($tax['rate'], 2, '.', ''));
+            $sale->setPricesIncludeTax($tax['pricesIncludeTax']);
 
-        $productRepo = $this->em->getRepository(\App\Entity\Product::class);
+            $productRepo = $this->em->getRepository(\App\Entity\Product::class);
 
-        foreach ($lines as $line) {
-            $product = $productRepo->find($line['product_id']);
-            if (!$product || $product->getShop()?->getId() !== $shop->getId()) {
-                throw new \InvalidArgumentException('Produit invalide.');
+            // 1) Valider toutes les lignes avant toute mutation de stock
+            $resolved = [];
+            foreach ($lines as $line) {
+                $product = $productRepo->find($line['product_id']);
+                if (!$product || $product->getShop()?->getId() !== $shop->getId() || !$product->isActive()) {
+                    throw new \InvalidArgumentException('Produit invalide.');
+                }
+
+                $qty = (int) $line['quantity'];
+                if ($qty < 1) {
+                    continue;
+                }
+                if ($product->getQuantity() < $qty) {
+                    throw new \RuntimeException(sprintf('Stock insuffisant pour "%s".', $product->getName()));
+                }
+
+                $resolved[] = [
+                    'product' => $product,
+                    'quantity' => $qty,
+                    'unit_price' => $line['unit_price'] ?? $product->getSalePrice(),
+                ];
             }
 
-            $qty = (int) $line['quantity'];
-            if ($qty < 1) {
-                continue;
-            }
-            if ($product->getQuantity() < $qty) {
-                throw new \RuntimeException(sprintf('Stock insuffisant pour "%s".', $product->getName()));
+            if ($resolved === []) {
+                throw new \InvalidArgumentException('Ajoutez au moins un produit.');
             }
 
-            $item = new SaleItem();
-            $item->setProduct($product);
-            $item->setQuantity($qty);
-            $item->setUnitPrice($line['unit_price'] ?? $product->getSalePrice());
-            $sale->addItem($item);
+            // 2) Appliquer les lignes + stock (flush différé)
+            foreach ($resolved as $row) {
+                $product = $row['product'];
+                $qty = $row['quantity'];
 
-            $this->stockService->adjust(
-                $product,
-                -$qty,
-                StockMovement::TYPE_SALE,
+                $item = new SaleItem();
+                $item->setProduct($product);
+                $item->setQuantity($qty);
+                $item->setUnitPrice($row['unit_price']);
+                $sale->addItem($item);
+
+                $this->stockService->adjust(
+                    $product,
+                    -$qty,
+                    StockMovement::TYPE_SALE,
+                    $user,
+                    'Vente '.$sale->getReference(),
+                    false
+                );
+            }
+
+            $sale->recalculateTotals();
+
+            // Crédit : 0 encaissé = dette totale ; autres modes : vide/0 = total
+            if ($paymentMethod === Sale::PAYMENT_CREDIT) {
+                $paid = $amountPaid ?? 0.0;
+            } else {
+                $paid = ($amountPaid !== null && $amountPaid > 0) ? $amountPaid : (float) $sale->getTotal();
+            }
+            $sale->setAmountPaid(number_format($paid, 2, '.', ''));
+
+            if ($customer && $paymentMethod === Sale::PAYMENT_CREDIT) {
+                $due = (float) $sale->getTotal() - $paid;
+                if ($due > 0) {
+                    $customer->setBalance(number_format((float) $customer->getBalance() + $due, 2, '.', ''));
+                }
+            }
+
+            $invoice = new Invoice();
+            $invoice->setSale($sale);
+            $invoice->setType(Invoice::TYPE_INVOICE);
+            $sale->setInvoice($invoice);
+
+            $this->em->persist($sale);
+            $this->em->flush();
+
+            $this->activityLogger->log(
+                'sale.create',
+                sprintf('Vente %s par %s (total %s)', $sale->getReference(), $user->getFullName() ?: $user->getEmail(), $sale->getTotal()),
                 $user,
-                'Vente '.$sale->getReference()
+                $shop
             );
+
+            return $sale;
+        });
+    }
+
+    /**
+     * Génère le PDF hors transaction — un échec PDF ne doit pas annuler la vente.
+     */
+    public function generateInvoicePdfSafe(Sale $sale): void
+    {
+        try {
+            $this->invoicePdfService->generate($sale);
+        } catch (\Throwable) {
+            // La vente reste valide même si le PDF échoue.
+        }
+    }
+
+    public function cancelSale(Sale $sale, User $user): Sale
+    {
+        if ($sale->getStatus() === Sale::STATUS_CANCELLED) {
+            throw new \RuntimeException('Cette vente est déjà annulée.');
         }
 
-        $sale->recalculateTotals();
-        $paid = $amountPaid > 0 ? $amountPaid : (float) $sale->getTotal();
-        $sale->setAmountPaid(number_format($paid, 2, '.', ''));
-
-        if ($customer && $paymentMethod === Sale::PAYMENT_CREDIT) {
-            $due = (float) $sale->getTotal() - $paid;
-            if ($due > 0) {
-                $customer->setBalance(number_format((float) $customer->getBalance() + $due, 2, '.', ''));
+        return $this->em->wrapInTransaction(function () use ($sale, $user) {
+            foreach ($sale->getItems() as $item) {
+                $product = $item->getProduct();
+                if (!$product) {
+                    continue;
+                }
+                $this->stockService->adjust(
+                    $product,
+                    $item->getQuantity(),
+                    StockMovement::TYPE_ADJUSTMENT,
+                    $user,
+                    'Annulation vente '.$sale->getReference(),
+                    false
+                );
             }
-        }
 
-        $invoice = new Invoice();
-        $invoice->setSale($sale);
-        $invoice->setType(Invoice::TYPE_INVOICE);
-        $sale->setInvoice($invoice);
+            if (
+                $sale->getCustomer()
+                && $sale->getPaymentMethod() === Sale::PAYMENT_CREDIT
+            ) {
+                $due = (float) $sale->getTotal() - (float) $sale->getAmountPaid();
+                if ($due > 0) {
+                    $customer = $sale->getCustomer();
+                    $newBalance = max(0, (float) $customer->getBalance() - $due);
+                    $customer->setBalance(number_format($newBalance, 2, '.', ''));
+                }
+            }
 
-        $this->em->persist($sale);
-        $this->em->flush();
+            $sale->setStatus(Sale::STATUS_CANCELLED);
+            $this->em->flush();
 
-        // PDF facture stocké en base (pas de fichier disque)
-        $this->invoicePdfService->generate($sale);
+            $this->activityLogger->log(
+                'sale.cancel',
+                sprintf('Vente %s annulée par %s', $sale->getReference(), $user->getFullName() ?: $user->getEmail()),
+                $user,
+                $sale->getShop()
+            );
 
-        $this->activityLogger->log(
-            'sale.create',
-            sprintf('Vente %s par %s (total %s)', $sale->getReference(), $user->getFullName() ?: $user->getEmail(), $sale->getTotal()),
-            $user,
-            $shop
-        );
-
-        return $sale;
+            return $sale;
+        });
     }
 }

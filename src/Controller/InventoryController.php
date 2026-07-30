@@ -108,10 +108,18 @@ class InventoryController extends ShopAwareController
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $inventory->getShop());
 
+        if (!$this->isCsrfTokenValid('inventory_complete'.$inventory->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Session expirée. Réessayez.');
+
+            return $this->redirectToRoute('app_inventory_show', ['id' => $inventory->getId()]);
+        }
+
         /** @var User $user */
         $user = $this->getUser();
         $realQtys = $request->request->all('real_qty') ?: [];
-
+        if (!\is_array($realQtys)) {
+            $realQtys = [];
+        }
         foreach ($inventory->getItems() as $item) {
             $id = (string) $item->getId();
             if (isset($realQtys[$id])) {

@@ -2,10 +2,18 @@
 {% block title %}Vente {{ sale.reference }}{% endblock %}
 {% block body %}
 <div class="d-flex justify-content-between mb-4 no-print">
-    <h1 class="page-title h3 mb-0">Vente {{ sale.reference }}</h1>
+    <h1 class="page-title h3 mb-0">Vente {{ sale.reference }}
+        {% if sale.status == 'cancelled' %}<span class="badge-stock ms-2">Annulée</span>{% endif %}
+    </h1>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" href="{{ path('app_sale_print', {id: sale.id}) }}" target="_blank">Imprimer</a>
         <a class="btn btn-brand" href="{{ path('app_sale_invoice_pdf', {id: sale.id}) }}">PDF</a>
+        {% if can_module('sale_cancel') and sale.status != 'cancelled' %}
+        <form method="post" action="{{ path('app_sale_cancel', {id: sale.id}) }}" data-confirm="Annuler cette vente ? Le stock sera rétabli." data-confirm-title="Annuler la vente" data-confirm-label="Annuler la vente">
+            <input type="hidden" name="_token" value="{{ csrf_token('sale_cancel' ~ sale.id) }}">
+            <button class="btn btn-outline-danger">Annuler</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 <div class="card stat-card p-4">
@@ -51,7 +59,9 @@
 (() => {
   try {
     const shopId = {{ sale.shop.id }};
-    localStorage.removeItem(`ndamstore.pos.cart.${shopId}`);
+    const key = `ndamstore.pos.cart.${shopId}`;
+    localStorage.removeItem(key);
+    sessionStorage.setItem(key + '.paid', '1');
   } catch (_) {
     /* ignore */
   }

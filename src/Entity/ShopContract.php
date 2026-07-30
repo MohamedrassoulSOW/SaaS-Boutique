@@ -496,6 +496,10 @@ class ShopContract
 
     public function getPdfData(): ?string
     {
+        if (\is_resource($this->pdfData)) {
+            $this->pdfData = $this->readBinary($this->pdfData);
+        }
+
         return $this->readBinary($this->pdfData);
     }
 
@@ -514,7 +518,7 @@ class ShopContract
 
     public function hasPdf(): bool
     {
-        return $this->getPdfData() !== null && $this->getPdfData() !== '';
+        return $this->getPdfData() !== null;
     }
 
     public function isFullySigned(): bool

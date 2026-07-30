@@ -645,7 +645,7 @@ a:hover { color: var(--brand); }
 /* Motion */
 @keyframes rise {
     from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: none; }
 }
 
 @keyframes fade-in {
@@ -791,6 +791,47 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
     filter: invert(1) grayscale(100%);
 }
 
+#appResultModal {
+    z-index: 1200;
+}
+
+#appResultModal .app-result-modal {
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: var(--modal-bg);
+    color: var(--ink);
+}
+
+#appResultModal .app-result-icon {
+    width: 4.25rem;
+    height: 4.25rem;
+    margin: 0 auto .9rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 2.2rem;
+}
+
+#appResultModal.is-success .app-result-icon {
+    background: color-mix(in srgb, var(--brand) 16%, var(--panel));
+    color: var(--brand);
+}
+
+#appResultModal.is-danger .app-result-icon {
+    background: color-mix(in srgb, var(--danger) 14%, var(--panel));
+    color: var(--danger);
+}
+
+#appResultModal #appResultTitle {
+    font-family: var(--font-brand);
+    font-weight: 650;
+}
+
+#appResultModal #appResultMessage {
+    white-space: pre-line;
+}
+
 .ui-rise {
     opacity: 0;
     transform: translateY(14px);
@@ -875,7 +916,7 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
 }
 
 @media print {
-    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop, #toastStack, #appConfirmModal { display: none !important; }
+    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop, #toastStack, #appConfirmModal, #appResultModal { display: none !important; }
     .content-wrap { margin: 0 !important; padding: 0 !important; }
     body { background: #fff; }
 }
@@ -1170,6 +1211,15 @@ html[data-theme="dark"] .stat-card:hover {
 
 .pos-cart-modal {
     z-index: 1100;
+}
+
+.pos-cart-modal.modal {
+    pointer-events: none;
+}
+
+.pos-cart-modal .modal-dialog,
+.pos-cart-modal .modal-content {
+    pointer-events: auto;
 }
 
 .pos-cart-modal .modal-dialog {

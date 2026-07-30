@@ -19,10 +19,12 @@ trait BinaryPayloadTrait
         if (\is_resource($value)) {
             $content = stream_get_contents($value);
 
-            return $content === false ? null : $content;
+            return $content === false || $content === '' ? null : $content;
         }
 
-        return (string) $value;
+        $content = (string) $value;
+
+        return $content === '' ? null : $content;
     }
 
     public function writeBinary(?string $content): mixed

@@ -17,7 +17,25 @@ class AccessDeniedHandler implements AccessDeniedHandlerInterface
 
     public function handle(Request $request, AccessDeniedException $accessDeniedException): ?Response
     {
-        $request->getSession()->getFlashBag()->add(
+        $session = $request->getSession();
+        $from = $request->attributes->get('_route');
+        $loopKey = 'access_denied_loop';
+
+        // Évite la boucle dashboard ↔ shops pour les employés sans entreprise active
+        if (\in_array($from, ['app_dashboard', 'app_shop_index', 'app_shop_switch'], true)
+            || $session->get($loopKey) === $from
+        ) {
+            $session->remove($loopKey);
+            $session->getFlashBag()->add(
+                'warning',
+                'Aucune entreprise accessible pour votre compte. Contactez l\'administrateur ou reconnectez-vous.'
+            );
+
+            return new RedirectResponse($this->urlGenerator->generate('app_profile'));
+        }
+
+        $session->set($loopKey, $from ?: 'unknown');
+        $session->getFlashBag()->add(
             'warning',
             'Vous n\'avez pas accès à cette section avec votre rôle actuel.'
         );

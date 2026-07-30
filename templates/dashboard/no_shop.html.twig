@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% block title %}Aucune entreprise{% endblock %}
+{% block body %}
+<div class="panel p-4" style="max-width:640px">
+    <h1 class="page-title h3 mb-2">Aucune entreprise accessible</h1>
+    <p class="text-muted mb-3">
+        Votre compte n’a pas d’entreprise active pour le moment.
+        Contactez l’administrateur de la plateforme ou vérifiez que votre entreprise n’a pas été désactivée.
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-brand" href="{{ path('app_profile') }}">Mon profil</a>
+        <a class="btn btn-outline-secondary" href="{{ path('app_logout') }}">Se déconnecter</a>
+    </div>
+</div>
+{% endblock %}

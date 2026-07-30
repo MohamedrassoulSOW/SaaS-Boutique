@@ -14,6 +14,7 @@
 {% block body %}
 <div class="pos-page">
 <form method="post" id="saleForm" class="pos-form">
+<input type="hidden" name="_token" value="{{ csrf_token('sale_new') }}">
 <div class="pos-layout">
     <section class="pos-catalog panel">
         <div class="panel-head pos-catalog-head">
@@ -135,7 +136,7 @@
                         <span>Total{% if taxConfig.enabled %} TTC{% endif %}</span>
                         <strong id="totalDisplay">0 FCFA</strong>
                     </div>
-                    <button class="btn btn-brand pos-checkout-btn" type="submit" form="saleForm" id="posCheckoutBtn">
+                    <button class="btn btn-brand pos-checkout-btn" type="button" id="posCheckoutBtn">
                         <i class="bi bi-cash-coin me-1"></i>Encaisser
                     </button>
                 </div>
@@ -276,7 +277,7 @@
     renderCart();
   }
 
-  function renderCart() {
+  function renderCart(persist = true) {
     const items = [...cart.values()];
     cartList.querySelectorAll('.pos-cart-item').forEach((el) => el.remove());
     cartEmpty.style.display = items.length ? 'none' : 'flex';
@@ -313,10 +314,12 @@
       pid.type = 'hidden';
       pid.name = 'product_id[]';
       pid.value = item.id;
+      pid.setAttribute('form', 'saleForm');
       const qty = document.createElement('input');
       qty.type = 'hidden';
       qty.name = 'quantity[]';
       qty.value = String(item.qty);
+      qty.setAttribute('form', 'saleForm');
       cartFields.appendChild(pid);
       cartFields.appendChild(qty);
     });
@@ -342,7 +345,11 @@
     document.getElementById('totalDisplay').textContent = money(total);
     const count = String(items.reduce((n, i) => n + i.qty, 0));
     document.querySelectorAll('.js-cart-count').forEach((el) => { el.textContent = count; });
-    saveCart();
+    if (persist) {
+      saveCart();
+    } else {
+      clearSavedCart();
+    }
   }
 
   document.getElementById('posGrid')?.addEventListener('click', (e) => {
@@ -379,21 +386,136 @@
     });
   });
 
-  discountInput?.addEventListener('input', renderCart);
+  discountInput?.addEventListener('input', () => renderCart(true));
   customerSelect?.addEventListener('change', saveCart);
   paymentSelect?.addEventListener('change', saveCart);
   amountPaidInput?.addEventListener('input', saveCart);
 
-  saleForm?.addEventListener('submit', (e) => {
+  function syncCartFields() {
+    if (!cartFields) return;
+    cartFields.innerHTML = '';
+    [...cart.values()].forEach((item) => {
+      const pid = document.createElement('input');
+      pid.type = 'hidden';
+      pid.name = 'product_id[]';
+      pid.value = String(item.id);
+      pid.setAttribute('form', 'saleForm');
+      const qty = document.createElement('input');
+      qty.type = 'hidden';
+      qty.name = 'quantity[]';
+      qty.value = String(item.qty);
+      qty.setAttribute('form', 'saleForm');
+      cartFields.appendChild(pid);
+      cartFields.appendChild(qty);
+    });
+  }
+
+  function checkout() {
     if (cart.size === 0) {
-      e.preventDefault();
       openCart();
       if (window.AppUI) AppUI.toast('Ajoutez au moins un produit.', 'danger');
+      return false;
+    }
+    for (const item of cart.values()) {
+      if (item.qty > item.stock) {
+        openCart();
+        if (window.AppUI) AppUI.toast(`Stock insuffisant pour « ${item.name} ».`, 'warning');
+        return false;
+      }
+    }
+    syncCartFields();
+    [customerSelect, paymentSelect, discountInput, amountPaidInput].forEach((el) => {
+      if (el) el.setAttribute('form', 'saleForm');
+    });
+    const checkoutBtn = document.getElementById('posCheckoutBtn');
+    if (checkoutBtn && !checkoutBtn.disabled) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.dataset.originalHtml = checkoutBtn.innerHTML;
+      checkoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Encaissement…';
+    }
+    closeCart();
+    return true;
+  }
+
+  saleForm?.addEventListener('submit', (e) => {
+    if (!checkout()) {
+      e.preventDefault();
+      e.stopPropagation();
+      const checkoutBtn = document.getElementById('posCheckoutBtn');
+      if (checkoutBtn?.dataset.originalHtml) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = checkoutBtn.dataset.originalHtml;
+      }
     }
   });
 
-  loadCart();
-  renderCart();
+  document.getElementById('posCheckoutBtn')?.addEventListener('click', () => {
+    if (!saleForm) return;
+    if (typeof saleForm.requestSubmit === 'function') {
+      saleForm.requestSubmit();
+    } else if (checkout()) {
+      saleForm.submit();
+    }
+  });
+
+  function resetCheckoutButton() {
+    const checkoutBtn = document.getElementById('posCheckoutBtn');
+    if (!checkoutBtn) return;
+    checkoutBtn.disabled = false;
+    if (checkoutBtn.dataset.originalHtml) {
+      checkoutBtn.innerHTML = checkoutBtn.dataset.originalHtml;
+    } else {
+      checkoutBtn.innerHTML = '<i class="bi bi-cash-coin me-1"></i>Encaisser';
+    }
+  }
+
+  document.addEventListener('app:checkout-retry', () => {
+    resetCheckoutButton();
+    openCart();
+  });
+
+  function emptyCartUi() {
+    cart.clear();
+    if (discountInput) discountInput.value = '0';
+    if (customerSelect) customerSelect.value = '';
+    if (paymentSelect) paymentSelect.value = 'cash';
+    if (amountPaidInput) amountPaidInput.value = '0';
+    clearSavedCart();
+    renderCart(false);
+  }
+
+  function consumePaidFlag() {
+    try {
+      if (sessionStorage.getItem(storageKey + '.paid')) {
+        sessionStorage.removeItem(storageKey + '.paid');
+        return true;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return false;
+  }
+
+  // Uniquement retour arrière (bfcache) après une vente — pas au chargement normal
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    try {
+      const paid = consumePaidFlag();
+      const raw = localStorage.getItem(storageKey);
+      if (paid || !raw) {
+        emptyCartUi();
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  });
+
+  if (consumePaidFlag()) {
+    emptyCartUi();
+  } else {
+    loadCart();
+    renderCart(true);
+  }
 })();
 </script>
 {% endblock %}

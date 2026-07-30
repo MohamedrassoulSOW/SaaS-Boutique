@@ -3,7 +3,10 @@
 {% block body %}
 <div class="d-flex justify-content-between mb-4">
     <h1 class="page-title h3 mb-0">Clients</h1>
-    <a href="{{ path('app_customer_new') }}" class="btn btn-brand">Ajouter</a>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_customer_debts') }}" class="btn btn-outline-brand">Crédits</a>
+        <a href="{{ path('app_customer_new') }}" class="btn btn-brand">Ajouter</a>
+    </div>
 </div>
 <div class="card stat-card">
 <table class="table mb-0 align-middle">

@@ -16,6 +16,18 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
+    /** @return list<Customer> */
+    public function findWithDebt(\App\Entity\Shop $shop): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.shop = :shop')
+            ->andWhere('c.balance > 0')
+            ->setParameter('shop', $shop)
+            ->orderBy('c.balance', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function save(Customer $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

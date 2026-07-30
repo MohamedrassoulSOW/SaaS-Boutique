@@ -164,6 +164,10 @@ class Shop
 
     public function getLogoData(): ?string
     {
+        if (\is_resource($this->logoData)) {
+            $this->logoData = $this->readBinary($this->logoData);
+        }
+
         return $this->readBinary($this->logoData);
     }
 
@@ -200,7 +204,7 @@ class Shop
 
     public function hasLogo(): bool
     {
-        return $this->getLogoData() !== null && $this->getLogoData() !== '';
+        return $this->getLogoData() !== null;
     }
 
     public function isActive(): bool

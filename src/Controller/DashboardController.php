@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Sale;
 use App\Entity\User;
+use App\Repository\CashSessionRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
@@ -11,7 +13,9 @@ use App\Security\ShopPermission;
 use App\Service\FiscalService;
 use App\Service\ShopContext;
 use App\Service\StockService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -29,6 +33,7 @@ class DashboardController extends AbstractController
         ShopContractRepository $contractRepo,
         FiscalService $fiscalService,
         ShopPermission $shopPermission,
+        CashSessionRepository $cashSessions,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -39,6 +44,13 @@ class DashboardController extends AbstractController
 
         $shop = $shopContext->getCurrentShop($user);
         if (!$shop) {
+            $accessible = $shopContext->getAccessibleShops($user);
+            if ($accessible === [] || !$shopPermission->can($user, ShopPermission::SHOPS)) {
+                return $this->render('dashboard/no_shop.html.twig', [
+                    'user' => $user,
+                ]);
+            }
+
             return $this->redirectToRoute('app_shop_index');
         }
 
@@ -106,6 +118,72 @@ class DashboardController extends AbstractController
             ];
         }
 
+        $alerts = [];
+        if (\count($lowStock) > 0) {
+            $alerts[] = [
+                'type' => 'warning',
+                'text' => sprintf('%d produit(s) en stock faible', \count($lowStock)),
+                'href' => 'app_stock_index',
+            ];
+        }
+        if ($shopPermission->can($user, ShopPermission::CUSTOMERS, $shop)) {
+            $debtors = $customers->findWithDebt($shop);
+            if ($debtors !== []) {
+                $alerts[] = [
+                    'type' => 'warning',
+                    'text' => sprintf('%d client(s) avec solde dû', \count($debtors)),
+                    'href' => 'app_customer_debts',
+                ];
+            }
+        }
+        if ($shopPermission->can($user, ShopPermission::CASH, $shop) && !$cashSessions->findOpenForShop($shop)) {
+            $alerts[] = [
+                'type' => 'info',
+                'text' => 'Aucune de caisse non ouverte',
+                'href' => 'app_cash_index',
+            ];
+        }
+        if ($user->isMerchant()) {
+            $sub = $user->getMerchant()?->getSubscription();
+            if ($sub && !$sub->isActive()) {
+                $alerts[] = [
+                    'type' => 'danger',
+                    'text' => 'Abonnement inactif ou expiré',
+                    'href' => 'app_dashboard',
+                ];
+            }
+            $unsigned = array_filter(
+                $merchantContracts,
+                static fn ($c) => method_exists($c, 'getMerchantSignedAt') && $c->getMerchantSignedAt() === null
+            );
+            if ($unsigned !== []) {
+                $alerts[] = [
+                    'type' => 'info',
+                    'text' => 'Contrat(s) en attente de signature',
+                    'href' => 'app_dashboard',
+                    'anchor' => 'contrats',
+                ];
+            }
+        }
+        if ($fiscalSummary && !$fiscalSummary['taxConfig']['enabled']) {
+            $alerts[] = [
+                'type' => 'info',
+                'text' => 'TVA non activée sur les ventes',
+                'href' => 'app_fiscal_index',
+            ];
+        }
+
+        $onboarding = null;
+        if ($user->isMerchant() && !$user->hasCompletedOnboarding()) {
+            $onboarding = [
+                'hasShop' => true,
+                'hasProducts' => $productCount > 0,
+                'hasSale' => $sales->count(['shop' => $shop, 'status' => Sale::STATUS_COMPLETED]) > 0,
+                'taxReady' => (bool) ($fiscalSummary['taxConfig']['enabled'] ?? false) || (bool) $shop->getMerchant()?->getTaxId(),
+                'hasStaff' => false,
+            ];
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'shop' => $shop,
             'contract' => $shop->getContract(),
@@ -119,7 +197,26 @@ class DashboardController extends AbstractController
             'topProducts' => $topProducts,
             'salesByDay' => $salesByDay,
             'fiscalSummary' => $fiscalSummary,
+            'alerts' => $alerts,
+            'onboarding' => $onboarding,
         ]);
+    }
+
+    #[Route('/onboarding/terminer', name: 'app_onboarding_complete', methods: ['POST'])]
+    public function completeOnboarding(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$this->isCsrfTokenValid('onboarding_complete', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_dashboard');
+        }
+        $user->setOnboardingCompletedAt(new \DateTimeImmutable());
+        $em->flush();
+        $this->addFlash('success', 'Checklist masquée. Vous pourrez tout retrouver dans le menu.');
+
+        return $this->redirectToRoute('app_dashboard');
     }
 
     #[Route('/shop/switch/{id}', name: 'app_shop_switch')]

@@ -41,6 +41,9 @@ class ProductType extends AbstractType
                 'label' => 'Prix d\'achat (FCFA)',
                 'scale' => 0,
                 'html5' => true,
+                'disabled' => !$options['show_margin'],
+                'attr' => $options['show_margin'] ? [] : ['class' => 'd-none'],
+                'label_attr' => $options['show_margin'] ? [] : ['class' => 'd-none'],
             ])
             ->add('salePrice', NumberType::class, [
                 'label' => 'Prix de vente (FCFA)',
@@ -66,7 +69,11 @@ class ProductType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => Product::class]);
+        $resolver->setDefaults([
+            'data_class' => Product::class,
+            'show_margin' => true,
+        ]);
         $resolver->setRequired(['shop']);
+        $resolver->setAllowedTypes('show_margin', 'bool');
     }
 }

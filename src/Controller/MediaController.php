@@ -7,6 +7,7 @@ use App\Entity\Shop;
 use App\Entity\User;
 use App\Service\ShopContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -26,11 +27,19 @@ class MediaController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return new Response($data, 200, [
+        $response = new Response($data, 200, [
             'Content-Type' => $product->getPhotoMime() ?: 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="'.($product->getPhotoName() ?: 'photo').'"',
             'Cache-Control' => 'private, max-age=3600',
         ]);
+        $response->headers->set(
+            'Content-Disposition',
+            HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_INLINE,
+                $product->getPhotoName() ?: 'photo.jpg'
+            )
+        );
+
+        return $response;
     }
 
     #[Route('/media/shop/{id}/logo', name: 'app_media_shop_logo')]
@@ -47,10 +56,18 @@ class MediaController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return new Response($data, 200, [
+        $response = new Response($data, 200, [
             'Content-Type' => $shop->getLogoMime() ?: 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="'.($shop->getLogoName() ?: 'logo').'"',
             'Cache-Control' => 'private, max-age=3600',
         ]);
+        $response->headers->set(
+            'Content-Disposition',
+            HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_INLINE,
+                $shop->getLogoName() ?: 'logo.png'
+            )
+        );
+
+        return $response;
     }
 }

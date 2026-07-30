@@ -72,6 +72,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?int $preferredShopId = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $onboardingCompletedAt = null;
+
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Merchant $merchant = null;
 
@@ -283,6 +286,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->preferredShopId = $preferredShopId;
 
         return $this;
+    }
+
+    public function getOnboardingCompletedAt(): ?\DateTimeImmutable
+    {
+        return $this->onboardingCompletedAt;
+    }
+
+    public function setOnboardingCompletedAt(?\DateTimeImmutable $onboardingCompletedAt): static
+    {
+        $this->onboardingCompletedAt = $onboardingCompletedAt;
+
+        return $this;
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->onboardingCompletedAt !== null;
     }
 
     public function isAdmin(): bool

@@ -40,7 +40,7 @@ final class Version20260729100000 extends AbstractMigration
         ) VALUES (
             1, 'NdamStore SARL', 'SN-NINEA-000000000', NULL, 'SARL',
             'Immeuble Horizon, Avenue Cheikh Anta Diop', 'Dakar', 'Sénégal',
-            'contact@ndamstore.local', '+221 33 800 00 00',
+            'contact@ndamstore.sowcoder.com', '+221 33 800 00 00',
             18.00, 1, 1, NOW()
         )");
 

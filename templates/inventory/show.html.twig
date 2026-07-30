@@ -6,6 +6,7 @@
 <form method="post" action="{{ path('app_inventory_complete', {id: inventory.id}) }}">
 <input type="hidden" name="_token" value="{{ csrf_token('inventory_complete' ~ inventory.id) }}">
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
 <thead><tr><th>Produit</th><th>Théorique</th><th>Réel</th><th>Écart</th></tr></thead>
 <tbody>
@@ -25,6 +26,7 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% if inventory.status == 'draft' %}
 <button class="btn btn-brand mt-3">Terminer & ajuster le stock</button>

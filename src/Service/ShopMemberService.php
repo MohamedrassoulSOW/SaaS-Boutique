@@ -16,6 +16,7 @@ class ShopMemberService
         private UserPasswordHasherInterface $passwordHasher,
         private UserRepository $userRepository,
         private ActivityLogger $activityLogger,
+        private AppMailer $appMailer,
     ) {
     }
 
@@ -67,6 +68,8 @@ class ShopMemberService
             $shop
         );
 
+        $this->appMailer->sendWelcomeStaff($user, $password, $shop);
+
         return $member;
     }
 
@@ -115,6 +118,10 @@ class ShopMemberService
             $merchant,
             $member->getShop()
         );
+
+        if (\is_string($password) && $password !== '') {
+            $this->appMailer->sendPasswordChanged($user, $password);
+        }
     }
 
     public function delete(ShopMember $member, User $merchant): void

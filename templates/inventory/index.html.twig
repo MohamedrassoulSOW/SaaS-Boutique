@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
 {% block title %}Inventaires{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <h1 class="page-title h3 mb-0">Inventaires</h1>
     <a href="{{ path('app_inventory_new') }}" class="btn btn-brand">Nouvel inventaire</a>
 </div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0">
 <thead><tr><th>Réf.</th><th>Type</th><th>Statut</th><th>Date</th><th></th></tr></thead>
 <tbody>
@@ -22,5 +23,6 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

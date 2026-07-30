@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
 {% block title %}Achats{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <h1 class="page-title h3 mb-0">Commandes fournisseurs</h1>
     <a href="{{ path('app_purchase_new') }}" class="btn btn-brand">Nouvelle commande</a>
 </div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0">
 <thead><tr><th>Réf.</th><th>Fournisseur</th><th>Date</th><th>Statut</th><th>Total</th><th></th></tr></thead>
 <tbody>
@@ -23,5 +24,6 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Bienvenue — {{ appName }}{% endblock %}
+{% block eyebrow %}Votre compte {{ roleLabel }}{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;font-size:16px;">Bonjour {{ user.firstName }},</p>
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Votre accès <strong>{{ appName }}</strong> a été créé
+    {% if shopName is defined and shopName %} pour l’entreprise <strong>{{ shopName }}</strong>{% endif %}.
+</p>
+<table role="presentation" cellspacing="0" cellpadding="0" style="width:100%;margin:0 0 20px;background:#f4faf7;border-radius:12px;border:1px solid rgba(19,32,28,.08);">
+    <tr>
+        <td style="padding:16px 18px;font-size:14px;line-height:1.6;">
+            <div><strong>Email :</strong> {{ user.email }}</div>
+            {% if plainPassword %}
+            <div><strong>Mot de passe temporaire :</strong> {{ plainPassword }}</div>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+<p style="margin:0 0 24px;text-align:center;">
+    <a href="{{ loginUrl }}"
+       style="display:inline-block;background:#0c5c50;color:#fff;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:600;">
+        Se connecter
+    </a>
+</p>
+<p style="margin:0;font-size:13px;color:#5f726c;line-height:1.5;">
+    Pour votre sécurité, changez ce mot de passe après votre première connexion (Profil).
+</p>
+{% endblock %}

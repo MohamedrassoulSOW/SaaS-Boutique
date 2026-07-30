@@ -21,10 +21,11 @@ services:
     App\:
         resource: '../src/'
 
-    App\Service\PasswordResetMailer:
+    App\Service\AppMailer:
         arguments:
             $mailFrom: '%app.mail_from%'
             $appName: '%app.name%'
+            $platform: '%app.platform%'
 
     App\Service\ContractService:
         arguments:
@@ -37,7 +38,6 @@ services:
     App\Controller\MarketingController:
         arguments:
             $platform: '%app.platform%'
-            $mailFrom: '%app.mail_from%'
 
     # Sessions PHP stockées en base (table `sessions`)
     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:

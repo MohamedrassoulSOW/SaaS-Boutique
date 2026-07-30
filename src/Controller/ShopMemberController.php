@@ -56,7 +56,7 @@ class ShopMemberController extends ShopAwareController
                     'plainPassword' => $form->get('plainPassword')->getData(),
                 ], (string) $form->get('role')->getData());
 
-                $this->addFlash('success', 'Accès vendeur créé. Il peut se connecter avec son email.');
+                $this->addFlash('success', 'Accès vendeur créé. Un email d\'accès a été envoyé.');
 
                 return $this->redirectToRoute('app_staff_index');
             } catch (\InvalidArgumentException $e) {

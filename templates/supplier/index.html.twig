@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
 {% block title %}Fournisseurs{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <h1 class="page-title h3 mb-0">Fournisseurs</h1>
     <a href="{{ path('app_supplier_new') }}" class="btn btn-brand">Ajouter</a>
 </div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
 <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th></th></tr></thead>
 <tbody>
@@ -14,7 +15,7 @@
     <td><a href="{{ path('app_supplier_show', {id: s.id}) }}">{{ s.name }}</a></td>
     <td>{{ s.phone }}</td>
     <td>{{ s.email }}</td>
-    <td class="text-end">
+    <td class="text-end text-nowrap">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_supplier_edit', {id: s.id}) }}">Modifier</a>
         <form class="d-inline" method="post" action="{{ path('app_supplier_delete', {id: s.id}) }}" data-confirm="Supprimer ce fournisseur ?" data-confirm-title="Supprimer le fournisseur" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ s.id) }}">
@@ -27,5 +28,6 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

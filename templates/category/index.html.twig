@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
 {% block title %}Catégories{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <h1 class="page-title h3 mb-0">Catégories</h1>
     <a href="{{ path('app_category_new') }}" class="btn btn-brand">Ajouter</a>
 </div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
 <thead><tr><th>Nom</th><th>Ordre</th><th>Produits</th><th></th></tr></thead>
 <tbody>
@@ -14,7 +15,7 @@
     <td>{{ c.name }}</td>
     <td>{{ c.sortOrder }}</td>
     <td>{{ c.products|length }}</td>
-    <td class="text-end">
+    <td class="text-end text-nowrap">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_category_edit', {id: c.id}) }}">Modifier</a>
         <form class="d-inline" method="post" action="{{ path('app_category_delete', {id: c.id}) }}" data-confirm="Supprimer cette catégorie ?" data-confirm-title="Supprimer la catégorie" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
@@ -27,5 +28,6 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

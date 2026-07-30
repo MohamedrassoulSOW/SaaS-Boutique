@@ -1,0 +1,16 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Entreprise créée — {{ appName }}{% endblock %}
+{% block eyebrow %}Nouvelle entreprise{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;font-size:16px;">Bonjour {{ user.firstName }},</p>
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Votre entreprise <strong>{{ shop.name }}</strong> a été créée sur {{ appName }}.
+    Un contrat (<strong>{{ contract.number }}</strong>) est prêt à être consulté / signé.
+</p>
+<p style="margin:0 0 24px;text-align:center;">
+    <a href="{{ dashboardUrl }}"
+       style="display:inline-block;background:#0c5c50;color:#fff;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:600;">
+        Ouvrir mon espace
+    </a>
+</p>
+{% endblock %}

@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\ProfileType;
 use App\Repository\NotificationRepository;
 use App\Service\ActivityLogger;
+use App\Service\AppMailer;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +26,7 @@ class ProfileController extends AbstractController
         UserPasswordHasherInterface $hasher,
         ActivityLogger $logger,
         ShopContext $shopContext,
+        AppMailer $mailer,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -48,6 +50,9 @@ class ProfileController extends AbstractController
                 $user,
                 $shop
             );
+            if ($passwordChanged) {
+                $mailer->sendPasswordChanged($user, null);
+            }
             $this->addFlash('success', 'Profil mis à jour.');
 
             return $this->redirectToRoute('app_profile');

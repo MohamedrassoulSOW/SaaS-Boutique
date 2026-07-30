@@ -1,0 +1,25 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}{% if suspended %}Compte suspendu{% else %}Compte réactivé{% endif %} — {{ appName }}{% endblock %}
+{% block eyebrow %}Statut du compte{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;font-size:16px;">Bonjour {{ user.firstName }},</p>
+{% if suspended %}
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Votre compte <strong>{{ user.email }}</strong> a été suspendu. Vous ne pouvez plus vous connecter pour le moment.
+</p>
+{% else %}
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Bonne nouvelle : votre compte <strong>{{ user.email }}</strong> a été réactivé. Vous pouvez à nouveau vous connecter.
+</p>
+<p style="margin:0 0 24px;text-align:center;">
+    <a href="{{ loginUrl }}"
+       style="display:inline-block;background:#0c5c50;color:#fff;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:600;">
+        Se connecter
+    </a>
+</p>
+{% endif %}
+<p style="margin:0;font-size:13px;color:#5f726c;line-height:1.5;">
+    Des questions ? Écrivez à
+    <a href="mailto:{{ platform.email }}" style="color:#0c5c50;">{{ platform.email }}</a>.
+</p>
+{% endblock %}

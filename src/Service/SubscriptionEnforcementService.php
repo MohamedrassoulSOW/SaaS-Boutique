@@ -16,6 +16,7 @@ class SubscriptionEnforcementService
         private NotificationService $notifications,
         private ActivityLogger $activityLogger,
         private SubscriptionBillingService $billing,
+        private AppMailer $appMailer,
     ) {
     }
 
@@ -126,6 +127,8 @@ class SubscriptionEnforcementService
             $message,
             $subscription->getMerchant()?->getShops()->first() ?: null
         );
+
+        $this->appMailer->sendSubscriptionAlert($user, $title, $message, $terminal);
 
         $subscription->setLastEnforcementAction($terminal ? 'terminate' : 'notify');
         $subscription->setLastEnforcementAt(new \DateTimeImmutable());

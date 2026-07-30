@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 {% block title %}Vente {{ sale.reference }}{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4 no-print">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4 no-print">
     <h1 class="page-title h3 mb-0">Vente {{ sale.reference }}
         {% if sale.status == 'cancelled' %}<span class="badge-stock ms-2">Annulée</span>{% endif %}
     </h1>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary" href="{{ path('app_sale_print', {id: sale.id}) }}" target="_blank">Imprimer</a>
         <a class="btn btn-brand" href="{{ path('app_sale_invoice_pdf', {id: sale.id}) }}">PDF</a>
         {% if can_module('sale_cancel') and sale.status != 'cancelled' %}
@@ -29,7 +29,8 @@
             <div><strong>Paiement:</strong> {{ sale.paymentMethod }}</div>
         </div>
     </div>
-    <table class="table">
+    <div class="table-responsive">
+    <table class="table mb-0">
         <thead><tr><th>Produit</th><th>Qté</th><th>P.U.</th><th>Total</th></tr></thead>
         <tbody>
         {% for item in sale.items %}
@@ -51,6 +52,7 @@
             <tr><th colspan="3" class="text-end">Payé</th><th>{{ sale.amountPaid|money }}</th></tr>
         </tfoot>
     </table>
+    </div>
 </div>
 {% endblock %}
 

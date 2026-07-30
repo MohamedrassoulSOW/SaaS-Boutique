@@ -1,0 +1,5 @@
+framework:
+    mailer:
+        # Expéditeur technique (bounces / alignement SPF) — boîte SMTP NdamStore
+        envelope:
+            sender: 'contact@ndamstore.sowcoder.com'

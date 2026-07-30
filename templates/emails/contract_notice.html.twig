@@ -1,0 +1,27 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}{{ title }} — {{ appName }}{% endblock %}
+{% block eyebrow %}Contrat {{ contract.number }}{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;font-size:16px;">Bonjour {{ user.firstName }},</p>
+{% if kind == 'signature' %}
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Le contrat <strong>{{ contract.number }}</strong>
+    {% if contract.displayShopName %} pour <strong>{{ contract.displayShopName }}</strong>{% endif %}
+    est prêt pour votre signature.
+</p>
+{% elseif kind == 'shared' %}
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Le contrat <strong>{{ contract.number }}</strong> est désormais disponible sur votre tableau de bord.
+</p>
+{% else %}
+<p style="margin:0 0 16px;line-height:1.5;color:#5f726c;">
+    Un contrat (<strong>{{ contract.number }}</strong>) vous a été transmis pour discussion.
+</p>
+{% endif %}
+<p style="margin:0 0 24px;text-align:center;">
+    <a href="{{ dashboardUrl }}"
+       style="display:inline-block;background:#0c5c50;color:#fff;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:600;">
+        Voir le contrat
+    </a>
+</p>
+{% endblock %}

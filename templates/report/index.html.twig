@@ -21,12 +21,14 @@
 <div class="col-lg-7">
 <div class="panel">
 <div class="panel-head"><h2>Produits vendus (mois)</h2></div>
+<div class="table-responsive">
 <table class="table mb-0"><thead><tr><th>Produit</th><th>Qté</th><th>CA</th></tr></thead>
 <tbody>
 {% for row in soldProducts %}
 <tr><td>{{ row.name }}</td><td>{{ row.qty }}</td><td>{{ row.amount|money }}</td></tr>
 {% else %}<tr><td colspan="3" class="text-muted p-3">Aucune donnée</td></tr>{% endfor %}
 </tbody></table>
+</div>
 </div>
 </div>
 <div class="col-lg-5">

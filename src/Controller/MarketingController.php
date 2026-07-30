@@ -3,12 +3,10 @@
 namespace App\Controller;
 
 use App\Form\ContactType;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use App\Service\AppMailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
 
 class MarketingController extends AbstractController
@@ -28,7 +26,6 @@ class MarketingController extends AbstractController
      */
     public function __construct(
         private array $platform,
-        private string $mailFrom,
     ) {
     }
 
@@ -49,7 +46,7 @@ class MarketingController extends AbstractController
     }
 
     #[Route('/contact', name: 'app_contact')]
-    public function contact(Request $request, MailerInterface $mailer): Response
+    public function contact(Request $request, AppMailer $mailer): Response
     {
         $form = $this->createForm(ContactType::class);
         $form->handleRequest($request);
@@ -57,25 +54,12 @@ class MarketingController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
-            try {
-                $email = (new TemplatedEmail())
-                    ->from(new Address($this->mailFrom, $this->platform['name']))
-                    ->to(new Address($this->platform['email'], $this->platform['legal_name']))
-                    ->replyTo(new Address((string) $data['email'], (string) $data['name']))
-                    ->subject('[Contact] '.$data['subject'])
-                    ->htmlTemplate('emails/contact.html.twig')
-                    ->context([
-                        'sender_name' => $data['name'],
-                        'sender_email' => $data['email'],
-                        'subject' => $data['subject'],
-                        'body' => $data['message'],
-                        'platform' => $this->platform,
-                    ]);
-
-                $mailer->send($email);
-            } catch (\Throwable) {
-                // On confirme quand même pour ne pas bloquer si Mailer n'est pas configuré en local
-            }
+            $mailer->sendContactMessage(
+                (string) $data['name'],
+                (string) $data['email'],
+                (string) $data['subject'],
+                (string) $data['message'],
+            );
 
             $this->addFlash('success', 'Merci — votre message a bien été transmis. Nous vous répondrons rapidement.');
 

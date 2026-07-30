@@ -144,6 +144,7 @@
 
 <div class="panel">
 <div class="panel-head"><h2>Derniers paiements d'abonnement</h2></div>
+<div class="table-responsive">
 <table class="table mb-0">
 <thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
 <tbody>
@@ -152,6 +153,7 @@
 {% else %}<tr><td colspan="4" class="text-muted p-3">Aucun paiement</td></tr>{% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 
 <script type="application/json" id="admin-chart-data">{{ chartPayload|json_encode|raw }}</script>

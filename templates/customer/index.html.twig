@@ -1,14 +1,15 @@
 {% extends 'base.html.twig' %}
 {% block title %}Clients{% endblock %}
 {% block body %}
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
     <h1 class="page-title h3 mb-0">Clients</h1>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <a href="{{ path('app_customer_debts') }}" class="btn btn-outline-brand">Crédits</a>
         <a href="{{ path('app_customer_new') }}" class="btn btn-brand">Ajouter</a>
     </div>
 </div>
 <div class="card stat-card">
+<div class="table-responsive">
 <table class="table mb-0 align-middle">
 <thead><tr><th>Nom</th><th>Téléphone</th><th>Solde</th><th></th></tr></thead>
 <tbody>
@@ -17,7 +18,7 @@
     <td><a href="{{ path('app_customer_show', {id: c.id}) }}">{{ c.fullName }}</a></td>
     <td>{{ c.phone }}</td>
     <td>{{ c.balance|money }}</td>
-    <td class="text-end">
+    <td class="text-end text-nowrap">
         <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_customer_edit', {id: c.id}) }}">Modifier</a>
         <form class="d-inline" method="post" action="{{ path('app_customer_delete', {id: c.id}) }}" data-confirm="Supprimer ce client ?" data-confirm-title="Supprimer le client" data-confirm-label="Supprimer">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
@@ -30,5 +31,6 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

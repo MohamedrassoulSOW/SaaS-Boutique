@@ -363,7 +363,8 @@ a:hover { color: var(--brand); }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: .65rem 1rem;
     margin: -1.25rem -1.25rem 1.35rem;
     padding: .85rem 1.25rem;
     background: color-mix(in srgb, var(--surface) 88%, var(--panel));
@@ -897,26 +898,109 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
         top: 0;
         height: 100vh;
         height: 100dvh;
+        padding-top: env(safe-area-inset-top, 0px);
         transform: translateX(-105%);
     }
     .sidebar.open { transform: translateX(0); }
     .sidebar-backdrop.show { display: block; }
     .content-wrap {
         margin-left: 0;
-        padding: 1rem 1rem 1.75rem;
+        padding: 1rem 1rem calc(1.75rem + env(safe-area-inset-bottom, 0px));
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1rem, env(safe-area-inset-right, 0px));
     }
     .topbar {
         margin: -1rem -1rem 1.1rem;
-        padding: .75rem 1rem;
+        margin-left: calc(-1 * max(1rem, env(safe-area-inset-left, 0px)));
+        margin-right: calc(-1 * max(1rem, env(safe-area-inset-right, 0px)));
+        padding: .75rem max(1rem, env(safe-area-inset-right, 0px)) .75rem max(1rem, env(safe-area-inset-left, 0px));
+        padding-top: calc(.75rem + env(safe-area-inset-top, 0px));
     }
     .auth-shell { grid-template-columns: 1fr; }
     .auth-visual { min-height: 220px; padding: 1.5rem; }
     .auth-quote { max-width: none; font-size: 1.55rem; }
-    #toastStack { top: auto; bottom: 1rem; right: .75rem; left: .75rem; width: auto; }
+    #toastStack {
+        top: auto;
+        bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+        right: .75rem;
+        left: .75rem;
+        width: auto;
+    }
+}
+
+/* PWA install banner */
+.pwa-install {
+    position: fixed;
+    left: .75rem;
+    right: .75rem;
+    bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+    z-index: 1080;
+    pointer-events: none;
+}
+
+.pwa-install[hidden] {
+    display: none !important;
+}
+
+.pwa-install-inner {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .7rem .75rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    box-shadow: 0 12px 32px rgba(8, 63, 55, .18);
+}
+
+.pwa-install-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: .7rem;
+    flex-shrink: 0;
+}
+
+.pwa-install-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    font-size: .78rem;
+    color: var(--muted);
+    line-height: 1.3;
+}
+
+.pwa-install-copy strong {
+    font-size: .88rem;
+    color: var(--ink);
+    font-weight: 650;
+}
+
+.pwa-install-dismiss {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.35rem;
+    line-height: 1;
+    padding: .25rem .35rem;
+    cursor: pointer;
+    border-radius: .4rem;
+}
+
+.pwa-install-dismiss:hover {
+    color: var(--ink);
+    background: var(--brand-soft);
+}
+
+@media (display-mode: standalone) {
+    .pwa-install { display: none !important; }
 }
 
 @media print {
-    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop, #toastStack, #appConfirmModal, #appResultModal { display: none !important; }
+    .sidebar, .no-print, .mobile-toggle, .sidebar-backdrop, #toastStack, #appConfirmModal, #appResultModal, .pwa-install { display: none !important; }
     .content-wrap { margin: 0 !important; padding: 0 !important; }
     body { background: #fff; }
 }
@@ -1443,8 +1527,8 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .pos-cart-close {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.75rem;
+    height: 2.75rem;
     padding: 0;
     display: inline-grid;
     place-items: center;
@@ -1576,13 +1660,13 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .pos-qty-btn {
-    width: 1.7rem;
-    height: 1.7rem;
-    border-radius: .45rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .55rem;
     border: none;
     background: transparent;
     color: var(--ink);
-    font-size: 1rem;
+    font-size: 1.15rem;
     line-height: 1;
     cursor: pointer;
     display: inline-grid;
@@ -1602,16 +1686,16 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .pos-qty-remove {
-    width: 1.7rem;
-    height: 1.7rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border: none;
     background: transparent;
     color: var(--muted);
-    border-radius: .45rem;
+    border-radius: .55rem;
     cursor: pointer;
     display: inline-grid;
     place-items: center;
-    font-size: .92rem;
+    font-size: 1rem;
     align-self: start;
 }
 
@@ -1727,6 +1811,9 @@ html[data-theme="dark"] .stat-card:hover {
         width: calc(100vw - 1rem);
         margin: .5rem auto;
     }
+    .content-wrap {
+        overflow-x: clip;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -1736,7 +1823,48 @@ html[data-theme="dark"] .stat-card:hover {
     .pos-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
+    .pos-cart-item {
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
+    }
+    .pos-cart-photo {
+        grid-row: 1 / 3;
+        align-self: center;
+    }
+    .pos-cart-main {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    .pos-cart-side {
+        grid-column: 2;
+        grid-row: 2;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: .65rem;
+    }
+    .pos-qty-remove {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        align-self: center;
+    }
+    .auth-quote { font-size: 1.35rem; }
+    .auth-theme-bar {
+        top: max(1rem, env(safe-area-inset-top, 0px));
+        right: max(1rem, env(safe-area-inset-right, 0px));
+    }
 }
+
+/* Tables / titles on narrow screens */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+.page-title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
 
 /* Visibilit? contrat ? ic?nes ?il */
 .visibility-choice .visibility-option {

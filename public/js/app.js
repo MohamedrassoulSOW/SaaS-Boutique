@@ -335,4 +335,86 @@
 
   window.AppUI = AppUI;
   document.addEventListener('DOMContentLoaded', () => AppUI.init());
+
+  // —— PWA: service worker + install prompt ——
+  const PWA = {
+    deferredPrompt: null,
+    dismissKey: 'ndamstore-pwa-dismiss',
+
+    init() {
+      this.registerSW();
+      this.bindInstall();
+    },
+
+    registerSW() {
+      if (!('serviceWorker' in navigator)) return;
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+      });
+    },
+
+    isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+    },
+
+    bindInstall() {
+      const banner = document.getElementById('pwaInstallBanner');
+      const btn = document.getElementById('pwaInstallBtn');
+      const dismiss = document.getElementById('pwaInstallDismiss');
+      if (!banner || !btn) return;
+
+      try {
+        if (localStorage.getItem(this.dismissKey) === '1' || this.isStandalone()) return;
+      } catch (_) {
+        if (this.isStandalone()) return;
+      }
+
+      const showIosTip = () => {
+        const ua = window.navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (!isIOS) return;
+        const copy = banner.querySelector('.pwa-install-copy span');
+        if (copy) {
+          copy.textContent = 'Sur iPhone : Partager → Sur l’écran d’accueil.';
+        }
+        btn.hidden = true;
+        banner.hidden = false;
+      };
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        this.deferredPrompt = e;
+        btn.hidden = false;
+        banner.hidden = false;
+      });
+
+      // iOS n’émet pas beforeinstallprompt — tip après un court délai
+      window.setTimeout(showIosTip, 1800);
+
+      btn.addEventListener('click', async () => {
+        if (!this.deferredPrompt) return;
+        this.deferredPrompt.prompt();
+        try {
+          await this.deferredPrompt.userChoice;
+        } catch (_) {}
+        this.deferredPrompt = null;
+        banner.hidden = true;
+      });
+
+      if (dismiss) {
+        dismiss.addEventListener('click', () => {
+          banner.hidden = true;
+          try { localStorage.setItem(this.dismissKey, '1'); } catch (_) {}
+        });
+      }
+
+      window.addEventListener('appinstalled', () => {
+        banner.hidden = true;
+        this.deferredPrompt = null;
+      });
+    },
+  };
+
+  PWA.init();
 })();

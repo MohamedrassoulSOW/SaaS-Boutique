@@ -26,6 +26,7 @@ use App\Repository\ShopRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\Service\ActivityLogger;
+use App\Service\AppMailer;
 use App\Service\BinaryUploadService;
 use App\Service\ContractService;
 use App\Service\FiscalService;
@@ -210,6 +211,7 @@ class AdminController extends AbstractController
         UserRepository $users,
         ActivityLogger $logger,
         NotificationService $notifications,
+        AppMailer $mailer,
     ): Response {
         $form = $this->createForm(AdminMerchantType::class, null, [
             'is_edit' => false,
@@ -222,13 +224,14 @@ class AdminController extends AbstractController
             if ($users->findOneBy(['email' => $email])) {
                 $this->addFlash('danger', 'Cet email est déjà utilisé.');
             } else {
+                $plainPassword = (string) $form->get('plainPassword')->getData();
                 $user = new User();
                 $user->setEmail($email);
                 $user->setFirstName((string) $form->get('firstName')->getData());
                 $user->setLastName((string) $form->get('lastName')->getData());
                 $user->setPhone($form->get('phone')->getData());
                 $user->setRoles([User::ROLE_MERCHANT]);
-                $user->setPassword($passwordHasher->hashPassword($user, (string) $form->get('plainPassword')->getData()));
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
 
                 $merchant = new Merchant();
                 $merchant->setCompanyName((string) $form->get('companyName')->getData());
@@ -268,7 +271,9 @@ class AdminController extends AbstractController
                     'Votre compte entrepreneur a été créé par l\'administration. Connectez-vous avec l\'email fourni.',
                 );
 
-                $this->addFlash('success', 'Compte entrepreneur créé. Il peut se connecter avec son email.');
+                $mailer->sendWelcomeMerchant($user, $plainPassword);
+
+                $this->addFlash('success', 'Compte entrepreneur créé. Un email d\'accès a été envoyé.');
 
                 return $this->redirectToRoute('admin_merchants');
             }
@@ -290,6 +295,7 @@ class AdminController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         UserRepository $users,
         ActivityLogger $logger,
+        AppMailer $mailer,
     ): Response {
         $user = $merchant->getUser();
         if (!$user) {
@@ -349,6 +355,10 @@ class AdminController extends AbstractController
                 /** @var User $admin */
                 $admin = $this->getUser();
                 $logger->log('admin.merchant_update', 'Entrepreneur modifié : '.$user->getEmail(), $admin);
+
+                if (\is_string($plainPassword) && $plainPassword !== '') {
+                    $mailer->sendPasswordChanged($user, $plainPassword);
+                }
 
                 $this->addFlash('success', 'Entrepreneur enregistré.');
 
@@ -524,6 +534,7 @@ class AdminController extends AbstractController
         NotificationService $notifications,
         BinaryUploadService $uploader,
         ContractService $contracts,
+        AppMailer $mailer,
     ): Response {
         $shop = new Shop();
 
@@ -607,7 +618,9 @@ class AdminController extends AbstractController
                 $shop
             );
 
-            $this->addFlash('success', 'Entreprise créée. Contrat généré — imprimez-le et faites-le signer.');
+            $mailer->sendShopCreated($user, $shop, $contract);
+
+            $this->addFlash('success', 'Entreprise créée. Contrat généré — un email a été envoyé à l\'entrepreneur.');
 
             return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
         }
@@ -631,6 +644,7 @@ class AdminController extends AbstractController
         Request $request,
         ContractService $contracts,
         NotificationService $notifications,
+        AppMailer $mailer,
     ): Response {
         $contract = new ShopContract();
         $contract->setPlan(Subscription::PLAN_BASIC);
@@ -648,13 +662,15 @@ class AdminController extends AbstractController
             try {
                 $contracts->saveDraft($contract, $admin, $contract->isSharedWithMerchant());
                 if ($contract->isSharedWithMerchant() && $contract->getMerchant()?->getUser()) {
+                    $merchantUser = $contract->getMerchant()->getUser();
                     $notifications->notify(
-                        $contract->getMerchant()->getUser(),
+                        $merchantUser,
                         Notification::TYPE_INFO,
                         'Nouveau contrat en discussion',
                         sprintf('Un contrat (%s) vous a été transmis pour discussion. Consultez votre tableau de bord.', $contract->getNumber()),
                         $contract->getShop()
                     );
+                    $mailer->sendContractNotice($merchantUser, $contract, 'discussion');
                 }
                 $this->addFlash('success', 'Contrat préparé. Vous pouvez l\'imprimer et le présenter à l\'entrepreneur.');
 
@@ -712,19 +728,22 @@ class AdminController extends AbstractController
         Request $request,
         ContractService $contracts,
         NotificationService $notifications,
+        AppMailer $mailer,
     ): Response {
         if ($this->isCsrfTokenValid('share_contract'.$contract->getId(), $request->request->get('_token'))) {
             /** @var User $admin */
             $admin = $this->getUser();
             $contracts->shareWithMerchant($contract, $admin);
             if ($contract->getMerchant()?->getUser()) {
+                $merchantUser = $contract->getMerchant()->getUser();
                 $notifications->notify(
-                    $contract->getMerchant()->getUser(),
+                    $merchantUser,
                     Notification::TYPE_INFO,
                     'Contrat disponible',
                     sprintf('Le contrat %s est disponible sur votre tableau de bord.', $contract->getNumber()),
                     $contract->getShop()
                 );
+                $mailer->sendContractNotice($merchantUser, $contract, 'shared');
             }
             $this->addFlash('success', 'Contrat visible sur le dashboard de l\'entrepreneur.');
         }
@@ -738,19 +757,22 @@ class AdminController extends AbstractController
         Request $request,
         ContractService $contracts,
         NotificationService $notifications,
+        AppMailer $mailer,
     ): Response {
         if ($this->isCsrfTokenValid('send_contract'.$contract->getId(), $request->request->get('_token'))) {
             /** @var User $admin */
             $admin = $this->getUser();
             $contracts->sendForSignature($contract, $admin);
             if ($contract->getMerchant()?->getUser()) {
+                $merchantUser = $contract->getMerchant()->getUser();
                 $notifications->notify(
-                    $contract->getMerchant()->getUser(),
+                    $merchantUser,
                     Notification::TYPE_INFO,
                     'Contrat à signer',
                     sprintf('Le contrat %s est prêt pour signature.', $contract->getNumber()),
                     $contract->getShop()
                 );
+                $mailer->sendContractNotice($merchantUser, $contract, 'signature');
             }
             $this->addFlash('success', 'Contrat envoyé pour signature.');
         }
@@ -972,7 +994,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}/toggle-suspend', name: 'admin_user_toggle_suspend', methods: ['POST'])]
-    public function toggleSuspend(User $user, Request $request, EntityManagerInterface $em, ActivityLogger $logger): Response
+    public function toggleSuspend(User $user, Request $request, EntityManagerInterface $em, ActivityLogger $logger, AppMailer $mailer): Response
     {
         if ($this->isCsrfTokenValid('suspend'.$user->getId(), $request->request->get('_token'))) {
             $user->setIsSuspended(!$user->isSuspended());
@@ -981,7 +1003,8 @@ class AdminController extends AbstractController
             /** @var User $admin */
             $admin = $this->getUser();
             $logger->log('admin.suspend', ($user->isSuspended() ? 'Suspension' : 'Réactivation').' de '.$user->getEmail(), $admin);
-            $this->addFlash('success', 'Statut utilisateur mis à jour.');
+            $mailer->sendAccountStatus($user, $user->isSuspended());
+            $this->addFlash('success', 'Statut utilisateur mis à jour. Un email a été envoyé.');
         }
 
         return $this->redirectToRoute('admin_users');

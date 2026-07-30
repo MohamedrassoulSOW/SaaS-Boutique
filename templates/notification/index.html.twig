@@ -5,7 +5,7 @@
 <div class="list-group">
 {% for n in notifications %}
 <div class="list-group-item {% if not n.read %}list-group-item-warning{% endif %}">
-    <div class="d-flex justify-content-between">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
         <div>
             <strong>{{ n.title }}</strong>
             <div class="small text-muted">{{ n.createdAt|date('d/m/Y H:i') }} — {{ n.type }}</div>

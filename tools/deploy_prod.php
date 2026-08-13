@@ -3,14 +3,9 @@
 
 /**
  * Déploiement production NdamStore
- * Usage (sur le serveur, à la racine du projet) :
- *   php tools/deploy_prod.php
- *   ou : composer prod:deploy
  *
- * Prérequis :
- *   - PHP ≥ 8.4 (CLI Hostinger : souvent /opt/alt/php84/usr/bin/php)
- *   - Document root → public/
- *   - Fichier .env.prod.local renseigné
+ *   php tools/deploy_prod.php
+ *   SKIP_COMPOSER=1 php tools/deploy_prod.php   # si vendor déjà OK
  */
 
 declare(strict_types=1);
@@ -21,8 +16,12 @@ chdir($root);
 function run(string $cmd): int
 {
     echo "\n> {$cmd}\n";
+    flush();
+    $code = 0;
     passthru($cmd, $code);
     $code = (int) $code;
+    echo "→ exit {$code}\n";
+    flush();
     if ($code !== 0) {
         fwrite(STDERR, "Échec (code {$code}) : {$cmd}\n");
     }
@@ -32,29 +31,57 @@ function run(string $cmd): int
 
 echo "=== NdamStore deploy prod ===\n";
 echo 'PHP CLI : '.PHP_VERSION.' ('.PHP_BINARY.")\n";
+flush();
 
 if (PHP_VERSION_ID < 80400) {
     fwrite(STDERR, "ERREUR : PHP ≥ 8.4 requis (actuel ".PHP_VERSION.").\n");
-    fwrite(STDERR, "Hostinger → hPanel → PHP Configuration → 8.4\n");
-    fwrite(STDERR, "Ou en SSH : /opt/alt/php84/usr/bin/php tools/deploy_prod.php\n");
     exit(1);
 }
 
 if (!is_file($root.'/.env.prod.local')) {
     fwrite(STDERR, "ERREUR : créez .env.prod.local\n");
-    fwrite(STDERR, "  cp .env.prod.local.example .env.prod.local && nano .env.prod.local\n");
     exit(1);
 }
 
 $php = escapeshellarg(PHP_BINARY);
-$composer = 'composer';
-if (is_file($root.'/composer.phar')) {
-    $composer = $php.' '.escapeshellarg($root.'/composer.phar');
+$skipComposer = getenv('SKIP_COMPOSER') === '1' || getenv('SKIP_COMPOSER') === 'true';
+
+if (!$skipComposer) {
+    $composerCmd = null;
+    if (is_file($root.'/composer.phar')) {
+        $composerCmd = $php.' '.escapeshellarg($root.'/composer.phar');
+    } else {
+        // Forcer composer via le même binaire PHP (évite un autre php CLI)
+        $which = trim((string) shell_exec('command -v composer 2>/dev/null || which composer 2>/dev/null'));
+        if ($which !== '') {
+            $composerCmd = $php.' '.escapeshellarg($which);
+        }
+    }
+
+    if ($composerCmd === null) {
+        fwrite(STDERR, "ERREUR : composer introuvable. Lancez manuellement :\n");
+        fwrite(STDERR, "  composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --no-scripts\n");
+        exit(1);
+    }
+
+    $code = run($composerCmd.' install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --no-scripts');
+    if ($code !== 0) {
+        // Sur certains hébergeurs composer renvoie un code bizarre alors que vendor est OK
+        if (!is_dir($root.'/vendor/doctrine/orm')) {
+            exit(1);
+        }
+        echo "AVERTISSEMENT : code composer={$code} mais vendor/doctrine/orm présent — on continue.\n";
+    }
+} else {
+    echo "SKIP_COMPOSER=1 — étape composer ignorée.\n";
 }
 
-// --no-scripts : évite cache:clear auto en APP_ENV=dev pendant install
+if (!is_dir($root.'/vendor/doctrine/orm')) {
+    fwrite(STDERR, "ERREUR : vendor/doctrine/orm absent. Lancez composer install avant.\n");
+    exit(1);
+}
+
 $steps = [
-    $composer.' install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --no-scripts',
     $php.' bin/console doctrine:migrations:migrate --no-interaction --env=prod --no-debug',
     $php.' bin/console app:sessions:init --env=prod --no-debug',
     $php.' bin/console cache:clear --env=prod --no-debug',
@@ -71,5 +98,4 @@ foreach ($steps as $step) {
 
 echo "\n=== Déploiement terminé ===\n";
 echo "Document root → public/\n";
-echo "Vérifier APP_ENV=prod dans .env.prod.local\n";
-echo "Cron : 0 3 * * * cd {$root} && {$php} bin/console app:subscriptions:enforce --env=prod --no-debug\n";
+echo "Cron : 0 3 * * * cd {$root} && php bin/console app:subscriptions:enforce --env=prod --no-debug\n";

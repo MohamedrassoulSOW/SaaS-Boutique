@@ -77,7 +77,15 @@ class SecurityController extends AbstractController
                     $passwordResetMailer->sendResetLink($user, $plainToken);
                     $activityLogger->log('user.reset_request', 'Demande de reset MDP pour '.$user->getEmail(), $user);
                 } catch (\Throwable $e) {
-                    $this->addFlash('danger', 'Impossible d’envoyer l’email pour le moment. Vérifiez la configuration Mailer.');
+                    $activityLogger->log(
+                        'user.reset_mail_fail',
+                        'Échec envoi reset : '.$e->getMessage(),
+                        $user
+                    );
+                    $this->addFlash(
+                        'danger',
+                        'Impossible d’envoyer l’email pour le moment. Vérifiez MAILER_DSN SMTP Hostinger (voir app:mail:test).'
+                    );
 
                     return $this->render('security/reset_request.html.twig', ['form' => $form]);
                 }

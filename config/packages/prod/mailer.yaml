@@ -1,5 +1,9 @@
 framework:
     mailer:
-        # Expéditeur technique (bounces / alignement SPF) — boîte SMTP NdamStore
+        # Doit correspondre à la boîte SMTP Hostinger (SPF / auth)
         envelope:
-            sender: 'contact@ndamstore.sowcoder.com'
+            sender: '%env(default:mail_envelope_default:MAIL_ENVELOPE_SENDER)%'
+
+parameters:
+    env(MAIL_ENVELOPE_SENDER): 'contact@ndamstore.sowcoder.com'
+    mail_envelope_default: 'contact@ndamstore.sowcoder.com'

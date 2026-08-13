@@ -30,11 +30,13 @@ class ShopPermission
     public const REPORTS = 'reports';
     public const FISCAL = 'fiscal';
     public const CASH = 'cash';
+    public const EXPENSES = 'expenses';
     public const SALE_CANCEL = 'sale_cancel';
     public const VIEW_MARGIN = 'view_margin';
     public const SHOPS = 'shops';
     public const STAFF = 'staff';
     public const CONTRACTS = 'contracts';
+    public const BILLING = 'billing';
 
     /** @var array<string, list<string>> */
     private const ROLE_MODULES = [
@@ -52,9 +54,11 @@ class ShopPermission
             self::REPORTS,
             self::FISCAL,
             self::CASH,
+            self::EXPENSES,
             self::SALE_CANCEL,
             self::VIEW_MARGIN,
             self::SHOPS,
+            self::BILLING,
         ],
         ShopMember::ROLE_CASHIER => [
             self::DASHBOARD,

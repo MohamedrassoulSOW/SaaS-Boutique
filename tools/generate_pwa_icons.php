@@ -42,10 +42,13 @@ $make = static function (int $size, string $filename, float $padRatio) use ($src
     imagedestroy($out);
 };
 
+$make(16, 'favicon-16.png', 0.12);
+$make(32, 'favicon-32.png', 0.12);
+$make(48, 'favicon-48.png', 0.12);
 $make(192, 'icon-192.png', 0.14);
 $make(512, 'icon-512.png', 0.14);
 $make(180, 'apple-touch-icon.png', 0.14);
 $make(512, 'maskable-512.png', 0.22);
 
 imagedestroy($src);
-echo "PWA icons generated\n";
+echo "PWA icons + favicons generated\n";

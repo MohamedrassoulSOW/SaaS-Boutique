@@ -1,0 +1,363 @@
+{% extends 'marketing/layout.html.twig' %}
+
+{% block title %}Guide d'utilisation — {{ app_name }}{% endblock %}
+{% block meta_description %}Guide moderne {{ app_name }} : modules, glossaire (CA, TVA, NINEA, HT/TTC), mots-clés et support.{% endblock %}
+{% block body_class %} mkt-guide-page{% endblock %}
+
+{% block content %}
+{% set support_email = platform.email %}
+{% set support_phone_sn = platform.phone %}
+{% set support_phone_ma = platform.phone_alt %}
+
+<section class="mkt-guide-hero">
+    <div class="mkt-guide-hero-bg" aria-hidden="true"></div>
+    <div class="mkt-wrap mkt-guide-hero-inner reveal-up">
+        <p class="mkt-kicker">Documentation interactive</p>
+        <h1 class="mkt-page-title">Guide d'utilisation</h1>
+        <p class="mkt-lead mkt-lead-wide">
+            Explorez {{ app_name }} module par module. Recherchez une notion, une abréviation ou un mot-clé —
+            le guide se filtre en direct.
+        </p>
+        <div class="mkt-guide-search-wrap">
+            <label class="visually-hidden" for="guideSearch">Rechercher dans le guide</label>
+            <input type="search" id="guideSearch" class="mkt-guide-search" placeholder="Ex. TVA, NINEA, bénéfices, caisse, POS…" autocomplete="off">
+            <span class="mkt-guide-search-hint" data-guide-count></span>
+        </div>
+        <div class="mkt-guide-hero-actions">
+            {% if app.user %}
+                <a class="mkt-btn mkt-btn-primary" href="{{ path(app.user.isAdmin ? 'admin_dashboard' : 'app_dashboard') }}">Mon espace</a>
+            {% else %}
+                <a class="mkt-btn mkt-btn-primary" href="{{ path('app_login') }}">Se connecter</a>
+            {% endif %}
+            <a class="mkt-btn mkt-btn-ghost" href="#support">Contacter le support</a>
+            <a class="mkt-btn mkt-btn-ghost" href="#glossaire">Abréviations</a>
+        </div>
+    </div>
+</section>
+
+<div class="mkt-wrap mkt-guide-shell">
+    <aside class="mkt-guide-rail" aria-label="Sommaire">
+        <div class="mkt-guide-rail-card">
+            <div class="mkt-guide-rail-label">Sommaire</div>
+            <nav class="mkt-guide-rail-nav" id="guideRail">
+                <a href="#demarrer" data-guide-nav>Démarrer</a>
+                <a href="#ventes" data-guide-nav>Ventes</a>
+                <a href="#catalogue" data-guide-nav>Catalogue</a>
+                <a href="#stock" data-guide-nav>Stock &amp; achats</a>
+                <a href="#caisse" data-guide-nav>Caisse</a>
+                <a href="#clients" data-guide-nav>Clients</a>
+                <a href="#benefices" data-guide-nav>Bénéfices</a>
+                <a href="#rapports" data-guide-nav>Rapports</a>
+                <a href="#equipe" data-guide-nav>Équipe</a>
+                <a href="#glossaire" data-guide-nav>Abréviations</a>
+                <a href="#mots-cles" data-guide-nav>Mots-clés</a>
+                <a href="#astuces" data-guide-nav>Astuces</a>
+                <a href="#support" data-guide-nav>Support</a>
+            </nav>
+            <div class="mkt-guide-rail-contact">
+                <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+                <a href="tel:+221777901460">{{ support_phone_sn }}</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="mkt-guide-main" id="guideMain">
+        <article class="mkt-guide-card reveal-up" id="demarrer" data-guide-section data-keywords="demarrer onboarding entrepreneur vendeur produits tva ninea caisse">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">01</span>
+                <h2>Démarrer</h2>
+            </div>
+            <p class="mkt-copy">Mettez votre entreprise en ligne en quelques minutes.</p>
+            <ol class="mkt-guide-steps">
+                <li><span>Compte</span>Créez / recevez votre accès entrepreneur ou vendeur.</li>
+                <li><span>Entreprise</span>Vérifiez l’entreprise active (sélecteur si plusieurs).</li>
+                <li><span>Catalogue</span>Ajoutez les produits avec prix de vente et prix d’achat.</li>
+                <li><span>Fiscalité</span>Configurez TVA, HT/TTC et NINEA.</li>
+                <li><span>Caisse</span>Ouvrez une session avant d’encaisser.</li>
+                <li><span>1ʳᵉ vente</span>Lancez une vente depuis le POS.</li>
+            </ol>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="ventes" data-guide-section data-keywords="ventes pos ticket remise mobile money credit facture code-barres">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">02</span>
+                <h2>Ventes &amp; tickets (POS)</h2>
+            </div>
+            <p class="mkt-copy">Le point de vente sert à encaisser rapidement.</p>
+            <div class="mkt-guide-chips">
+                <span>Recherche article</span><span>Remise</span><span>Espèces</span><span>Mobile money</span><span>Carte</span><span>Crédit</span><span>Ticket</span>
+            </div>
+            <ul class="mkt-guide-list">
+                <li>Recherchez par <strong>nom</strong> ou <strong>code-barres</strong>.</li>
+                <li>Validez : le <strong>stock</strong> baisse et un <strong>ticket / facture</strong> est créé.</li>
+                <li>En crédit, le <strong>solde client</strong> augmente du reste dû.</li>
+                <li>Historique dans <strong>Ventes</strong> pour consulter ou réimprimer.</li>
+            </ul>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="catalogue" data-guide-section data-keywords="catalogue produits categories fournisseurs prix achat vente sku">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">03</span>
+                <h2>Catalogue</h2>
+            </div>
+            <div class="mkt-guide-grid-3">
+                <div class="mkt-guide-mini">
+                    <strong>Produits</strong>
+                    <p>Référence, prix vente/achat, stock, catégorie, photo.</p>
+                </div>
+                <div class="mkt-guide-mini">
+                    <strong>Catégories</strong>
+                    <p>Organisent le rayon pour retrouver les articles vite.</p>
+                </div>
+                <div class="mkt-guide-mini">
+                    <strong>Fournisseurs</strong>
+                    <p>Fiches liées aux commandes d’achat.</p>
+                </div>
+            </div>
+            <p class="mkt-guide-callout">Renseignez toujours le <strong>prix d’achat</strong> pour des bénéfices fiables.</p>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="stock" data-guide-section data-keywords="stock achats inventaires mouvement casse reception fournisseur">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">04</span>
+                <h2>Stock, achats &amp; inventaires</h2>
+            </div>
+            <ul class="mkt-guide-list">
+                <li><strong>Stock</strong> — quantités et mouvements (vente, achat, ajustement, casse).</li>
+                <li><strong>Achats</strong> — commandes fournisseur pour entrer la marchandise.</li>
+                <li><strong>Inventaires</strong> — comptage physique et validation des écarts.</li>
+                <li>Alertes de <strong>stock faible</strong> sur le tableau de bord et les rapports.</li>
+            </ul>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="caisse" data-guide-section data-keywords="caisse fond cloture ecart session tiroir">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">05</span>
+                <h2>Caisse</h2>
+            </div>
+            <div class="mkt-guide-timeline">
+                <div><strong>Matin</strong><span>Ouvrir avec le fond de caisse</span></div>
+                <div><strong>Journée</strong><span>Encaisser via les ventes</span></div>
+                <div><strong>Soir</strong><span>Compter et clôturer la session</span></div>
+            </div>
+            <p class="mkt-copy mkt-copy-muted mb-0">L’écart attendu vs compté est enregistré pour le contrôle.</p>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="clients" data-guide-section data-keywords="clients credits creance solde du dettes fiche">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">06</span>
+                <h2>Clients &amp; crédits</h2>
+            </div>
+            <ul class="mkt-guide-list">
+                <li>Créez une fiche (nom, téléphone, adresse).</li>
+                <li>Associez-la à une vente en mode <strong>crédit</strong>.</li>
+                <li>Suivez les <strong>soldes dus</strong> depuis l’espace Clients.</li>
+            </ul>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="benefices" data-guide-section data-keywords="benefices marges cogs prix achat periode produit export csv">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">07</span>
+                <h2>Bénéfices &amp; marges</h2>
+            </div>
+            <p class="mkt-guide-formula">Bénéfice brut = CA − (prix d’achat × quantités vendues)</p>
+            <ul class="mkt-guide-list">
+                <li>Période libre (Du / Au) ou raccourcis jour / semaine / mois / année.</li>
+                <li>Bénéfice <strong>par produit</strong>, marge %, bénéfice / unité.</li>
+                <li>Coût <strong>figé à la vente</strong> pour un historique juste.</li>
+                <li>Export CSV disponible.</li>
+            </ul>
+            {% if app.user and not app.user.isAdmin %}
+            <a class="mkt-btn mkt-btn-primary" href="{{ path('app_profit_index') }}">Ouvrir mes bénéfices</a>
+            {% endif %}
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="rapports" data-guide-section data-keywords="rapports fiscalite tva ninea ht ttc audit csv impot">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">08</span>
+                <h2>Rapports &amp; fiscalité</h2>
+            </div>
+            <ul class="mkt-guide-list">
+                <li><strong>Rapports</strong> — CA, TVA, achats, crédits, exports CSV.</li>
+                <li><strong>Impôts</strong> — TVA, taux, HT/TTC, NINEA.</li>
+                <li><strong>Journal d’audit</strong> — actions sensibles.</li>
+                <li>« CA − achats » = trésorerie ; la <strong>marge réelle</strong> est dans Bénéfices.</li>
+            </ul>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="equipe" data-guide-section data-keywords="equipe roles responsable caissier magasinier permissions contrat">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">09</span>
+                <h2>Équipe &amp; droits</h2>
+            </div>
+            <div class="mkt-guide-roles">
+                <div><strong>Responsable</strong><span>Ops + rapports + marges + fiscalité</span></div>
+                <div><strong>Caissier</strong><span>Ventes, clients, caisse</span></div>
+                <div><strong>Magasinier</strong><span>Catalogue, stock, achats, inventaires</span></div>
+            </div>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="glossaire" data-guide-section data-keywords="abreviations glossaire ca tva ht ttc ninea fcfa xof pos sku cogs pwa csv uemoa saas marge">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">10</span>
+                <h2>Abréviations &amp; termes</h2>
+            </div>
+            <p class="mkt-copy">Lexique utilisé dans {{ app_name }} (Sénégal / UEMOA).</p>
+            <dl class="mkt-glossary" id="guideGlossary">
+                {% set glossary = [
+                    {k: 'CA', d: '<strong>Chiffre d’affaires</strong> — total des ventes sur une période.'},
+                    {k: 'TVA', d: '<strong>Taxe sur la valeur ajoutée</strong> — configurable dans Impôts.'},
+                    {k: 'HT', d: '<strong>Hors taxes</strong> — montant avant TVA.'},
+                    {k: 'TTC', d: '<strong>Toutes taxes comprises</strong> — montant avec TVA.'},
+                    {k: 'NINEA', d: '<strong>Numéro d’Identification Nationale des Entreprises et Associations</strong> (Sénégal).'},
+                    {k: 'FCFA / XOF', d: '<strong>Franc CFA</strong> — devise (code ISO XOF).'},
+                    {k: 'POS', d: '<strong>Point of Sale</strong> — écran Nouvelle vente.'},
+                    {k: 'SKU', d: '<strong>Stock Keeping Unit</strong> — référence produit.'},
+                    {k: 'COGS', d: '<strong>Cost of Goods Sold</strong> — coût des marchandises vendues.'},
+                    {k: 'Marge', d: '(bénéfice ÷ CA) × 100.'},
+                    {k: 'PWA', d: '<strong>Progressive Web App</strong> — app installable depuis le navigateur.'},
+                    {k: 'CSV', d: 'Export tableur (Excel / LibreOffice).'},
+                    {k: 'UEMOA', d: '<strong>Union Économique et Monétaire Ouest-Africaine</strong>.'},
+                    {k: 'SaaS', d: '<strong>Software as a Service</strong> — logiciel en ligne par abonnement.'}
+                ] %}
+                {% for item in glossary %}
+                <div class="mkt-glossary-item" data-glossary-item data-term="{{ item.k|lower }}">
+                    <dt>{{ item.k }}</dt>
+                    <dd>{{ item.d|raw }}</dd>
+                </div>
+                {% endfor %}
+            </dl>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="mots-cles" data-guide-section data-keywords="mots cles recherche">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">11</span>
+                <h2>Mots-clés utiles</h2>
+            </div>
+            <div class="mkt-guide-keywords" id="guideKeywords">
+                {% set keywords = [
+                    'Tableau de bord','Nouvelle vente','Ticket de caisse','Facture','Remise','Espèces','Mobile money',
+                    'Carte bancaire','Vente à crédit','Solde client','Créances','Prix d\'achat','Prix de vente',
+                    'Marge commerciale','Bénéfice brut','Coût des ventes','Stock faible','Ajustement de stock',
+                    'Bon de commande','Réception fournisseur','Inventaire physique','Écart d\'inventaire',
+                    'Fond de caisse','Ouverture de caisse','Clôture de caisse','Écart de caisse','TVA collectée',
+                    'Taux de TVA','NINEA','Prix HT','Prix TTC','Export CSV','Journal d\'audit','Multi-entreprises',
+                    'Rôle responsable','Rôle caissier','Rôle magasinier','Abonnement','Contrat','Notifications',
+                    'Mode sombre','Application PWA','FCFA','XOF'
+                ] %}
+                {% for kw in keywords %}
+                <button type="button" class="mkt-guide-kw" data-guide-kw="{{ kw }}">{{ kw }}</button>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="mkt-guide-card reveal-up" id="astuces" data-guide-section data-keywords="astuces theme sombre pwa mobile cloture">
+            <div class="mkt-guide-card-top">
+                <span class="mkt-guide-step">12</span>
+                <h2>Astuces du quotidien</h2>
+            </div>
+            <ul class="mkt-guide-list">
+                <li>Basculez le thème clair / sombre via l’icône soleil / lune.</li>
+                <li>Sur mobile, ouvrez le menu latéral pour tous les modules.</li>
+                <li>Installez la <strong>PWA</strong> pour un accès type application.</li>
+                <li>Mettez à jour le prix d’achat après chaque réception.</li>
+                <li>Clôturez la caisse chaque soir.</li>
+                <li>Bénéfices = marge réelle · Rapports = CA / TVA / exports.</li>
+            </ul>
+        </article>
+
+        <section class="mkt-guide-support reveal-up" id="support" data-guide-section data-keywords="support contact aide telephone email whatsapp">
+            <div class="mkt-guide-support-inner">
+                <p class="mkt-kicker">Support</p>
+                <h2 class="mkt-h2">Besoin d’aide ?</h2>
+                <p class="mkt-lead">Notre équipe vous répond rapidement par téléphone ou e-mail. Pour l’abonnement, payez via <strong>Wave</strong> ou <strong>Orange Money</strong> au <strong>+221 77 790 14 60</strong>.</p>
+                <div class="mkt-guide-support-grid">
+                    <a class="mkt-guide-support-item" href="mailto:{{ support_email }}">
+                        <span class="mkt-guide-support-label">E-mail</span>
+                        <strong>{{ support_email }}</strong>
+                    </a>
+                    <a class="mkt-guide-support-item" href="tel:+221777901460">
+                        <span class="mkt-guide-support-label">Wave / Orange Money · SN</span>
+                        <strong>+221 77 790 14 60</strong>
+                    </a>
+                    <a class="mkt-guide-support-item" href="tel:+212684088765">
+                        <span class="mkt-guide-support-label">Maroc</span>
+                        <strong>{{ support_phone_ma }}</strong>
+                    </a>
+                    <a class="mkt-guide-support-item" href="{{ path('app_contact') }}">
+                        <span class="mkt-guide-support-label">Formulaire</span>
+                        <strong>Page Contact</strong>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(() => {
+  const search = document.getElementById('guideSearch');
+  const countEl = document.querySelector('[data-guide-count]');
+  const sections = [...document.querySelectorAll('[data-guide-section]')];
+  const glossaryItems = [...document.querySelectorAll('[data-glossary-item]')];
+  const navLinks = [...document.querySelectorAll('[data-guide-nav]')];
+  const kwButtons = [...document.querySelectorAll('[data-guide-kw]')];
+
+  const normalize = (s) => (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const applyFilter = (raw) => {
+    const q = normalize(raw.trim());
+    let visible = 0;
+
+    sections.forEach((sec) => {
+      const hay = normalize(sec.textContent + ' ' + (sec.dataset.keywords || ''));
+      const show = !q || hay.includes(q);
+      sec.classList.toggle('is-filtered-out', !show);
+      if (show) visible += 1;
+    });
+
+    glossaryItems.forEach((item) => {
+      const hay = normalize(item.textContent + ' ' + (item.dataset.term || ''));
+      item.classList.toggle('is-filtered-out', q ? !hay.includes(q) : false);
+    });
+
+    if (countEl) {
+      countEl.textContent = q
+        ? (visible ? visible + ' section(s)' : 'Aucun résultat')
+        : sections.length + ' sections';
+    }
+  };
+
+  search?.addEventListener('input', () => applyFilter(search.value));
+  applyFilter('');
+
+  kwButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!search) return;
+      search.value = btn.dataset.guideKw || btn.textContent || '';
+      applyFilter(search.value);
+      search.focus();
+      document.getElementById('glossaire')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        navLinks.forEach((a) => {
+          a.classList.toggle('is-active', a.getAttribute('href') === '#' + id);
+        });
+      });
+    }, { rootMargin: '-35% 0px -55% 0px', threshold: 0.01 });
+    sections.forEach((sec) => io.observe(sec));
+  }
+})();
+</script>
+{% endblock %}

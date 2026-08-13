@@ -1,55 +1,134 @@
 {% extends 'base.html.twig' %}
 {% block title %}Tableau de bord{% endblock %}
 {% block body %}
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-    <div>
-        <div class="text-muted small mb-1">Vue d'ensemble</div>
-        <h1 class="page-title h2 mb-1">Tableau de bord</h1>
-        <div class="text-muted">{{ shop.name }} · activité en direct</div>
+{% set onboardingDone = 0 %}
+{% if onboarding %}
+  {% if onboarding.hasShop %}{% set onboardingDone = onboardingDone + 1 %}{% endif %}
+  {% if onboarding.hasProducts %}{% set onboardingDone = onboardingDone + 1 %}{% endif %}
+  {% if onboarding.taxReady %}{% set onboardingDone = onboardingDone + 1 %}{% endif %}
+  {% if onboarding.hasSale %}{% set onboardingDone = onboardingDone + 1 %}{% endif %}
+  {% if onboarding.hasStaff %}{% set onboardingDone = onboardingDone + 1 %}{% endif %}
+{% endif %}
+
+<section class="dash-hero">
+    <div class="dash-hero-main">
+        <div class="dash-live">
+            <span class="dash-live-dot" aria-hidden="true"></span>
+            En direct
+        </div>
+        <div class="dash-eyebrow">Vue d'ensemble</div>
+        <h1 class="page-title h2">Tableau de bord</h1>
+        <p class="dash-subtitle">{{ shop.name }} · activité commerciale</p>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-        {% if can_module('fiscal') %}
-        <a href="{{ path('app_fiscal_index') }}" class="btn btn-outline-brand"><i class="bi bi-percent me-1"></i>Impôts</a>
-        {% endif %}
-        <a href="{{ path('app_report_index') }}" class="btn btn-outline-brand">Rapports</a>
-        <a href="{{ path('app_sale_new') }}" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Nouvelle vente</a>
+    <div class="dash-hero-aside">
+        <div class="dash-clock" data-dash-clock>—</div>
+        <div class="dash-actions">
+            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" target="_blank" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
+            {% if can_module('fiscal') %}
+            <a href="{{ path('app_fiscal_index') }}" class="btn btn-outline-brand"><i class="bi bi-percent me-1"></i>Impôts</a>
+            {% endif %}
+            {% if can_module('view_margin') %}
+            <a href="{{ path('app_profit_index') }}" class="btn btn-outline-brand"><i class="bi bi-piggy-bank me-1"></i>Bénéfices</a>
+            {% endif %}
+            {% if can_module('reports') %}
+            <a href="{{ path('app_report_index') }}" class="btn btn-outline-brand"><i class="bi bi-bar-chart-line me-1"></i>Rapports</a>
+            {% endif %}
+            {% if can_module('sales') %}
+            <a href="{{ path('app_sale_new') }}" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Nouvelle vente</a>
+            {% endif %}
+        </div>
     </div>
-</div>
+</section>
+
+{% include '_dash_guide.html.twig' %}
+
+<nav class="dash-quicklinks" aria-label="Accès rapides">
+    <a href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide</a>
+    {% if can_module('sales') %}
+    <a href="{{ path('app_sale_index') }}"><i class="bi bi-receipt"></i>Ventes</a>
+    {% endif %}
+    {% if can_module('products_view') %}
+    <a href="{{ path('app_product_index') }}"><i class="bi bi-box-seam"></i>Produits</a>
+    {% endif %}
+    {% if can_module('customers') %}
+    <a href="{{ path('app_customer_index') }}"><i class="bi bi-people"></i>Clients</a>
+    {% endif %}
+    {% if can_module('stock') %}
+    <a href="{{ path('app_stock_index') }}"><i class="bi bi-boxes"></i>Stock</a>
+    {% endif %}
+    {% if can_module('cash') %}
+    <a href="{{ path('app_cash_index') }}"><i class="bi bi-safe2"></i>Caisse</a>
+    {% endif %}
+    {% if can_module('purchases') %}
+    <a href="{{ path('app_purchase_index') }}"><i class="bi bi-truck"></i>Achats</a>
+    {% endif %}
+</nav>
 
 {% if onboarding %}
-<div class="panel mb-4" id="demarrage">
+<div class="panel dash-section dash-onboarding" id="demarrage">
     <div class="panel-head">
-        <h2>Démarrage rapide</h2>
+        <div class="d-flex align-items-center gap-3">
+            <div class="dash-ring" data-onboarding-ring data-done="{{ onboardingDone }}" data-total="5" aria-label="Progression démarrage {{ onboardingDone }} sur 5">
+                <svg viewBox="0 0 80 80" width="64" height="64">
+                    <circle class="dash-ring-track" cx="40" cy="40" r="34"></circle>
+                    <circle class="dash-ring-progress" cx="40" cy="40" r="34"></circle>
+                </svg>
+                <span class="dash-ring-label" data-ring-pct>0%</span>
+            </div>
+            <div>
+                <h2 class="mb-0">Démarrage rapide</h2>
+                <p class="text-muted small mb-0">{{ onboardingDone }}/5 étapes complétées</p>
+            </div>
+        </div>
         <form method="post" action="{{ path('app_onboarding_complete') }}">
             <input type="hidden" name="_token" value="{{ csrf_token('onboarding_complete') }}">
             <button class="btn btn-sm btn-outline-secondary">Masquer</button>
         </form>
     </div>
     <div class="panel-body">
-        <ul class="list-unstyled mb-0">
-            <li class="mb-2">{% if onboarding.hasShop %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} Entreprise prête</li>
-            <li class="mb-2">{% if onboarding.hasProducts %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_product_new') }}">Ajouter des produits</a></li>
-            <li class="mb-2">{% if onboarding.taxReady %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_fiscal_index') }}">Configurer NINEA / TVA</a></li>
-            <li class="mb-0">{% if onboarding.hasSale %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %} <a href="{{ path('app_sale_new') }}">Réaliser une première vente</a></li>
+        <ul class="dash-checklist">
+            <li class="{{ onboarding.hasShop ? 'is-done' : '' }}">
+                <span class="dash-check-icon {{ onboarding.hasShop ? 'is-done' : 'is-todo' }}"><i class="bi bi-{{ onboarding.hasShop ? 'check-circle-fill' : 'circle' }}"></i></span>
+                <span>Entreprise prête</span>
+            </li>
+            <li class="{{ onboarding.hasProducts ? 'is-done' : '' }}">
+                <span class="dash-check-icon {{ onboarding.hasProducts ? 'is-done' : 'is-todo' }}"><i class="bi bi-{{ onboarding.hasProducts ? 'check-circle-fill' : 'circle' }}"></i></span>
+                {% if onboarding.hasProducts %}<span>Produits ajoutés</span>{% else %}<a href="{{ path('app_product_new') }}">Ajouter des produits</a>{% endif %}
+            </li>
+            <li class="{{ onboarding.taxReady ? 'is-done' : '' }}">
+                <span class="dash-check-icon {{ onboarding.taxReady ? 'is-done' : 'is-todo' }}"><i class="bi bi-{{ onboarding.taxReady ? 'check-circle-fill' : 'circle' }}"></i></span>
+                {% if onboarding.taxReady %}<span>NINEA / TVA configurés</span>{% else %}<a href="{{ path('app_fiscal_index') }}">Configurer NINEA / TVA</a>{% endif %}
+            </li>
+            <li class="{{ onboarding.hasSale ? 'is-done' : '' }}">
+                <span class="dash-check-icon {{ onboarding.hasSale ? 'is-done' : 'is-todo' }}"><i class="bi bi-{{ onboarding.hasSale ? 'check-circle-fill' : 'circle' }}"></i></span>
+                {% if onboarding.hasSale %}<span>Première vente réalisée</span>{% else %}<a href="{{ path('app_sale_new') }}">Réaliser une première vente</a>{% endif %}
+            </li>
+            <li class="{{ onboarding.hasStaff ? 'is-done' : '' }}">
+                <span class="dash-check-icon {{ onboarding.hasStaff ? 'is-done' : 'is-todo' }}"><i class="bi bi-{{ onboarding.hasStaff ? 'check-circle-fill' : 'circle' }}"></i></span>
+                {% if onboarding.hasStaff %}<span>Collaborateur invité</span>{% else %}<a href="{{ path('app_staff_index') }}">Inviter un collaborateur</a>{% endif %}
+            </li>
         </ul>
     </div>
 </div>
 {% endif %}
 
 {% if alerts is defined and alerts|length > 0 %}
-<div class="panel mb-4">
-    <div class="panel-head"><h2>Alertes</h2></div>
+<div class="panel dash-section dash-alerts-panel">
+    <div class="panel-head">
+        <h2>Alertes</h2>
+        <span class="dash-pill">{{ alerts|length }}</span>
+    </div>
     <div class="panel-body">
-        <ul class="list-unstyled mb-0">
+        <ul class="dash-alert-list">
             {% for a in alerts %}
-            <li class="mb-2 d-flex justify-content-between gap-2">
-                <span>
+            <li class="dash-alert-item{% if a.type == 'danger' %} is-danger{% elseif a.type == 'warning' %} is-warning{% endif %}">
+                <div class="dash-alert-text">
                     {% if a.type == 'danger' %}<span class="badge-stock">Urgent</span>
                     {% elseif a.type == 'warning' %}<span class="badge-stock">Attention</span>
                     {% else %}<span class="badge-ok">Info</span>{% endif %}
-                    {{ a.text }}
-                </span>
-                <a class="small" href="{{ path(a.href) }}{% if a.anchor is defined %}#{{ a.anchor }}{% endif %}">Voir</a>
+                    <span>{{ a.text }}</span>
+                </div>
+                <a class="btn btn-sm btn-outline-brand flex-shrink-0" href="{{ path(a.href) }}{% if a.anchor is defined %}#{{ a.anchor }}{% endif %}">Voir</a>
             </li>
             {% endfor %}
         </ul>
@@ -57,25 +136,68 @@
 </div>
 {% endif %}
 
+<div class="dash-kpi-grid mb-4">
+    <div class="stat-card tone-ok reveal reveal-delay-1">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <div class="stat-label">CA du jour</div>
+                <div class="stat-value" data-count="{{ todaySales }}" data-money>{{ todaySales|money }}</div>
+                <div class="stat-meta">Encaissements aujourd'hui</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+        </div>
+    </div>
+    <div class="stat-card reveal reveal-delay-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <div class="stat-label">CA du mois</div>
+                <div class="stat-value" data-count="{{ monthSales }}" data-money>{{ monthSales|money }}</div>
+                <div class="stat-meta">Depuis le 1<sup>er</sup> du mois</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        </div>
+    </div>
+    <div class="stat-card tone-info reveal reveal-delay-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <div class="stat-label">Ventes</div>
+                <div class="stat-value" data-count="{{ salesCount }}">{{ salesCount }}</div>
+                <div class="stat-meta">Tickets complétés</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+        </div>
+    </div>
+    <div class="stat-card reveal reveal-delay-4">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <div class="stat-label">Clients</div>
+                <div class="stat-value" data-count="{{ customerCount }}">{{ customerCount }}</div>
+                <div class="stat-meta">Fiches enregistrées</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
+        </div>
+    </div>
+</div>
+
 {% if fiscalSummary %}
-<div class="panel mb-4" id="impots">
+<div class="panel dash-section" id="impots">
     <div class="panel-head">
         <h2>Impôts & fiscalité</h2>
-        <a href="{{ path('app_fiscal_index') }}" class="small">Gérer</a>
+        <a href="{{ path('app_fiscal_index') }}" class="btn btn-sm btn-outline-brand">Gérer</a>
     </div>
     <div class="panel-body">
-        <div class="row g-3 align-items-center">
-            <div class="col-sm-6 col-lg-3">
-                <div class="text-muted small">TVA collectée (mois)</div>
-                <div class="fs-4 fw-semibold">{{ fiscalSummary.monthTax|money }}</div>
+        <div class="dash-mini-grid">
+            <div class="dash-mini">
+                <div class="stat-label">TVA collectée (mois)</div>
+                <div class="stat-value dash-mini-value" data-count="{{ fiscalSummary.monthTax }}" data-money>{{ fiscalSummary.monthTax|money }}</div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="text-muted small">CA HT du mois</div>
-                <div class="fs-5 fw-semibold">{{ fiscalSummary.monthNet|money }}</div>
+            <div class="dash-mini">
+                <div class="stat-label">CA HT du mois</div>
+                <div class="stat-value dash-mini-value" data-count="{{ fiscalSummary.monthNet }}" data-money>{{ fiscalSummary.monthNet|money }}</div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="text-muted small">TVA ventes</div>
-                <div>
+            <div class="dash-mini">
+                <div class="stat-label">TVA ventes</div>
+                <div class="mt-1">
                     {% if fiscalSummary.taxConfig.enabled %}
                         <span class="badge-ok">{{ fiscalSummary.taxConfig.rate }}% · {{ fiscalSummary.taxConfig.pricesIncludeTax ? 'TTC' : 'HT' }}</span>
                     {% else %}
@@ -83,67 +205,21 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="text-muted small">NINEA</div>
-                <div class="fw-semibold text-break">{{ fiscalSummary.taxId ?: 'Non renseigné' }}</div>
+            <div class="dash-mini">
+                <div class="stat-label">NINEA</div>
+                <div class="fw-semibold text-break mt-1">{{ fiscalSummary.taxId ?: 'Non renseigné' }}</div>
             </div>
         </div>
     </div>
 </div>
 {% endif %}
 
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3 reveal reveal-delay-1">
-        <div class="stat-card h-100">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-label">CA du jour</div>
-                    <div class="stat-value">{{ todaySales|money }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3 reveal reveal-delay-2">
-        <div class="stat-card h-100">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-label">CA du mois</div>
-                    <div class="stat-value">{{ monthSales|money }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3 reveal reveal-delay-3">
-        <div class="stat-card h-100">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-label">Ventes</div>
-                    <div class="stat-value">{{ salesCount }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-receipt"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3 reveal reveal-delay-4">
-        <div class="stat-card h-100">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-label">Clients</div>
-                    <div class="stat-value">{{ customerCount }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-people"></i></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% if is_granted('ROLE_MERCHANT') %}
 {% if merchantContracts is defined and merchantContracts|length > 0 %}
-<div class="panel mb-4" id="contrats">
+<div class="panel dash-section" id="contrats">
     <div class="panel-head">
         <h2>Contrats</h2>
+        <span class="dash-pill">{{ merchantContracts|length }}</span>
     </div>
     <div class="table-responsive">
         <table class="table align-middle mb-0">
@@ -172,7 +248,7 @@
     </div>
 </div>
 {% else %}
-<div class="alert alert-info mb-4">
+<div class="alert alert-info dash-section mb-4">
     Aucun contrat partagé pour le moment. L'administration vous enverra un contrat lors des discussions.
 </div>
 {% endif %}
@@ -180,55 +256,70 @@
 
 <div class="row g-3">
     <div class="col-lg-8">
-        <div class="panel mb-3">
+        <div class="panel mb-3 h-100 dash-chart-panel">
             <div class="panel-head">
-                <h2>Évolution des ventes (7 jours)</h2>
+                <div>
+                    <h2 class="mb-0">Évolution des ventes</h2>
+                    <p class="text-muted small mb-0">7 derniers jours</p>
+                </div>
             </div>
-            <div class="panel-body">
-                <canvas id="salesChart" height="120"></canvas>
+            <div class="panel-body dash-chart-body">
+                <canvas id="salesChart" height="120" aria-label="Évolution des ventes sur 7 jours"></canvas>
             </div>
         </div>
         <div class="panel">
             <div class="panel-head">
                 <h2>Produits les plus vendus</h2>
             </div>
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead><tr><th>Produit</th><th>Quantité</th></tr></thead>
-                    <tbody>
+            <div class="panel-body">
+                {% set maxQty = 0 %}
+                {% for row in topProducts %}
+                    {% if row.qty > maxQty %}{% set maxQty = row.qty %}{% endif %}
+                {% endfor %}
+                {% if topProducts|length > 0 %}
+                <ul class="dash-rank-list">
                     {% for row in topProducts %}
-                        <tr>
-                            <td class="fw-semibold">{{ row.name }}</td>
-                            <td><span class="badge-ok">{{ row.qty }}</span></td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="2" class="text-muted px-3 py-4">Aucune vente pour le moment</td></tr>
+                    <li class="dash-rank-item">
+                        <span class="dash-rank-n">{{ loop.index }}</span>
+                        <span class="dash-rank-name" title="{{ row.name }}">{{ row.name }}</span>
+                        <span class="badge-ok">{{ row.qty }}</span>
+                        <div class="dash-rank-bar" aria-hidden="true">
+                            <span data-width="{{ maxQty > 0 ? ((row.qty / maxQty) * 100)|round : 0 }}"></span>
+                        </div>
+                    </li>
                     {% endfor %}
-                    </tbody>
-                </table>
+                </ul>
+                {% else %}
+                <div class="dash-empty-inline">
+                    <i class="bi bi-bag-x"></i>
+                    <span>Aucune vente pour le moment</span>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
     <div class="col-lg-4">
-        <div class="stat-card mb-3">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="stat-card mb-3 tone-info">
+            <div class="d-flex justify-content-between align-items-center gap-2">
                 <div>
                     <div class="stat-label">Produits en stock</div>
-                    <div class="stat-value">{{ productCount }}</div>
+                    <div class="stat-value" data-count="{{ productCount }}">{{ productCount }}</div>
+                    <div class="stat-meta">Catalogue actif</div>
                 </div>
                 <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
             </div>
         </div>
+        {% if canStock %}
         <div class="panel">
             <div class="panel-head">
                 <h2>Alertes stock faible</h2>
-                <a href="{{ path('app_stock_index') }}" class="small">Voir tout</a>
+                <a href="{{ path('app_stock_index') }}" class="btn btn-sm btn-outline-brand">Voir tout</a>
             </div>
             <div class="panel-body">
                 <ul class="list-group list-group-flush list-quiet">
                     {% for p in lowStock %}
-                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                            <span>{{ p.name }}</span>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                            <span class="text-truncate">{{ p.name }}</span>
                             <span class="badge-stock">{{ p.quantity }}</span>
                         </li>
                     {% else %}
@@ -237,42 +328,67 @@
                 </ul>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
 {% block javascripts %}
+<script src="{{ asset('js/dashboard.js') }}?v=1"></script>
 <script>
-const ctx = document.getElementById('salesChart');
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: {{ salesByDay|map(d => d.label)|json_encode|raw }},
-    datasets: [{
-      label: 'CA',
-      data: {{ salesByDay|map(d => d.value)|json_encode|raw }},
-      borderColor: '#0c5c50',
-      backgroundColor: (context) => {
-        const {ctx, chartArea} = context.chart;
-        if (!chartArea) return 'rgba(12,92,80,.12)';
-        const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        g.addColorStop(0, 'rgba(20,122,106,.28)');
-        g.addColorStop(1, 'rgba(20,122,106,0)');
-        return g;
+(function () {
+  const el = document.getElementById('salesChart');
+  if (!el || typeof Chart === 'undefined') return;
+  const t = (window.NdamDash && window.NdamDash.theme) ? window.NdamDash.theme() : {
+    isDark: document.documentElement.getAttribute('data-theme') === 'dark',
+    brand: '#0c5c50', mid: '#147a6a', muted: '#5f726c',
+    grid: 'rgba(19,32,28,.06)', soft: 'rgba(20,122,106,.28)'
+  };
+  new Chart(el, {
+    type: 'line',
+    data: {
+      labels: {{ salesByDay|map(d => d.label)|json_encode|raw }},
+      datasets: [{
+        label: 'CA',
+        data: {{ salesByDay|map(d => d.value)|json_encode|raw }},
+        borderColor: t.brand,
+        backgroundColor: (context) => {
+          const {ctx, chartArea} = context.chart;
+          if (!chartArea) return t.soft;
+          const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, t.soft);
+          g.addColorStop(1, 'rgba(20,122,106,0)');
+          return g;
+        },
+        fill: true,
+        tension: .4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: t.brand,
+        borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.parsed.y ?? 0;
+              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v) + ' FCFA';
+            }
+          }
+        }
       },
-      fill: true,
-      tension: .4,
-      pointRadius: 3,
-      pointBackgroundColor: '#0c5c50',
-      borderWidth: 2.5
-    }]
-  },
-  options: {
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: 'rgba(19,32,28,.06)' }, ticks: { color: '#5f726c' } },
-      x: { grid: { display: false }, ticks: { color: '#5f726c' } }
+      scales: {
+        y: { beginAtZero: true, grid: { color: t.grid }, ticks: { color: t.muted } },
+        x: { grid: { display: false }, ticks: { color: t.muted } }
+      }
     }
-  }
-});
+  });
+})();
 </script>
 {% endblock %}

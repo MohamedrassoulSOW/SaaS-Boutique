@@ -26,6 +26,9 @@ class PurchaseOrderItem
     #[ORM\Column]
     private int $quantity = 1;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $receivedQuantity = 0;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $unitPrice = '0.00';
 
@@ -68,6 +71,23 @@ class PurchaseOrderItem
         $this->quantity = $quantity;
 
         return $this;
+    }
+
+    public function getReceivedQuantity(): int
+    {
+        return $this->receivedQuantity;
+    }
+
+    public function setReceivedQuantity(int $receivedQuantity): static
+    {
+        $this->receivedQuantity = max(0, $receivedQuantity);
+
+        return $this;
+    }
+
+    public function getRemainingQuantity(): int
+    {
+        return max(0, $this->quantity - $this->receivedQuantity);
     }
 
     public function getUnitPrice(): string

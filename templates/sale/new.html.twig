@@ -12,6 +12,14 @@
 {% endblock %}
 
 {% block body %}
+{% if not openCash %}
+<div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <strong>Caisse fermée.</strong> Ouvrez une session de caisse avant d’encaisser.
+    </div>
+    <a href="{{ path('app_cash_index') }}" class="btn btn-sm btn-brand">Ouvrir la caisse</a>
+</div>
+{% endif %}
 <div class="pos-page">
 <form method="post" id="saleForm" class="pos-form">
 <input type="hidden" name="_token" value="{{ csrf_token('sale_new') }}">
@@ -21,7 +29,7 @@
             <h2>Produits</h2>
             <div class="pos-search-wrap">
                 <i class="bi bi-search" aria-hidden="true"></i>
-                <input type="search" id="posSearch" class="form-control form-control-sm" placeholder="Rechercher un produit…" autocomplete="off">
+                <input type="search" id="posSearch" class="form-control form-control-sm" placeholder="Recherche ou scan code-barres…" autocomplete="off" inputmode="none">
             </div>
         </div>
         <div class="pos-grid" id="posGrid">
@@ -33,6 +41,7 @@
                 data-name="{{ p.name|e('html_attr') }}"
                 data-price="{{ p.salePrice }}"
                 data-stock="{{ p.quantity }}"
+                data-barcode="{{ (p.barcode ?? '')|e('html_attr') }}"
                 data-photo="{% if p.hasPhoto %}{{ path('app_media_product_photo', {id: p.id}) }}{% endif %}"
                 data-search="{{ (p.name ~ ' ' ~ (p.reference ?? '') ~ ' ' ~ (p.barcode ?? '') ~ ' ' ~ (p.brand ?? '') ~ ' ' ~ (p.category ? p.category.name : ''))|lower|e('html_attr') }}"
             >
@@ -384,6 +393,25 @@
       const hay = tile.dataset.search || '';
       tile.hidden = q !== '' && !hay.includes(q);
     });
+  });
+
+  search?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const code = (search.value || '').trim();
+    if (!code) return;
+    const tiles = [...document.querySelectorAll('.pos-tile')];
+    const exact = tiles.find((tile) => (tile.dataset.barcode || '') === code)
+      || tiles.find((tile) => (tile.dataset.barcode || '').toLowerCase() === code.toLowerCase())
+      || tiles.find((tile) => (tile.dataset.search || '').split(' ').includes(code.toLowerCase()));
+    if (exact) {
+      addProduct(exact);
+      search.value = '';
+      tiles.forEach((tile) => { tile.hidden = false; });
+      if (window.AppUI) AppUI.toast(`Ajouté : ${exact.dataset.name}`, 'success');
+    } else if (window.AppUI) {
+      AppUI.toast('Code-barres introuvable.', 'warning');
+    }
   });
 
   discountInput?.addEventListener('input', () => renderCart(true));

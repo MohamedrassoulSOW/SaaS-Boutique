@@ -46,6 +46,12 @@ class PurchaseController extends ShopAwareController
         $productList = $products->findBy(['shop' => $shop, 'isActive' => true], ['name' => 'ASC']);
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('purchase_new', (string) $request->request->get('_token'))) {
+                $this->addFlash('danger', 'Session expirée. Réessayez.');
+
+                return $this->redirectToRoute('app_purchase_new');
+            }
+
             /** @var User $user */
             $user = $this->getUser();
             $supplier = $suppliers->find($request->request->getInt('supplier_id'));
@@ -117,28 +123,60 @@ class PurchaseController extends ShopAwareController
         }
 
         if ($order->getStatus() === PurchaseOrder::STATUS_RECEIVED) {
-            $this->addFlash('warning', 'Commande déjà reçue.');
+            $this->addFlash('warning', 'Commande déjà entièrement reçue.');
 
             return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);
         }
 
         /** @var User $user */
         $user = $this->getUser();
+        $qtyMap = $request->request->all('receive_qty') ?: [];
+        $receivedAny = false;
+        $fullyReceived = true;
+
         foreach ($order->getItems() as $item) {
+            $remaining = $item->getRemainingQuantity();
+            $raw = $qtyMap[(string) $item->getId()] ?? $qtyMap[$item->getId()] ?? null;
+            // Sans saisie par ligne = réception du reste (comportement classique)
+            $qty = $raw === null || $raw === '' ? $remaining : max(0, min($remaining, (int) $raw));
+            if ($qty < 1) {
+                if ($remaining > 0) {
+                    $fullyReceived = false;
+                }
+                continue;
+            }
+
             $stockService->adjust(
                 $item->getProduct(),
-                $item->getQuantity(),
+                $qty,
                 StockMovement::TYPE_PURCHASE,
                 $user,
                 'Réception '.$order->getReference()
             );
+            $item->setReceivedQuantity($item->getReceivedQuantity() + $qty);
+            $receivedAny = true;
+            if ($item->getRemainingQuantity() > 0) {
+                $fullyReceived = false;
+            }
         }
 
-        $order->setStatus(PurchaseOrder::STATUS_RECEIVED);
-        $order->setReceivedAt(new \DateTimeImmutable());
+        if (!$receivedAny) {
+            $this->addFlash('warning', 'Aucune quantité à réceptionner.');
+
+            return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);
+        }
+
+        if ($fullyReceived) {
+            $order->setStatus(PurchaseOrder::STATUS_RECEIVED);
+            $order->setReceivedAt(new \DateTimeImmutable());
+            $this->addFlash('success', 'Commande entièrement reçue, stock mis à jour.');
+        } else {
+            $order->setStatus(PurchaseOrder::STATUS_PARTIAL);
+            $this->addFlash('success', 'Réception partielle enregistrée, stock mis à jour.');
+        }
+
         $em->flush();
         $logger->log('purchase.receive', 'Réception '.$order->getReference(), $user, $shop);
-        $this->addFlash('success', 'Marchandises reçues, stock mis à jour.');
 
         return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);
     }

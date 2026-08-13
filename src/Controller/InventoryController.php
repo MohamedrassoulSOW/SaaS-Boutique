@@ -47,6 +47,12 @@ class InventoryController extends ShopAwareController
         $user = $this->getUser();
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('inventory_new', (string) $request->request->get('_token'))) {
+                $this->addFlash('danger', 'Session expirée. Réessayez.');
+
+                return $this->redirectToRoute('app_inventory_new');
+            }
+
             $type = $request->request->get('type', Inventory::TYPE_FULL);
             $inventory = new Inventory();
             $inventory->setShop($shop);

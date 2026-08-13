@@ -264,7 +264,8 @@ class Product
 
     public function hasPhoto(): bool
     {
-        return $this->getPhotoData() !== null;
+        // photoMime suffit (évite de charger le BLOB en liste POS)
+        return $this->photoMime !== null && $this->photoMime !== '';
     }
 
     public function isActive(): bool

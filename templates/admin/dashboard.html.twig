@@ -1,63 +1,106 @@
 {% extends 'base.html.twig' %}
 {% block title %}Vue d'ensemble — Admin{% endblock %}
 {% block body %}
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
-    <div>
-        <h1 class="page-title h2 mb-0">Vue d'ensemble</h1>
+<section class="dash-hero">
+    <div class="dash-hero-main">
+        <div class="dash-live">
+            <span class="dash-live-dot" aria-hidden="true"></span>
+            Plateforme
+        </div>
+        <div class="dash-eyebrow">Administration</div>
+        <h1 class="page-title h2">Vue d'ensemble</h1>
+        <p class="dash-subtitle">Abonnements, revenus et santé du réseau</p>
     </div>
-    <a href="{{ path('admin_subscriptions') }}" class="btn btn-brand">Gérer les abonnements</a>
+    <div class="dash-hero-aside">
+        <div class="dash-clock" data-dash-clock>—</div>
+        <div class="dash-actions">
+            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" target="_blank" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
+            <a href="{{ path('admin_subscriptions') }}" class="btn btn-brand"><i class="bi bi-credit-card me-1"></i>Gérer les abonnements</a>
+        </div>
+    </div>
+</section>
+
+{% include '_dash_guide.html.twig' %}
+
+<nav class="dash-quicklinks" aria-label="Navigation admin">
+    <a href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide</a>
+    <a href="{{ path('admin_users') }}"><i class="bi bi-people"></i>Utilisateurs</a>
+    <a href="{{ path('admin_merchants') }}"><i class="bi bi-briefcase"></i>Entrepreneurs</a>
+    <a href="{{ path('admin_shops') }}"><i class="bi bi-shop"></i>Entreprises</a>
+    <a href="{{ path('admin_subscriptions') }}"><i class="bi bi-credit-card"></i>Abonnements</a>
+    <a href="{{ path('admin_activity') }}"><i class="bi bi-activity"></i>Activités</a>
+    <a href="{{ path('admin_contracts') }}"><i class="bi bi-file-earmark-text"></i>Contrats</a>
+</nav>
+
+<div class="dash-kpi-grid dash-kpi-grid--6 mb-4">
+    <div class="stat-card tone-ok">
+        <div class="stat-label">Payés</div>
+        <div class="stat-value" data-count="{{ paidSubscribers }}">{{ paidSubscribers }}</div>
+        <div class="stat-meta">+ {{ freeSubscribers }} gratuit(s)</div>
+    </div>
+    <div class="stat-card tone-warn">
+        <div class="stat-label">Impayés</div>
+        <div class="stat-value" data-count="{{ unpaidSubscribers }}">{{ unpaidSubscribers }}</div>
+        <div class="stat-meta">{{ pendingPayments }} paiement(s) en attente</div>
+    </div>
+    <div class="stat-card tone-danger">
+        <div class="stat-label">Résiliés</div>
+        <div class="stat-value" data-count="{{ cancelledSubscribers }}">{{ cancelledSubscribers }}</div>
+        <div class="stat-meta">Abonnements clôturés</div>
+    </div>
+    <div class="stat-card tone-info">
+        <div class="stat-label">Actifs</div>
+        <div class="stat-value" data-count="{{ activeSubscriptions }}">{{ activeSubscriptions }}</div>
+        <div class="stat-meta">En cours de validité</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Reçu ce mois</div>
+        <div class="stat-value" data-count="{{ revenueThisMonth }}" data-money>{{ revenueThisMonth|money }}</div>
+        <div class="stat-meta">Encaissements abonnements</div>
+    </div>
+    <div class="stat-card tone-muted">
+        <div class="stat-label">Mois précédent</div>
+        <div class="stat-value" data-count="{{ revenuePrevMonth }}" data-money>{{ revenuePrevMonth|money }}</div>
+        <div class="stat-meta">Référence comparative</div>
+    </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Payés</div>
-            <div class="stat-value">{{ paidSubscribers }}</div>
-            <div class="small text-muted mt-1">dont {{ freeSubscribers }} gratuits</div>
+<div class="dash-kpi-grid dash-kpi-grid--3 mb-4">
+    <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+            <div>
+                <div class="stat-label">Entrepreneurs</div>
+                <div class="stat-value" data-count="{{ merchantCount }}">{{ merchantCount }}</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-briefcase"></i></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Impayés</div>
-            <div class="stat-value">{{ unpaidSubscribers }}</div>
-            <div class="small text-muted mt-1">{{ pendingPayments }} paiement(s) en attente</div>
+    <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+            <div>
+                <div class="stat-label">Entreprises</div>
+                <div class="stat-value" data-count="{{ shopCount }}">{{ shopCount }}</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-shop"></i></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Résiliés</div>
-            <div class="stat-value">{{ cancelledSubscribers }}</div>
+    <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+            <div>
+                <div class="stat-label">Utilisateurs</div>
+                <div class="stat-value" data-count="{{ userCount }}">{{ userCount }}</div>
+            </div>
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Actifs</div>
-            <div class="stat-value">{{ activeSubscriptions }}</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Reçu ce mois</div>
-            <div class="stat-value" style="font-size:1.25rem">{{ revenueThisMonth|money }}</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="stat-card">
-            <div class="stat-label">Mois précédent</div>
-            <div class="stat-value" style="font-size:1.25rem">{{ revenuePrevMonth|money }}</div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-3">
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Entrepreneurs</div><div class="stat-value">{{ merchantCount }}</div></div></div>
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Entreprises</div><div class="stat-value">{{ shopCount }}</div></div></div>
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Utilisateurs</div><div class="stat-value">{{ userCount }}</div></div></div>
 </div>
 
 <div class="panel mb-4 admin-chart-controls">
     <div class="panel-head">
-        <h2>Contrôles des diagrammes</h2>
+        <div>
+            <h2 class="mb-0">Contrôles des diagrammes</h2>
+            <p class="text-muted small mb-0">Filtrez la période, la série et le type d’affichage</p>
+        </div>
         <div class="d-flex flex-wrap gap-2">
             <button type="button" class="btn btn-sm btn-outline-brand" id="adminChartReset">Réinitialiser</button>
             <button type="button" class="btn btn-sm btn-outline-brand" id="adminChartExport">Exporter PNG</button>
@@ -96,25 +139,28 @@
                 </select>
             </div>
         </div>
-        <div class="small text-muted mt-3" id="adminChartSummary">—</div>
+        <div class="dash-summary-bar mt-3" id="adminChartSummary">—</div>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
     <div class="col-lg-8">
-        <div class="panel h-100">
+        <div class="panel h-100 dash-chart-panel">
             <div class="panel-head">
-                <h2 id="adminTrendTitle">Recettes mensuelles</h2>
+                <div>
+                    <h2 class="mb-0" id="adminTrendTitle">Recettes mensuelles</h2>
+                    <p class="text-muted small mb-0">Évolution des encaissements</p>
+                </div>
                 <span class="badge-ok" id="adminTrendTotal">0</span>
             </div>
-            <div class="panel-body">
+            <div class="panel-body dash-chart-body">
                 <canvas id="adminTrendChart" height="140" aria-label="Recettes abonnements par mois"></canvas>
             </div>
         </div>
     </div>
     <div class="col-lg-4">
         <div class="panel mb-3">
-            <div class="panel-head"><h2>Payés / Impayés / Résiliés</h2></div>
+            <div class="panel-head"><h2>Santé des abonnements</h2></div>
             <div class="panel-body">
                 <canvas id="adminHealthChart" height="180" aria-label="Santé des abonnements"></canvas>
             </div>
@@ -134,31 +180,35 @@
     </div>
 </div>
 
-<div class="d-flex flex-wrap gap-2 mb-4">
-    <a class="btn btn-outline-brand" href="{{ path('admin_users') }}">Utilisateurs</a>
-    <a class="btn btn-outline-brand" href="{{ path('admin_merchants') }}">Entrepreneurs</a>
-    <a class="btn btn-outline-brand" href="{{ path('admin_shops') }}">Entreprises</a>
-    <a class="btn btn-outline-brand" href="{{ path('admin_subscriptions') }}">Abonnements</a>
-    <a class="btn btn-outline-brand" href="{{ path('admin_activity') }}">Journal d'activités</a>
-</div>
-
 <div class="panel">
-<div class="panel-head"><h2>Derniers paiements d'abonnement</h2></div>
-<div class="table-responsive">
-<table class="table mb-0">
-<thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
-<tbody>
-{% for p in payments %}
-<tr><td>{{ p.reference ?: '#' ~ p.id }}</td><td>{{ p.amount|money }}{% if p.taxAmount > 0 %}<div class="small text-muted">dont TVA {{ p.taxAmount|money }}</div>{% endif %}</td><td>{{ p.status }}</td><td>{{ p.createdAt|date('d/m/Y') }}</td></tr>
-{% else %}<tr><td colspan="4" class="text-muted p-3">Aucun paiement</td></tr>{% endfor %}
-</tbody>
-</table>
-</div>
+    <div class="panel-head">
+        <h2>Derniers paiements d'abonnement</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <thead><tr><th>Réf.</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+            <tbody>
+            {% for p in payments %}
+            <tr>
+                <td class="fw-semibold">{{ p.reference ?: '#' ~ p.id }}</td>
+                <td>{{ p.amount|money }}{% if p.taxAmount > 0 %}<div class="small text-muted">dont TVA {{ p.taxAmount|money }}</div>{% endif %}</td>
+                <td>
+                    {% if p.status == 'paid' %}<span class="badge-ok">{{ paymentStatusLabels[p.status] ?? 'Payé' }}</span>
+                    {% elseif p.status == 'pending' %}<span class="badge-stock">{{ paymentStatusLabels[p.status] ?? 'En attente' }}</span>
+                    {% else %}<span class="badge-stock">{{ paymentStatusLabels[p.status] ?? p.status }}</span>{% endif %}
+                </td>
+                <td>{{ p.createdAt|date('d/m/Y') }}</td>
+            </tr>
+            {% else %}<tr><td colspan="4" class="text-muted p-3">Aucun paiement</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script type="application/json" id="admin-chart-data">{{ chartPayload|json_encode|raw }}</script>
 {% endblock %}
 
 {% block javascripts %}
-<script src="{{ asset('js/admin-dashboard.js') }}?v=2"></script>
+<script src="{{ asset('js/dashboard.js') }}?v=1"></script>
+<script src="{{ asset('js/admin-dashboard.js') }}?v=4"></script>
 {% endblock %}

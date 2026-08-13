@@ -3,8 +3,12 @@ framework:
     secret: '%env(APP_SECRET)%'
     session:
         handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        name: NDAMSESSID
         cookie_secure: auto
+        cookie_httponly: true
         cookie_samesite: lax
+        cookie_lifetime: 0
+        gc_maxlifetime: 7200
 
 when@test:
     framework:

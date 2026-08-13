@@ -1,5 +1,5 @@
 /* NdamStore service worker — cache shell + offline fallback */
-const CACHE_VERSION = 'ndamstore-v2';
+const CACHE_VERSION = 'ndamstore-v3';
 const SHELL = [
   '/offline.html',
   '/manifest.webmanifest',

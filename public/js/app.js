@@ -20,6 +20,7 @@
     init() {
       this.toastContainer = document.getElementById('toastStack');
       this.confirmModal = document.getElementById('appConfirmModal');
+      this.ensureModalsOnBody();
       this.bindConfirm();
       this.bindDataConfirms();
       this.bindFlashMessages();
@@ -28,6 +29,15 @@
       this.bindTables();
       this.bindLogoutConfirm();
       this.bindLiveClock();
+    },
+
+    ensureModalsOnBody() {
+      ['appConfirmModal', 'appResultModal', 'toastStack', 'pwaInstallBanner'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+          document.body.appendChild(el);
+        }
+      });
     },
 
     toast(message, type = 'info', options = {}) {

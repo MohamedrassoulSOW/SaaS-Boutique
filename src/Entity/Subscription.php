@@ -19,6 +19,25 @@ class Subscription
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_CANCELLED = 'cancelled';
 
+    /** Tarifs catalogue mensuels (FCFA) — source unique. */
+    public static function catalogPrice(string $plan): string
+    {
+        return match ($plan) {
+            self::PLAN_BASIC => '15000.00',
+            self::PLAN_PRO => '25000.00',
+            default => '0.00',
+        };
+    }
+
+    public static function planLabel(string $plan): string
+    {
+        return match ($plan) {
+            self::PLAN_BASIC => 'Basique',
+            self::PLAN_PRO => 'Pro',
+            default => 'Gratuit',
+        };
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

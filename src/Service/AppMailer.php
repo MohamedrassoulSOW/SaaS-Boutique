@@ -71,7 +71,19 @@ class AppMailer
     }
 
 
-    public function sendWelcomeMerchant(User $user, string $plainPassword): void
+    /**
+     * Crée un jeton de définition de mot de passe (à persister via flush côté appelant).
+     */
+    public function issueInviteToken(User $user): string
+    {
+        $plainToken = bin2hex(random_bytes(32));
+        $user->setPasswordResetToken(hash('sha256', $plainToken));
+        $user->setPasswordResetRequestedAt(new \DateTimeImmutable());
+
+        return $plainToken;
+    }
+
+    public function sendWelcomeMerchant(User $user, string $plainInviteToken): void
     {
         $this->sendToUser(
             $user,
@@ -80,7 +92,7 @@ class AppMailer
             null,
             [
                 'user' => $user,
-                'plainPassword' => $plainPassword,
+                'inviteUrl' => $this->inviteUrl($plainInviteToken),
                 'roleLabel' => 'entrepreneur',
                 'loginUrl' => $this->loginUrl(),
                 'appName' => $this->appName,
@@ -89,7 +101,7 @@ class AppMailer
         );
     }
 
-    public function sendWelcomeStaff(User $user, string $plainPassword, Shop $shop): void
+    public function sendWelcomeStaff(User $user, string $plainInviteToken, Shop $shop): void
     {
         $this->sendToUser(
             $user,
@@ -98,7 +110,7 @@ class AppMailer
             null,
             [
                 'user' => $user,
-                'plainPassword' => $plainPassword,
+                'inviteUrl' => $this->inviteUrl($plainInviteToken),
                 'roleLabel' => 'collaborateur',
                 'shopName' => $shop->getName(),
                 'loginUrl' => $this->loginUrl(),
@@ -108,7 +120,7 @@ class AppMailer
         );
     }
 
-    public function sendPasswordChanged(User $user, ?string $plainPassword = null): void
+    public function sendPasswordChanged(User $user): void
     {
         $this->sendToUser(
             $user,
@@ -117,11 +129,19 @@ class AppMailer
             null,
             [
                 'user' => $user,
-                'plainPassword' => $plainPassword,
                 'loginUrl' => $this->loginUrl(),
                 'appName' => $this->appName,
                 'platform' => $this->platform,
             ]
+        );
+    }
+
+    private function inviteUrl(string $plainToken): string
+    {
+        return $this->urlGenerator->generate(
+            'app_reset_password',
+            ['token' => $plainToken],
+            UrlGeneratorInterface::ABSOLUTE_URL
         );
     }
 

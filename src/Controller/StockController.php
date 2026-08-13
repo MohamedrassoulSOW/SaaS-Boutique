@@ -41,6 +41,12 @@ class StockController extends ShopAwareController
         $productList = $products->findBy(['shop' => $shop, 'isActive' => true], ['name' => 'ASC']);
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('stock_adjust', (string) $request->request->get('_token'))) {
+                $this->addFlash('danger', 'Session expirée. Réessayez.');
+
+                return $this->redirectToRoute('app_stock_adjust');
+            }
+
             /** @var User $user */
             $user = $this->getUser();
             $product = $products->find($request->request->getInt('product_id'));

@@ -4,6 +4,7 @@
 <h1 class="page-title h3 mb-4">Entrée / Sortie / Ajustement</h1>
 <div class="card stat-card p-4" style="max-width:640px">
 <form method="post">
+    <input type="hidden" name="_token" value="{{ csrf_token('stock_adjust') }}">
     <div class="mb-3">
         <label class="form-label">Produit</label>
         <select name="product_id" class="form-select" required>

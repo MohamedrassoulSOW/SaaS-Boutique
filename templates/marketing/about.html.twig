@@ -38,7 +38,11 @@
         </div>
         <div class="reveal-up delay-1">
             <p class="mkt-copy"><strong>Représentant</strong><br>{{ platform.representative }}</p>
-            <p class="mkt-copy"><strong>Contact</strong><br>{{ platform.email }} · {{ platform.phone }}</p>
+            <p class="mkt-copy"><strong>Contact</strong><br>
+                <a href="mailto:{{ platform.email }}">{{ platform.email }}</a><br>
+                <a href="tel:{{ platform.phone|replace({' ': '', '-': ''}) }}">{{ platform.phone }}</a>
+                {% if platform.phone_alt %} · <a href="tel:{{ platform.phone_alt|replace({' ': '', '-': ''}) }}">{{ platform.phone_alt }}</a>{% endif %}
+            </p>
         </div>
     </div>
 </section>

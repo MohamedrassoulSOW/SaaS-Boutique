@@ -1,0 +1,33 @@
+{% extends 'marketing/layout.html.twig' %}
+{% block title %}Conditions générales d'utilisation{% endblock %}
+{% block body %}
+<section class="mkt-section">
+    <div class="mkt-wrap" style="max-width:820px">
+        <p class="mkt-eyebrow">Légal</p>
+        <h1 class="mkt-h1">Conditions générales d'utilisation</h1>
+        <p class="mkt-lead">Dernière mise à jour : {{ "now"|date('d/m/Y') }}</p>
+
+        <h2 class="mkt-h2">1. Objet</h2>
+        <p class="mkt-copy">Les présentes CGU régissent l'accès et l'utilisation de la plateforme SaaS {{ platform.name }}, éditée par {{ platform.legal_name }}, destinée à la gestion commerciale multi-entreprises (ventes, stock, clients, abonnements).</p>
+
+        <h2 class="mkt-h2">2. Compte et accès</h2>
+        <p class="mkt-copy">L'utilisateur s'engage à fournir des informations exactes, à protéger ses identifiants et à informer immédiatement le support en cas d'accès non autorisé. Les comptes peuvent être suspendus en cas de non-paiement, d'abus ou de violation des présentes conditions.</p>
+
+        <h2 class="mkt-h2">3. Abonnement</h2>
+        <p class="mkt-copy">Selon la formule choisie (Gratuit, Basique, Pro), des fonctionnalités et un volume d'usage peuvent s'appliquer. Les tarifs catalogue sont communiqués lors de la souscription et peuvent évoluer avec préavis. Le non-paiement peut entraîner la restriction ou la suspension du service.</p>
+
+        <h2 class="mkt-h2">4. Données et responsabilité</h2>
+        <p class="mkt-copy">Chaque entrepreneur reste responsable des données saisies dans son espace (prix, stocks, factures, clients). {{ platform.name }} met en œuvre des mesures raisonnables de disponibilité et de sécurité, sans garantir une continuité absolue (maintenance, force majeure, panne réseau).</p>
+
+        <h2 class="mkt-h2">5. Usage interdit</h2>
+        <p class="mkt-copy">Il est interdit d'utiliser la plateforme à des fins illégales, de tenter d'accéder aux espaces d'autres clients, de surcharger le service ou de reverse-engineer les composants protégés.</p>
+
+        <h2 class="mkt-h2">6. Contact</h2>
+        <p class="mkt-copy">
+            {{ platform.legal_name }} ·
+            <a href="mailto:{{ platform.email }}">{{ platform.email }}</a> ·
+            {{ platform.phone }}{% if platform.phone_alt %} · {{ platform.phone_alt }}{% endif %}
+        </p>
+    </div>
+</section>
+{% endblock %}

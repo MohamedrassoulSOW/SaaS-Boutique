@@ -3,6 +3,7 @@
 {% block body %}
 <h1 class="page-title h3 mb-4">Nouvelle commande fournisseur</h1>
 <form method="post">
+<input type="hidden" name="_token" value="{{ csrf_token('purchase_new') }}">
 <div class="row g-3">
 <div class="col-lg-8">
 <div class="card stat-card p-3">

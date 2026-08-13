@@ -7,6 +7,7 @@ twig:
         app_logo: 'images/ndamstore-logo.png'
         currency: 'FCFA'
         currency_code: 'XOF'
+        platform: '%app.platform%'
 
 when@test:
     twig:

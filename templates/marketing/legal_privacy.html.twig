@@ -1,0 +1,29 @@
+{% extends 'marketing/layout.html.twig' %}
+{% block title %}Politique de confidentialité{% endblock %}
+{% block body %}
+<section class="mkt-section">
+    <div class="mkt-wrap" style="max-width:820px">
+        <p class="mkt-eyebrow">Légal</p>
+        <h1 class="mkt-h1">Politique de confidentialité</h1>
+        <p class="mkt-lead">Dernière mise à jour : {{ "now"|date('d/m/Y') }}</p>
+
+        <h2 class="mkt-h2">1. Responsable</h2>
+        <p class="mkt-copy">{{ platform.legal_name }}, {{ platform.address }}, {{ platform.city }}, {{ platform.country }}. Contact : <a href="mailto:{{ platform.email }}">{{ platform.email }}</a>.</p>
+
+        <h2 class="mkt-h2">2. Données collectées</h2>
+        <p class="mkt-copy">Compte (identité, email, téléphone), données métier saisies par l'utilisateur (produits, ventes, clients, stocks), journaux techniques (connexion, IP, activité) et messages de contact.</p>
+
+        <h2 class="mkt-h2">3. Finalités</h2>
+        <p class="mkt-copy">Fourniture du service SaaS, facturation d'abonnement, support, sécurité, amélioration du produit et obligations légales.</p>
+
+        <h2 class="mkt-h2">4. Conservation</h2>
+        <p class="mkt-copy">Les données de compte sont conservées pendant la durée du contrat puis archivées selon les obligations légales applicables. Les journaux techniques sont conservés pour une durée limitée nécessaire à la sécurité.</p>
+
+        <h2 class="mkt-h2">5. Partage</h2>
+        <p class="mkt-copy">Aucune vente de données. Des sous-traitants techniques (hébergement, email) peuvent traiter des données pour le compte de {{ platform.name }}, sous obligations de confidentialité.</p>
+
+        <h2 class="mkt-h2">6. Vos droits</h2>
+        <p class="mkt-copy">Vous pouvez demander l'accès, la rectification ou la suppression de vos données personnelles de compte via {{ platform.email }}, sous réserve des obligations de conservation légales et de la continuité du service.</p>
+    </div>
+</section>
+{% endblock %}

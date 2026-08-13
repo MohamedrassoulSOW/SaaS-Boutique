@@ -29,6 +29,10 @@ class SaleItem
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $unitPrice = '0.00';
 
+    /** Coût d'achat figé au moment de la vente (pour calcul de marge). */
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $unitCost = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -82,8 +86,30 @@ class SaleItem
         return $this;
     }
 
+    public function getUnitCost(): ?string
+    {
+        return $this->unitCost;
+    }
+
+    public function setUnitCost(?string $unitCost): static
+    {
+        $this->unitCost = $unitCost;
+
+        return $this;
+    }
+
     public function getLineTotal(): float
     {
         return (float) $this->unitPrice * $this->quantity;
+    }
+
+    public function getLineCost(): float
+    {
+        return (float) ($this->unitCost ?? 0) * $this->quantity;
+    }
+
+    public function getLineProfit(): float
+    {
+        return $this->getLineTotal() - $this->getLineCost();
     }
 }

@@ -38,11 +38,13 @@ class SaleController extends ShopAwareController
         CustomerRepository $customers,
         SaleService $saleService,
         FiscalService $fiscal,
+        \App\Repository\CashSessionRepository $cashSessions,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $productList = $products->findActiveForPos($shop);
         $customerList = $customers->findBy(['shop' => $shop], ['lastName' => 'ASC']);
         $taxConfig = $fiscal->resolveShopTax($shop);
+        $openCash = $cashSessions->findOpenForShop($shop);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('sale_new', (string) $request->request->get('_token'))) {
@@ -52,7 +54,14 @@ class SaleController extends ShopAwareController
                     'products' => $productList,
                     'customers' => $customerList,
                     'taxConfig' => $taxConfig,
+                    'openCash' => $openCash,
                 ]);
+            }
+
+            if (!$openCash) {
+                $this->addFlash('sale_error', 'Ouvrez une session de caisse avant d’encaisser.');
+
+                return $this->redirectToRoute('app_cash_index');
             }
 
             /** @var User $user */
@@ -133,6 +142,7 @@ class SaleController extends ShopAwareController
             'products' => $productList,
             'customers' => $customerList,
             'taxConfig' => $taxConfig,
+            'openCash' => $openCash,
         ]);
     }
 

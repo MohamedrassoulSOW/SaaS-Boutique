@@ -40,9 +40,16 @@ class ShopContext
             return null;
         }
 
-        $this->setCurrentShop($shops[0], $user);
+        // Auto-sélection sans lever d'exception (Twig globals appellent getCurrentShop)
+        $first = $shops[0];
+        if ($this->userCanAccess($user, $first)) {
+            $user->setPreferredShopId($first->getId());
+            $this->em->flush();
 
-        return $shops[0];
+            return $first;
+        }
+
+        return null;
     }
 
     public function setCurrentShop(Shop $shop, ?User $user = null): void
@@ -101,6 +108,10 @@ class ShopContext
     public function userCanAccess(User $user, Shop $shop): bool
     {
         if ($user->isSuspended() || !$user->isActive()) {
+            return false;
+        }
+
+        if (!$shop->isActive()) {
             return false;
         }
 

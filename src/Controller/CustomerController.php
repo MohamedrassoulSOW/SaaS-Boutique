@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Entity\CustomerPayment;
 use App\Form\CustomerType;
+use App\Repository\CustomerPaymentRepository;
 use App\Repository\CustomerRepository;
 use App\Service\ActivityLogger;
 use App\Service\ShopContext;
@@ -63,7 +65,26 @@ class CustomerController extends ShopAwareController
 
         $balance = (float) $customer->getBalance();
         $paid = min($amount, $balance);
+        $method = (string) $request->request->get('method', CustomerPayment::METHOD_CASH);
+        if (!\in_array($method, [
+            CustomerPayment::METHOD_CASH,
+            CustomerPayment::METHOD_MOBILE,
+            CustomerPayment::METHOD_CARD,
+            CustomerPayment::METHOD_OTHER,
+        ], true)) {
+            $method = CustomerPayment::METHOD_CASH;
+        }
+
+        $payment = new CustomerPayment();
+        $payment->setCustomer($customer);
+        $payment->setShop($shop);
+        $payment->setRecordedBy($this->getShopUser());
+        $payment->setAmount(number_format($paid, 2, '.', ''));
+        $payment->setMethod($method);
+        $payment->setNote(trim((string) $request->request->get('note', '')) ?: null);
+
         $customer->setBalance(number_format(max(0, $balance - $paid), 2, '.', ''));
+        $em->persist($payment);
         $em->flush();
         $logger->log(
             'customer.payment',
@@ -102,12 +123,15 @@ class CustomerController extends ShopAwareController
     }
 
     #[Route('/{id}', name: 'app_customer_show')]
-    public function show(Customer $customer, ShopContext $shopContext): Response
+    public function show(Customer $customer, ShopContext $shopContext, CustomerPaymentRepository $payments): Response
     {
         $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
 
-        return $this->render('customer/show.html.twig', ['customer' => $customer]);
+        return $this->render('customer/show.html.twig', [
+            'customer' => $customer,
+            'payments' => $payments->findForCustomer($customer),
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'app_customer_edit')]

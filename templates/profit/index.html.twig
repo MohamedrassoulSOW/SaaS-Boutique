@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+{% block title %}Bénéfices{% endblock %}
+{% block body %}
+<section class="dash-hero">
+    <div class="dash-hero-main">
+        <div class="dash-live"><span class="dash-live-dot" aria-hidden="true"></span>Marge réelle</div>
+        <div class="dash-eyebrow">Pilotage</div>
+        <h1 class="page-title h2">Bénéfices</h1>
+        <p class="dash-subtitle">
+            {{ shop.name }} · {{ periodLabel }}
+            {% if summary.selectedProduct %} · {{ summary.selectedProduct.name }}{% endif %}
+        </p>
+    </div>
+    <div class="dash-hero-aside">
+        <div class="dash-actions">
+            <a href="{{ path('app_profit_export', app.request.query.all) }}" class="btn btn-outline-brand">
+                <i class="bi bi-download me-1"></i>Export CSV
+            </a>
+            <a href="{{ path('app_report_index') }}" class="btn btn-outline-brand"><i class="bi bi-graph-up me-1"></i>Rapports</a>
+        </div>
+    </div>
+</section>
+
+<form method="get" class="panel dash-section" id="profitFilters">
+    <div class="panel-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label small text-muted mb-1" for="period">Raccourci</label>
+                <select name="period" id="period" class="form-select form-select-sm">
+                    <option value="today" {{ period == 'today' ? 'selected' }}>Aujourd'hui</option>
+                    <option value="week" {{ period == 'week' ? 'selected' }}>7 derniers jours</option>
+                    <option value="month" {{ period == 'month' ? 'selected' }}>Mois en cours</option>
+                    <option value="last_month" {{ period == 'last_month' ? 'selected' }}>Mois précédent</option>
+                    <option value="year" {{ period == 'year' ? 'selected' }}>Année en cours</option>
+                    <option value="custom" {{ period == 'custom' ? 'selected' }}>Période libre</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label small text-muted mb-1" for="from">Du</label>
+                <input type="date" class="form-control form-control-sm" id="from" name="from" value="{{ from|date('Y-m-d') }}">
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label small text-muted mb-1" for="to">Au</label>
+                <input type="date" class="form-control form-control-sm" id="to" name="to" value="{{ to|date('Y-m-d') }}">
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small text-muted mb-1" for="product">Produit</label>
+                <select name="product" id="product" class="form-select form-select-sm">
+                    <option value="">Tous les produits</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" {{ productId == p.id ? 'selected' }}>{{ p.name }}{% if p.reference %} ({{ p.reference }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label small text-muted mb-1" for="sort">Trier par</label>
+                <select name="sort" id="sort" class="form-select form-select-sm">
+                    <option value="profit" {{ sort == 'profit' ? 'selected' }}>Bénéfice</option>
+                    <option value="margin" {{ sort == 'margin' ? 'selected' }}>Marge %</option>
+                    <option value="revenue" {{ sort == 'revenue' ? 'selected' }}>CA</option>
+                    <option value="qty" {{ sort == 'qty' ? 'selected' }}>Quantité</option>
+                    <option value="name" {{ sort == 'name' ? 'selected' }}>Nom</option>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small text-muted mb-1" for="q">Rechercher</label>
+                <input type="search" class="form-control form-control-sm" id="q" name="q" value="{{ q }}" placeholder="Nom, référence, code-barres…">
+            </div>
+            <div class="col-lg-2 col-md-4 d-flex gap-2">
+                <button class="btn btn-brand btn-sm flex-grow-1" type="submit">Appliquer</button>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_profit_index') }}" title="Réinitialiser">Reset</a>
+            </div>
+        </div>
+        <p class="small text-muted mb-0 mt-3">
+            Choisissez n’importe quelle période (Du / Au). Le bénéfice de chaque produit = CA − (prix d’achat × quantité vendue).
+        </p>
+    </div>
+</form>
+
+{% if summary.selectedProduct %}
+<div class="panel dash-section">
+    <div class="panel-head">
+        <div>
+            <h2 class="mb-0">{{ summary.selectedProduct.name }}</h2>
+            <p class="text-muted small mb-0">
+                {% if summary.selectedProduct.reference %}Réf. {{ summary.selectedProduct.reference }} · {% endif %}
+                Bénéfice sur la période sélectionnée
+            </p>
+        </div>
+        <a class="btn btn-sm btn-outline-brand" href="{{ path('app_profit_index', app.request.query.all|filter((v, k) => k != 'product')) }}">Tous les produits</a>
+    </div>
+    <div class="panel-body">
+        <div class="dash-mini-grid">
+            <div class="dash-mini">
+                <div class="stat-label">Quantité vendue</div>
+                <div class="stat-value dash-mini-value">{{ summary.selectedProduct.qty|number_format(0, ',', ' ') }}</div>
+            </div>
+            <div class="dash-mini">
+                <div class="stat-label">CA</div>
+                <div class="stat-value dash-mini-value">{{ summary.selectedProduct.revenue|money }}</div>
+            </div>
+            <div class="dash-mini">
+                <div class="stat-label">Coût</div>
+                <div class="stat-value dash-mini-value">{{ summary.selectedProduct.cost|money }}</div>
+            </div>
+            <div class="dash-mini">
+                <div class="stat-label">Bénéfice</div>
+                <div class="stat-value dash-mini-value {{ summary.selectedProduct.profit < 0 ? 'text-danger' : '' }}">{{ summary.selectedProduct.profit|money }}</div>
+            </div>
+            <div class="dash-mini">
+                <div class="stat-label">Marge</div>
+                <div class="stat-value dash-mini-value">{{ summary.selectedProduct.margin|number_format(1, ',', ' ') }}%</div>
+            </div>
+            <div class="dash-mini">
+                <div class="stat-label">Bénéfice / unité</div>
+                <div class="stat-value dash-mini-value">{{ summary.selectedProduct.unitProfit|money }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="dash-kpi-grid mb-4">
+    <div class="stat-card tone-info">
+        <div class="stat-label">Chiffre d'affaires</div>
+        <div class="stat-value" data-count="{{ summary.revenue }}" data-money>{{ summary.revenue|money }}</div>
+        <div class="stat-meta">{{ summary.salesCount }} vente(s) · {{ summary.itemsSold }} article(s)</div>
+    </div>
+    <div class="stat-card tone-warn">
+        <div class="stat-label">Coût des ventes</div>
+        <div class="stat-value" data-count="{{ summary.cost }}" data-money>{{ summary.cost|money }}</div>
+        <div class="stat-meta">{{ summary.productCount }} produit(s) concernés</div>
+    </div>
+    <div class="stat-card {{ summary.profit >= 0 ? 'tone-ok' : 'tone-danger' }}">
+        <div class="stat-label">Bénéfice brut</div>
+        <div class="stat-value" data-count="{{ summary.profit }}" data-money>{{ summary.profit|money }}</div>
+        <div class="stat-meta">CA − coût des ventes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Dépenses</div>
+        <div class="stat-value" data-count="{{ summary.expenses }}" data-money>{{ summary.expenses|money }}</div>
+        <div class="stat-meta"><a href="{{ path('app_expense_index') }}">Voir les dépenses</a></div>
+    </div>
+    <div class="stat-card {{ summary.netProfit >= 0 ? 'tone-ok' : 'tone-danger' }}">
+        <div class="stat-label">Bénéfice net</div>
+        <div class="stat-value" data-count="{{ summary.netProfit }}" data-money>{{ summary.netProfit|money }}</div>
+        <div class="stat-meta">Brut − dépenses</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Marge brute</div>
+        <div class="stat-value">{{ summary.margin|number_format(1, ',', ' ') }}%</div>
+        <div class="stat-meta">{{ summary.margin >= 30 ? 'Saine' : (summary.margin >= 15 ? 'Correcte' : 'À surveiller') }}</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="panel h-100 dash-chart-panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="mb-0">Évolution du bénéfice</h2>
+                    <p class="text-muted small mb-0">
+                        {% if summary.selectedProduct %}Produit sélectionné · {% endif %}
+                        Sur la période choisie
+                    </p>
+                </div>
+            </div>
+            <div class="panel-body dash-chart-body">
+                <canvas id="profitChart" height="130" aria-label="Évolution du bénéfice"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel h-100">
+            <div class="panel-head">
+                <h2>Faibles marges</h2>
+                <span class="dash-pill">{{ summary.lowMargin|length }}</span>
+            </div>
+            <div class="panel-body">
+                {% if summary.lowMargin|length > 0 %}
+                <ul class="list-group list-group-flush list-quiet">
+                    {% for row in summary.lowMargin %}
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                        <a class="text-truncate text-decoration-none" title="{{ row.name }}"
+                           href="{{ path('app_profit_index', app.request.query.all|merge({product: row.id})) }}">{{ row.name }}</a>
+                        <span class="{{ row.margin < 0 ? 'badge-stock' : 'badge-ok' }}">{{ row.margin|number_format(0, ',', ' ') }}%</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="dash-empty-inline"><i class="bi bi-emoji-smile"></i><span>Aucune alerte de marge</span></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel" id="produits">
+    <div class="panel-head">
+        <div>
+            <h2 class="mb-0">Bénéfice par produit</h2>
+            <p class="text-muted small mb-0">{{ summary.byProduct|length }} produit(s) · cliquez un nom pour le détail sur la période</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Réf.</th>
+                    <th class="text-end">Qté</th>
+                    <th class="text-end">CA</th>
+                    <th class="text-end">Coût</th>
+                    <th class="text-end">Bénéfice</th>
+                    <th class="text-end">/ unité</th>
+                    <th class="text-end">Marge</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in summary.byProduct %}
+                <tr class="{{ productId == row.id ? 'table-active' : '' }}">
+                    <td class="fw-semibold">
+                        <a class="text-decoration-none" href="{{ path('app_profit_index', app.request.query.all|merge({product: row.id})) }}">{{ row.name }}</a>
+                    </td>
+                    <td class="small text-muted">{{ row.reference ?: '—' }}</td>
+                    <td class="text-end">{{ row.qty|number_format(0, ',', ' ') }}</td>
+                    <td class="text-end">{{ row.revenue|money }}</td>
+                    <td class="text-end">{{ row.cost|money }}</td>
+                    <td class="text-end fw-semibold {{ row.profit < 0 ? 'text-danger' : '' }}">{{ row.profit|money }}</td>
+                    <td class="text-end">{{ row.unitProfit|money }}</td>
+                    <td class="text-end">
+                        {% if row.margin < 15 %}
+                            <span class="badge-stock">{{ row.margin|number_format(1, ',', ' ') }}%</span>
+                        {% else %}
+                            <span class="badge-ok">{{ row.margin|number_format(1, ',', ' ') }}%</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-brand" href="{{ path('app_profit_index', app.request.query.all|merge({product: row.id})) }}">Détail</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9" class="text-muted p-3">Aucune vente pour ce filtre / cette période</td></tr>
+            {% endfor %}
+            </tbody>
+            {% if summary.byProduct|length > 0 %}
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td colspan="2">Total période</td>
+                    <td class="text-end">{{ summary.itemsSold|number_format(0, ',', ' ') }}</td>
+                    <td class="text-end">{{ summary.revenue|money }}</td>
+                    <td class="text-end">{{ summary.cost|money }}</td>
+                    <td class="text-end">{{ summary.profit|money }}</td>
+                    <td></td>
+                    <td class="text-end">{{ summary.margin|number_format(1, ',', ' ') }}%</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('js/dashboard.js') }}?v=1"></script>
+<script>
+(function () {
+  const form = document.getElementById('profitFilters');
+  const period = document.getElementById('period');
+  const from = document.getElementById('from');
+  const to = document.getElementById('to');
+
+  const fillPreset = (key) => {
+    const today = new Date();
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    if (key === 'today') { from.value = iso(today); to.value = iso(today); }
+    else if (key === 'week') {
+      const d = new Date(today); d.setDate(d.getDate() - 6);
+      from.value = iso(d); to.value = iso(today);
+    }
+    else if (key === 'month') { from.value = iso(startOfMonth); to.value = iso(today); }
+    else if (key === 'last_month') { from.value = iso(startOfLastMonth); to.value = iso(endOfLastMonth); }
+    else if (key === 'year') { from.value = iso(startOfYear); to.value = iso(today); }
+  };
+
+  period?.addEventListener('change', () => {
+    if (period.value !== 'custom') fillPreset(period.value);
+    form?.requestSubmit();
+  });
+
+  [from, to].forEach((el) => {
+    el?.addEventListener('change', () => {
+      if (period) period.value = 'custom';
+    });
+  });
+
+  const el = document.getElementById('profitChart');
+  if (!el || typeof Chart === 'undefined') return;
+  const t = (window.NdamDash && window.NdamDash.theme) ? window.NdamDash.theme() : {
+    brand: '#0c5c50', mid: '#147a6a', muted: '#5f726c', grid: 'rgba(19,32,28,.06)'
+  };
+  const days = {{ summary.byDay|json_encode|raw }};
+  new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: days.map((d) => d.label),
+      datasets: [
+        {
+          type: 'line',
+          label: 'Bénéfice',
+          data: days.map((d) => d.profit),
+          borderColor: t.brand,
+          backgroundColor: t.brand,
+          tension: .35,
+          order: 0,
+        },
+        {
+          label: 'CA',
+          data: days.map((d) => d.revenue),
+          backgroundColor: 'rgba(20,122,106,.35)',
+          borderRadius: 5,
+          order: 1,
+        },
+        {
+          label: 'Coût',
+          data: days.map((d) => d.cost),
+          backgroundColor: 'rgba(217,119,6,.35)',
+          borderRadius: 5,
+          order: 2,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 850, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { position: 'bottom', labels: { color: t.muted, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.parsed.y ?? 0;
+              return ctx.dataset.label + ' : ' + new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v) + ' FCFA';
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: t.grid }, ticks: { color: t.muted } },
+        x: { grid: { display: false }, ticks: { color: t.muted, maxRotation: 0 } }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

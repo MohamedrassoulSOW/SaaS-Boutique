@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Form\ContactType;
 use App\Service\AppMailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 class MarketingController extends AbstractController
@@ -21,6 +23,7 @@ class MarketingController extends AbstractController
      *   tax_id: string,
      *   email: string,
      *   phone: string,
+     *   phone_alt: string,
      *   representative: string
      * } $platform
      */
@@ -45,13 +48,63 @@ class MarketingController extends AbstractController
         ]);
     }
 
-    #[Route('/contact', name: 'app_contact')]
-    public function contact(Request $request, AppMailer $mailer): Response
+    #[Route('/guide', name: 'app_guide')]
+    public function guide(): Response
     {
+        return $this->render('marketing/guide.html.twig', [
+            'platform' => $this->platform,
+        ]);
+    }
+
+    #[Route('/aide', name: 'app_guide_legacy')]
+    public function guideLegacy(): Response
+    {
+        return $this->redirectToRoute('app_guide', status: 301);
+    }
+
+    #[Route('/cgu', name: 'app_legal_terms')]
+    public function terms(): Response
+    {
+        return $this->render('marketing/legal_terms.html.twig', [
+            'platform' => $this->platform,
+        ]);
+    }
+
+    #[Route('/confidentialite', name: 'app_legal_privacy')]
+    public function privacy(): Response
+    {
+        return $this->render('marketing/legal_privacy.html.twig', [
+            'platform' => $this->platform,
+        ]);
+    }
+
+    #[Route('/mentions-legales', name: 'app_legal_mentions')]
+    public function mentions(): Response
+    {
+        return $this->render('marketing/legal_mentions.html.twig', [
+            'platform' => $this->platform,
+        ]);
+    }
+
+    #[Route('/contact', name: 'app_contact')]
+    public function contact(
+        Request $request,
+        AppMailer $mailer,
+        #[Autowire(service: 'limiter.contact_form')]
+        RateLimiterFactory $contactFormLimiter,
+    ): Response {
         $form = $this->createForm(ContactType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $clientKey = hash('sha256', ($request->getClientIp() ?: 'anon').'|'.(string) $request->headers->get('User-Agent', ''));
+            $limiter = $contactFormLimiter->create($clientKey);
+            if (!$limiter->consume(1)->isAccepted()) {
+                $this->addFlash('warning', 'Trop de messages envoyés. Réessayez dans une heure.');
+
+                return $this->redirectToRoute('app_contact');
+            }
+
             $data = $form->getData();
 
             $mailer->sendContactMessage(

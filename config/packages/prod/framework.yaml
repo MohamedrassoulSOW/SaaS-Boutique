@@ -1,0 +1,19 @@
+framework:
+    # Cookies de session uniquement en HTTPS en production
+    session:
+        cookie_secure: true
+        cookie_samesite: lax
+        # 2 heures d'inactivité max (ajuste si besoin)
+        cookie_lifetime: 0
+        gc_maxlifetime: 7200
+
+    # Derrière reverse-proxy / hébergeur mutualisé
+    trusted_proxies: '%env(default:trusted_proxies_default:TRUSTED_PROXIES)%'
+    trusted_headers:
+        - 'x-forwarded-for'
+        - 'x-forwarded-proto'
+        - 'x-forwarded-port'
+        - 'x-forwarded-host'
+
+parameters:
+    trusted_proxies_default: 'REMOTE_ADDR'

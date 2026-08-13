@@ -31,7 +31,11 @@ class SuspendedUserSubscriber implements EventSubscriberInterface
 
         $token = $this->tokenStorage->getToken();
         $user = $token?->getUser();
-        if (!$user instanceof User || !$user->isSuspended()) {
+        if (!$user instanceof User) {
+            return;
+        }
+
+        if ($user->isActive() && !$user->isSuspended()) {
             return;
         }
 
@@ -42,6 +46,10 @@ class SuspendedUserSubscriber implements EventSubscriberInterface
         }
 
         $this->tokenStorage->setToken(null);
+        $request = $event->getRequest();
+        if ($request->hasSession()) {
+            $request->getSession()->invalidate();
+        }
         $event->setResponse(new RedirectResponse($this->urlGenerator->generate('app_login')));
     }
 }

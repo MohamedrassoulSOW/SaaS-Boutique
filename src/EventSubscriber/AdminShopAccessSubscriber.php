@@ -29,6 +29,12 @@ class AdminShopAccessSubscriber implements EventSubscriberInterface
         '/reports',
         '/vendeurs',
         '/contrats',
+        '/fiscalite',
+        '/caisse',
+        '/benefices',
+        '/depenses',
+        '/facturation',
+        '/audit',
         '/shop/',
     ];
 

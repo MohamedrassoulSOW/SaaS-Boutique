@@ -3,6 +3,7 @@
 {% block body %}
 <h1 class="page-title h3 mb-4">Nouvel inventaire</h1>
 <form method="post" class="card stat-card p-4" style="max-width:720px">
+<input type="hidden" name="_token" value="{{ csrf_token('inventory_new') }}">
     <div class="mb-3">
         <label class="form-label">Type</label>
         <select name="type" class="form-select" id="invType">

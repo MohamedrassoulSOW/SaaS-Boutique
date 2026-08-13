@@ -11,6 +11,7 @@ parameters:
         tax_id: '%env(PLATFORM_TAX_ID)%'
         email: '%env(PLATFORM_EMAIL)%'
         phone: '%env(PLATFORM_PHONE)%'
+        phone_alt: '%env(PLATFORM_PHONE_ALT)%'
         representative: '%env(PLATFORM_REPRESENTATIVE)%'
 
 services:
@@ -20,22 +21,29 @@ services:
 
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+            - '../src/Kernel.php'
 
     App\Service\AppMailer:
+        class: App\Service\AppMailer
         arguments:
             $mailFrom: '%app.mail_from%'
             $appName: '%app.name%'
             $platform: '%app.platform%'
 
     App\Service\ContractService:
+        class: App\Service\ContractService
         arguments:
             $platform: '%app.platform%'
 
     App\Service\FiscalService:
+        class: App\Service\FiscalService
         arguments:
             $platform: '%app.platform%'
 
     App\Controller\MarketingController:
+        class: App\Controller\MarketingController
         arguments:
             $platform: '%app.platform%'
 

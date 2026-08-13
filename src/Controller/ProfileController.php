@@ -51,7 +51,7 @@ class ProfileController extends AbstractController
                 $shop
             );
             if ($passwordChanged) {
-                $mailer->sendPasswordChanged($user, null);
+                $mailer->sendPasswordChanged($user);
             }
             $this->addFlash('success', 'Profil mis à jour.');
 

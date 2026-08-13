@@ -18,12 +18,15 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Catalogue POS sans charger les BLOB photos (perf / mémoire).
+     *
      * @return list<Product>
      */
     public function findActiveForPos(Shop $shop): array
     {
         return $this->createQueryBuilder('p')
-            ->leftJoin('p.category', 'c')->addSelect('c')
+            ->select('PARTIAL p.{id, name, reference, barcode, brand, salePrice, quantity, minStock, photoMime, photoName, isActive}, PARTIAL c.{id, name}')
+            ->leftJoin('p.category', 'c')
             ->andWhere('p.shop = :shop')
             ->andWhere('p.isActive = true')
             ->setParameter('shop', $shop)

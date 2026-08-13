@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle dépense{% endblock %}
+{% block body %}
+<h1 class="page-title h3 mb-4">Nouvelle dépense</h1>
+<div class="panel" style="max-width:640px">
+    <div class="panel-body">
+        <form method="post">
+            <input type="hidden" name="_token" value="{{ csrf_token('expense_new') }}">
+            <div class="mb-3">
+                <label class="form-label" for="label">Libellé</label>
+                <input type="text" class="form-control" id="label" name="label" required maxlength="180" placeholder="Ex. Loyer mars">
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="category">Catégorie</label>
+                    <select class="form-select" id="category" name="category">
+                        {% for key, label in categories %}
+                        <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="amount">Montant (FCFA)</label>
+                    <input type="number" class="form-control" id="amount" name="amount" min="1" step="1" required>
+                </div>
+            </div>
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="spent_at">Date</label>
+                <input type="date" class="form-control" id="spent_at" name="spent_at" value="{{ 'now'|date('Y-m-d') }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="note">Note (optionnel)</label>
+                <input type="text" class="form-control" id="note" name="note" maxlength="255">
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-brand" type="submit">Enregistrer</button>
+                <a href="{{ path('app_expense_index') }}" class="btn btn-outline-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -4,6 +4,9 @@
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
     <h1 class="page-title h3 mb-0">Rapports — {{ shop.name }}</h1>
     <div class="d-flex flex-wrap gap-2">
+        {% if can_module('view_margin') %}
+        <a class="btn btn-brand btn-sm" href="{{ path('app_profit_index') }}"><i class="bi bi-piggy-bank me-1"></i>Bénéfices</a>
+        {% endif %}
         <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_sales', {from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}">Export ventes</a>
         <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_tax', {from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}">Export TVA</a>
         <a class="btn btn-outline-brand btn-sm" href="{{ path('app_report_export_credits') }}">Export crédits</a>
@@ -14,7 +17,13 @@
     <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">CA mois</div><div class="stat-value fs-4">{{ monthly|money }}</div></div></div>
     <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">TVA mois</div><div class="stat-value fs-4">{{ monthTax|money }}</div></div></div>
     <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Achats mois</div><div class="stat-value fs-4">{{ purchaseTotal|money }}</div></div></div>
-    <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Bénéfice estimé</div><div class="stat-value fs-4">{{ profit|money }}</div></div></div>
+    <div class="col-md-4 col-xl-2">
+        <div class="stat-card p-3">
+            <div class="stat-label">CA − achats</div>
+            <div class="stat-value fs-4">{{ profit|money }}</div>
+            <div class="small text-muted">Flux de trésorerie{% if can_module('view_margin') %} · <a href="{{ path('app_profit_index') }}">marge réelle</a>{% endif %}</div>
+        </div>
+    </div>
     <div class="col-md-4 col-xl-2"><div class="stat-card p-3"><div class="stat-label">Crédits dus</div><div class="stat-value fs-4">{{ debtTotal|money }}</div><div class="small text-muted">{{ debtorsCount }} client(s)</div></div></div>
 </div>
 <div class="row g-3">

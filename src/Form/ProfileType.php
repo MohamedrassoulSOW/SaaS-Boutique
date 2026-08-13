@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Validator\PasswordPolicy;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -23,6 +24,9 @@ class ProfileType extends AbstractType
                 'label' => 'Nouveau mot de passe',
                 'mapped' => false,
                 'required' => false,
+                'help' => 'Laisser vide pour conserver. Sinon : 10+ caractères, lettre + chiffre.',
+                'attr' => ['autocomplete' => 'new-password'],
+                'constraints' => PasswordPolicy::optionalConstraints(),
             ]);
     }
 

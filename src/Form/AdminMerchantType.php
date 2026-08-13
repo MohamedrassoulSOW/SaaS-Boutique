@@ -15,8 +15,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use App\Validator\PasswordPolicy;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class AdminMerchantType extends AbstractType
 {
@@ -43,29 +43,18 @@ class AdminMerchantType extends AbstractType
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
-                'required' => !$isEdit,
+                'required' => false,
                 'first_options' => [
-                    'label' => $isEdit ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe temporaire',
+                    'label' => $isEdit
+                        ? 'Nouveau mot de passe (optionnel)'
+                        : 'Mot de passe initial (optionnel — sinon invitation email)',
+                    'help' => $isEdit ? null : 'Jamais envoyé par email. Un lien sécurisé est toujours envoyé.',
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
                 ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
-                'constraints' => $isEdit
-                    ? [
-                        new Assert\Callback(static function (mixed $value, ExecutionContextInterface $context): void {
-                            if (!\is_string($value) || $value === '') {
-                                return;
-                            }
-                            if (\strlen($value) < 8) {
-                                $context->buildViolation('Au moins 8 caractères.')->addViolation();
-                            }
-                        }),
-                    ]
-                    : [
-                        new Assert\NotBlank(message: 'Mot de passe obligatoire.'),
-                        new Assert\Length(min: 8, minMessage: 'Au moins {{ limit }} caractères.'),
-                    ],
+                'constraints' => PasswordPolicy::optionalConstraints(),
             ])
             ->add('companyName', TextType::class, [
                 'label' => 'Raison sociale / entreprise',

@@ -9,6 +9,7 @@ use App\Repository\CustomerRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
 use App\Repository\ShopContractRepository;
+use App\Repository\ShopMemberRepository;
 use App\Security\ShopPermission;
 use App\Service\FiscalService;
 use App\Service\ShopContext;
@@ -34,6 +35,7 @@ class DashboardController extends AbstractController
         FiscalService $fiscalService,
         ShopPermission $shopPermission,
         CashSessionRepository $cashSessions,
+        ShopMemberRepository $members,
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -44,60 +46,76 @@ class DashboardController extends AbstractController
 
         $shop = $shopContext->getCurrentShop($user);
         if (!$shop) {
-            $accessible = $shopContext->getAccessibleShops($user);
-            if ($accessible === [] || !$shopPermission->can($user, ShopPermission::SHOPS)) {
-                return $this->render('dashboard/no_shop.html.twig', [
-                    'user' => $user,
-                ]);
-            }
-
-            return $this->redirectToRoute('app_shop_index');
+            return $this->render('dashboard/no_shop.html.twig', [
+                'user' => $user,
+            ]);
         }
 
         $todayStart = new \DateTimeImmutable('today');
         $monthStart = new \DateTimeImmutable('first day of this month midnight');
+        $completed = Sale::STATUS_COMPLETED;
 
         $todaySales = $sales->createQueryBuilder('s')
             ->select('COALESCE(SUM(s.total), 0)')
-            ->andWhere('s.shop = :shop')->andWhere('s.soldAt >= :from')
-            ->setParameter('shop', $shop)->setParameter('from', $todayStart)
+            ->andWhere('s.shop = :shop')
+            ->andWhere('s.status = :status')
+            ->andWhere('s.soldAt >= :from')
+            ->setParameter('shop', $shop)
+            ->setParameter('status', $completed)
+            ->setParameter('from', $todayStart)
             ->getQuery()->getSingleScalarResult();
 
         $monthSales = $sales->createQueryBuilder('s')
             ->select('COALESCE(SUM(s.total), 0)')
-            ->andWhere('s.shop = :shop')->andWhere('s.soldAt >= :from')
-            ->setParameter('shop', $shop)->setParameter('from', $monthStart)
+            ->andWhere('s.shop = :shop')
+            ->andWhere('s.status = :status')
+            ->andWhere('s.soldAt >= :from')
+            ->setParameter('shop', $shop)
+            ->setParameter('status', $completed)
+            ->setParameter('from', $monthStart)
             ->getQuery()->getSingleScalarResult();
 
-        $salesCount = $sales->count(['shop' => $shop]);
+        $salesCount = $sales->count(['shop' => $shop, 'status' => $completed]);
         $productCount = $products->count(['shop' => $shop, 'isActive' => true]);
         $customerCount = $customers->count(['shop' => $shop]);
-        $lowStock = $stockService->getLowStockProducts($shop);
+        $canStock = $shopPermission->can($user, ShopPermission::STOCK, $shop);
+        $lowStock = $canStock ? $stockService->getLowStockProducts($shop) : [];
 
         $topProducts = $sales->createQueryBuilder('s')
             ->select('p.name AS name, SUM(si.quantity) AS qty')
             ->join('s.items', 'si')
             ->join('si.product', 'p')
             ->andWhere('s.shop = :shop')
+            ->andWhere('s.status = :status')
             ->setParameter('shop', $shop)
+            ->setParameter('status', $completed)
             ->groupBy('p.id')
             ->orderBy('qty', 'DESC')
             ->setMaxResults(5)
             ->getQuery()->getResult();
 
+        $weekStart = (new \DateTimeImmutable('today'))->modify('-6 days');
+        $weekEnd = (new \DateTimeImmutable('today'))->modify('+1 day');
+        $rawWeek = $sales->createQueryBuilder('s')
+            ->select('SUBSTRING(s.soldAt, 1, 10) AS dayKey, COALESCE(SUM(s.total), 0) AS amount')
+            ->andWhere('s.shop = :shop')
+            ->andWhere('s.status = :status')
+            ->andWhere('s.soldAt >= :from AND s.soldAt < :to')
+            ->setParameter('shop', $shop)
+            ->setParameter('status', $completed)
+            ->setParameter('from', $weekStart)
+            ->setParameter('to', $weekEnd)
+            ->groupBy('dayKey')
+            ->getQuery()->getResult();
+        $weekMap = [];
+        foreach ($rawWeek as $row) {
+            $weekMap[(string) $row['dayKey']] = (float) $row['amount'];
+        }
         $salesByDay = [];
         for ($i = 6; $i >= 0; --$i) {
             $day = (new \DateTimeImmutable('today'))->modify("-{$i} days");
-            $next = $day->modify('+1 day');
-            $amount = $sales->createQueryBuilder('s')
-                ->select('COALESCE(SUM(s.total), 0)')
-                ->andWhere('s.shop = :shop')
-                ->andWhere('s.soldAt >= :from AND s.soldAt < :to')
-                ->setParameter('shop', $shop)
-                ->setParameter('from', $day)
-                ->setParameter('to', $next)
-                ->getQuery()->getSingleScalarResult();
-            $salesByDay[] = ['label' => $day->format('d/m'), 'value' => (float) $amount];
+            $key = $day->format('Y-m-d');
+            $salesByDay[] = ['label' => $day->format('d/m'), 'value' => $weekMap[$key] ?? 0.0];
         }
 
         $merchantContracts = [];
@@ -119,7 +137,7 @@ class DashboardController extends AbstractController
         }
 
         $alerts = [];
-        if (\count($lowStock) > 0) {
+        if ($canStock && \count($lowStock) > 0) {
             $alerts[] = [
                 'type' => 'warning',
                 'text' => sprintf('%d produit(s) en stock faible', \count($lowStock)),
@@ -139,7 +157,7 @@ class DashboardController extends AbstractController
         if ($shopPermission->can($user, ShopPermission::CASH, $shop) && !$cashSessions->findOpenForShop($shop)) {
             $alerts[] = [
                 'type' => 'info',
-                'text' => 'Aucune de caisse non ouverte',
+                'text' => 'Session de caisse non ouverte',
                 'href' => 'app_cash_index',
             ];
         }
@@ -149,7 +167,7 @@ class DashboardController extends AbstractController
                 $alerts[] = [
                     'type' => 'danger',
                     'text' => 'Abonnement inactif ou expiré',
-                    'href' => 'app_dashboard',
+                    'href' => 'app_contact',
                 ];
             }
             $unsigned = array_filter(
@@ -175,12 +193,13 @@ class DashboardController extends AbstractController
 
         $onboarding = null;
         if ($user->isMerchant() && !$user->hasCompletedOnboarding()) {
+            $staffCount = \count($members->findByShop($shop));
             $onboarding = [
                 'hasShop' => true,
                 'hasProducts' => $productCount > 0,
-                'hasSale' => $sales->count(['shop' => $shop, 'status' => Sale::STATUS_COMPLETED]) > 0,
+                'hasSale' => $salesCount > 0,
                 'taxReady' => (bool) ($fiscalSummary['taxConfig']['enabled'] ?? false) || (bool) $shop->getMerchant()?->getTaxId(),
-                'hasStaff' => false,
+                'hasStaff' => $staffCount > 0,
             ];
         }
 
@@ -194,6 +213,7 @@ class DashboardController extends AbstractController
             'productCount' => $productCount,
             'customerCount' => $customerCount,
             'lowStock' => $lowStock,
+            'canStock' => $canStock,
             'topProducts' => $topProducts,
             'salesByDay' => $salesByDay,
             'fiscalSummary' => $fiscalSummary,

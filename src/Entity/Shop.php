@@ -64,6 +64,10 @@ class Shop
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    /** Compteur de factures (séquence légale par boutique) */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $invoiceSequence = 0;
+
     /** @var Collection<int, ShopMember> */
     #[ORM\OneToMany(mappedBy: 'shop', targetEntity: ShopMember::class, orphanRemoval: true)]
     private Collection $members;
@@ -308,6 +312,25 @@ class Shop
         $this->contract = $contract;
 
         return $this;
+    }
+
+    public function getInvoiceSequence(): int
+    {
+        return $this->invoiceSequence;
+    }
+
+    public function setInvoiceSequence(int $invoiceSequence): static
+    {
+        $this->invoiceSequence = $invoiceSequence;
+
+        return $this;
+    }
+
+    public function nextInvoiceSequence(): int
+    {
+        ++$this->invoiceSequence;
+
+        return $this->invoiceSequence;
     }
 
     public function __toString(): string

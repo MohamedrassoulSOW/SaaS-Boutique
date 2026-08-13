@@ -1,0 +1,27 @@
+{% extends 'marketing/layout.html.twig' %}
+{% block title %}Mentions légales{% endblock %}
+{% block body %}
+<section class="mkt-section">
+    <div class="mkt-wrap" style="max-width:820px">
+        <p class="mkt-eyebrow">Légal</p>
+        <h1 class="mkt-h1">Mentions légales</h1>
+
+        <h2 class="mkt-h2">Éditeur</h2>
+        <p class="mkt-copy">
+            {{ platform.legal_name }}<br>
+            {{ platform.address }}<br>
+            {{ platform.city }}, {{ platform.country }}<br>
+            Identifiant fiscal : {{ platform.tax_id }}<br>
+            Représentant : {{ platform.representative }}<br>
+            Email : <a href="mailto:{{ platform.email }}">{{ platform.email }}</a><br>
+            Tél. : {{ platform.phone }}{% if platform.phone_alt %} · {{ platform.phone_alt }}{% endif %}
+        </p>
+
+        <h2 class="mkt-h2">Hébergement</h2>
+        <p class="mkt-copy">La plateforme {{ platform.name }} est hébergée sur l'infrastructure indiquée auprès du support sur demande. Pour toute question technique : <a href="mailto:{{ platform.email }}">{{ platform.email }}</a>.</p>
+
+        <h2 class="mkt-h2">Propriété intellectuelle</h2>
+        <p class="mkt-copy">Marque, interface, code et documentation {{ platform.name }} sont protégés. Toute reproduction non autorisée est interdite.</p>
+    </div>
+</section>
+{% endblock %}

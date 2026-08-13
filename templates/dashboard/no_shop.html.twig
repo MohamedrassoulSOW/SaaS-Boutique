@@ -1,15 +1,17 @@
 {% extends 'base.html.twig' %}
 {% block title %}Aucune entreprise{% endblock %}
 {% block body %}
-<div class="panel p-4" style="max-width:640px">
+<section class="dash-empty">
+    <div class="dash-empty-icon"><i class="bi bi-shop-window"></i></div>
     <h1 class="page-title h3 mb-2">Aucune entreprise accessible</h1>
     <p class="text-muted mb-3">
         Votre compte n’a pas d’entreprise active pour le moment.
         Contactez l’administrateur de la plateforme ou vérifiez que votre entreprise n’a pas été désactivée.
     </p>
-    <div class="d-flex flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a class="btn btn-outline-brand" href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book me-1"></i>Guide d'utilisation</a>
         <a class="btn btn-brand" href="{{ path('app_profile') }}">Mon profil</a>
         <a class="btn btn-outline-secondary" href="{{ path('app_logout') }}">Se déconnecter</a>
     </div>
-</div>
+</section>
 {% endblock %}

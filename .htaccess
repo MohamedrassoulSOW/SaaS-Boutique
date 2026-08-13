@@ -1,0 +1,37 @@
+# Hébergement mutualisé : la racine du site pointe souvent ici (pas sur public/).
+# On redirige tout le trafic HTTP vers /public sans exposer le code source.
+
+DirectoryIndex index.php
+
+# Désactive le listing de dossiers
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Déjà dans /public → ne rien faire
+    RewriteRule ^public/ - [L]
+
+    # Fichiers / dossiers sensibles : interdit
+    RewriteRule ^(\.git|\.github|\.svn|\.hg)(/|$) - [F,L]
+    RewriteRule ^(\.env.*|composer\.(json|lock)|symfony\.lock|phpunit\.xml.*|\.php-cs-fixer.*)$ - [F,L]
+    RewriteRule ^(bin|config|migrations|src|templates|tools|var|vendor|translations|tests|canvases)(/|$) - [F,L]
+    RewriteRule ^(README\.md|CHANGELOG\.md|LICENSE|Makefile|Dockerfile)$ - [F,L]
+
+    # Assets et front controller dans public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Si mod_rewrite est indisponible, tenter un fallback
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 302 ^/$ /public/
+    </IfModule>
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+</IfModule>

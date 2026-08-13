@@ -52,9 +52,16 @@ class AdminController extends AbstractController
         ShopRepository $shops,
         SubscriptionRepository $subscriptions,
         PaymentRepository $payments,
+        SubscriptionBillingService $billing,
+        EntityManagerInterface $em,
     ): Response {
         $allSubs = $subscriptions->findAll();
         $today = new \DateTimeImmutable('today');
+
+        foreach ($allSubs as $sub) {
+            $billing->ensureNextDueAt($sub);
+        }
+        $em->flush();
 
         $paidCount = 0;
         $unpaidCount = 0;
@@ -67,13 +74,11 @@ class AdminController extends AbstractController
                 ++$cancelledCount;
                 continue;
             }
-            if ($sub->getStatus() === Subscription::STATUS_ACTIVE) {
+            if ($sub->isActive()) {
                 ++$activeCount;
             }
             if (!$sub->isBillable()) {
                 ++$freeCount;
-                ++$paidCount; // gratuit = à jour (pas de dette)
-
                 continue;
             }
             if ($sub->getDaysOverdue($today) > 0) {
@@ -85,7 +90,6 @@ class AdminController extends AbstractController
 
         $monthStart = $today->modify('first day of this month')->setTime(0, 0);
         $prevMonthStart = $monthStart->modify('-1 month');
-        $prevMonthEnd = $monthStart->modify('-1 second');
 
         $revenueThisMonth = $payments->sumPaidBetween($monthStart, $today->modify('+1 day'));
         $revenuePrevMonth = $payments->sumPaidBetween($prevMonthStart, $monthStart);
@@ -101,7 +105,7 @@ class AdminController extends AbstractController
                 $allSubs,
                 static fn (Subscription $s) => $s->getStatus() === Subscription::STATUS_CANCELLED
             )),
-            static fn (Subscription $s) => $s->getLastEnforcementAt() ?? $s->getEndsAt() ?? $s->getStartsAt(),
+            static fn (Subscription $s) => $s->getLastEnforcementAt() ?? $s->getEndsAt(),
             static fn () => 1.0
         );
 
@@ -128,12 +132,17 @@ class AdminController extends AbstractController
             'revenueThisMonth' => $revenueThisMonth,
             'revenuePrevMonth' => $revenuePrevMonth,
             'payments' => $payments->findBy([], ['createdAt' => 'DESC'], 10),
+            'paymentStatusLabels' => [
+                Payment::STATUS_PAID => 'Payé',
+                Payment::STATUS_PENDING => 'En attente',
+                Payment::STATUS_FAILED => 'Échoué',
+            ],
             'chartPayload' => [
                 'revenueByMonth' => $revenueByMonth,
                 'cancelledByMonth' => $cancelledByMonth,
                 'paymentHealth' => [
-                    'labels' => ['Payés', 'Impayés', 'Résiliés'],
-                    'values' => [$paidCount, $unpaidCount, $cancelledCount],
+                    'labels' => ['Payés', 'Gratuits', 'Impayés', 'Résiliés'],
+                    'values' => [$paidCount, $freeCount, $unpaidCount, $cancelledCount],
                 ],
                 'plans' => [
                     'labels' => array_values(array_map(static fn (string $k) => $planLabels[$k] ?? $k, array_keys($byPlan))),
@@ -224,7 +233,10 @@ class AdminController extends AbstractController
             if ($users->findOneBy(['email' => $email])) {
                 $this->addFlash('danger', 'Cet email est déjà utilisé.');
             } else {
-                $plainPassword = (string) $form->get('plainPassword')->getData();
+                $plainPassword = (string) ($form->get('plainPassword')->getData() ?? '');
+                if ($plainPassword === '') {
+                    $plainPassword = bin2hex(random_bytes(16));
+                }
                 $user = new User();
                 $user->setEmail($email);
                 $user->setFirstName((string) $form->get('firstName')->getData());
@@ -250,12 +262,10 @@ class AdminController extends AbstractController
                 $subscription->setMerchant($merchant);
                 $subscription->setPlan($plan);
                 $subscription->setStatus(Subscription::STATUS_ACTIVE);
-                $subscription->setPrice(match ($plan) {
-                    Subscription::PLAN_BASIC => '15000',
-                    Subscription::PLAN_PRO => '25000',
-                    default => '0',
-                });
+                $subscription->setPrice(Subscription::catalogPrice($plan));
                 $merchant->setSubscription($subscription);
+
+                $inviteToken = $mailer->issueInviteToken($user);
 
                 $em->persist($user);
                 $em->flush();
@@ -268,12 +278,12 @@ class AdminController extends AbstractController
                     $user,
                     Notification::TYPE_INFO,
                     'Compte créé',
-                    'Votre compte entrepreneur a été créé par l\'administration. Connectez-vous avec l\'email fourni.',
+                    'Votre compte entrepreneur a été créé. Définissez votre mot de passe via l\'email d\'invitation.',
                 );
 
-                $mailer->sendWelcomeMerchant($user, $plainPassword);
+                $mailer->sendWelcomeMerchant($user, $inviteToken);
 
-                $this->addFlash('success', 'Compte entrepreneur créé. Un email d\'accès a été envoyé.');
+                $this->addFlash('success', 'Compte entrepreneur créé. Un email d\'invitation (sans mot de passe en clair) a été envoyé.');
 
                 return $this->redirectToRoute('admin_merchants');
             }
@@ -344,11 +354,7 @@ class AdminController extends AbstractController
                     $em->persist($subscription);
                 }
                 $subscription->setPlan($plan);
-                $subscription->setPrice(match ($plan) {
-                    Subscription::PLAN_BASIC => '15000',
-                    Subscription::PLAN_PRO => '25000',
-                    default => '0',
-                });
+                $subscription->setPrice(Subscription::catalogPrice($plan));
 
                 $em->flush();
 
@@ -357,7 +363,7 @@ class AdminController extends AbstractController
                 $logger->log('admin.merchant_update', 'Entrepreneur modifié : '.$user->getEmail(), $admin);
 
                 if (\is_string($plainPassword) && $plainPassword !== '') {
-                    $mailer->sendPasswordChanged($user, $plainPassword);
+                    $mailer->sendPasswordChanged($user);
                 }
 
                 $this->addFlash('success', 'Entrepreneur enregistré.');
@@ -1021,11 +1027,7 @@ class AdminController extends AbstractController
         if ($this->isCsrfTokenValid('plan'.$subscription->getId(), $request->request->get('_token'))) {
             $plan = (string) $request->request->get('plan', Subscription::PLAN_FREE);
             $subscription->setPlan($plan);
-            $subscription->setPrice(match ($plan) {
-                Subscription::PLAN_BASIC => '10000',
-                Subscription::PLAN_PRO => '25000',
-                default => '0',
-            });
+            $subscription->setPrice(Subscription::catalogPrice($plan));
             $subscription->setEndsAt((new \DateTimeImmutable())->modify('+30 days'));
             $subscription->setStatus(Subscription::STATUS_ACTIVE);
             $billing->ensureNextDueAt($subscription);

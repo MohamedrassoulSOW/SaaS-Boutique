@@ -6,7 +6,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\PasswordPolicy;
 
 class ResetPasswordType extends AbstractType
 {
@@ -14,12 +14,16 @@ class ResetPasswordType extends AbstractType
     {
         $builder->add('plainPassword', RepeatedType::class, [
             'type' => PasswordType::class,
-            'first_options' => ['label' => 'Nouveau mot de passe'],
-            'second_options' => ['label' => 'Confirmer'],
-            'constraints' => [
-                new Assert\NotBlank(),
-                new Assert\Length(min: 8),
+            'first_options' => [
+                'label' => 'Nouveau mot de passe',
+                'help' => 'Au moins 10 caractères, avec une lettre et un chiffre.',
+                'attr' => ['autocomplete' => 'new-password'],
             ],
+            'second_options' => [
+                'label' => 'Confirmer',
+                'attr' => ['autocomplete' => 'new-password'],
+            ],
+            'constraints' => PasswordPolicy::constraints(true),
         ]);
     }
 }

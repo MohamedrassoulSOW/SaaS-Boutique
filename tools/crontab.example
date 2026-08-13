@@ -1,0 +1,8 @@
+# Cron production NdamStore (crontab -e sur le serveur)
+# Adapter le chemin absolu du projet.
+
+# Suspension / alertes abonnements — tous les jours à 03:00
+0 3 * * * cd /chemin/vers/NdamStore-web && /usr/bin/php bin/console app:subscriptions:enforce --env=prod --no-debug >> var/log/cron-subscriptions.log 2>&1
+
+# Optionnel : nettoyage sessions expirées (si GC MySQL insuffisant)
+# 15 4 * * * cd /chemin/vers/NdamStore-web && /usr/bin/php bin/console session:gc --env=prod --no-debug >> var/log/cron-sessions.log 2>&1

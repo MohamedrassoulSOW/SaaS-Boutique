@@ -47,9 +47,10 @@ class ShopMemberService
 
         $password = (string) ($profile['plainPassword'] ?? '');
         if ($password === '') {
-            throw new \InvalidArgumentException('Mot de passe obligatoire.');
+            $password = bin2hex(random_bytes(16));
         }
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
+        $inviteToken = $this->appMailer->issueInviteToken($user);
 
         $member = new ShopMember();
         $member->setShop($shop);
@@ -68,7 +69,7 @@ class ShopMemberService
             $shop
         );
 
-        $this->appMailer->sendWelcomeStaff($user, $password, $shop);
+        $this->appMailer->sendWelcomeStaff($user, $inviteToken, $shop);
 
         return $member;
     }
@@ -120,7 +121,7 @@ class ShopMemberService
         );
 
         if (\is_string($password) && $password !== '') {
-            $this->appMailer->sendPasswordChanged($user, $password);
+            $this->appMailer->sendPasswordChanged($user);
         }
     }
 

@@ -16,6 +16,7 @@
         "symfony/form": "8.1.*",
         "symfony/framework-bundle": "8.1.*",
         "symfony/mailer": "8.1.*",
+        "symfony/monolog-bundle": "^4.0",
         "symfony/password-hasher": "8.1.*",
         "symfony/rate-limiter": "8.1.*",
         "symfony/runtime": "8.1.*",
@@ -73,7 +74,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "prod:check": "php bin/console app:prod:check --env=prod --no-debug",
+        "prod:deploy": "php tools/deploy_prod.php",
+        "test:regression": "php tools/regression_check.php"
     },
     "conflict": {
         "symfony/symfony": "*"

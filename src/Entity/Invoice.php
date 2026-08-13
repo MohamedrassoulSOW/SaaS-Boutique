@@ -44,7 +44,8 @@ class Invoice
     public function __construct()
     {
         $this->issuedAt = new \DateTimeImmutable();
-        $this->number = 'FAC-'.date('Ymd').'-'.substr(uniqid(), -5);
+        // Numéro attribué lors de la persistance (séquence boutique)
+        $this->number = 'FAC-TMP-'.substr(uniqid(), -6);
     }
 
     public function getId(): ?int

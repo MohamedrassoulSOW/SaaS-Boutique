@@ -83,6 +83,7 @@ class SaleService
                 $item->setProduct($product);
                 $item->setQuantity($qty);
                 $item->setUnitPrice($row['unit_price']);
+                $item->setUnitCost(number_format((float) $product->getPurchasePrice(), 2, '.', ''));
                 $sale->addItem($item);
 
                 $this->stockService->adjust(
@@ -115,6 +116,8 @@ class SaleService
             $invoice = new Invoice();
             $invoice->setSale($sale);
             $invoice->setType(Invoice::TYPE_INVOICE);
+            $seq = $shop->nextInvoiceSequence();
+            $invoice->setNumber(sprintf('FAC-%s-%05d', date('Y'), $seq));
             $sale->setInvoice($invoice);
 
             $this->em->persist($sale);

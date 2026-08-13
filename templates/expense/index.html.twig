@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+{% block title %}Dépenses{% endblock %}
+{% block body %}
+<div class="dash-header">
+    <div>
+        <div class="dash-eyebrow">Pilotage</div>
+        <h1 class="page-title h2">Dépenses</h1>
+        <p class="dash-subtitle">{{ shop.name }} · charges hors coût des marchandises</p>
+    </div>
+    <div class="dash-actions">
+        <a href="{{ path('app_expense_new') }}" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Nouvelle dépense</a>
+    </div>
+</div>
+
+<form method="get" class="panel dash-section">
+    <div class="panel-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="from">Du</label>
+                <input type="date" class="form-control form-control-sm" id="from" name="from" value="{{ from|date('Y-m-d') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1" for="to">Au</label>
+                <input type="date" class="form-control form-control-sm" id="to" name="to" value="{{ to|date('Y-m-d') }}">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-brand btn-sm" type="submit">Filtrer</button>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <div class="stat-label">Total période</div>
+                <div class="stat-value" style="font-size:1.35rem">{{ total|money }}</div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="panel">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Catégorie</th>
+                    <th>Libellé</th>
+                    <th class="text-end">Montant</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for e in expenses %}
+                <tr>
+                    <td>{{ e.spentAt|date('d/m/Y') }}</td>
+                    <td><span class="badge-ok">{{ e.categoryLabel }}</span></td>
+                    <td class="fw-semibold">{{ e.label }}</td>
+                    <td class="text-end">{{ e.amount|money }}</td>
+                    <td class="small text-muted">{{ e.note ?: '—' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-muted">
+                        Aucune dépense sur la période.
+                        <a href="{{ path('app_expense_new') }}">Ajouter une dépense</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

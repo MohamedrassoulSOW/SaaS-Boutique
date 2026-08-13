@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+{% block title %}Facturation{% endblock %}
+{% block body %}
+<div class="dash-header">
+    <div>
+        <div class="dash-eyebrow">Compte</div>
+        <h1 class="page-title h2">Facturation & abonnement</h1>
+        <p class="dash-subtitle">{{ shop.name }} · formule plateforme {{ app_name }}</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card tone-info h-100">
+            <div class="stat-label">Formule actuelle</div>
+            <div class="stat-value" style="font-size:1.5rem">{{ planLabel }}</div>
+            <div class="stat-meta">
+                {% if subscription %}
+                    Statut : {{ subscription.status }}
+                {% else %}
+                    Aucun abonnement lié
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card h-100">
+            <div class="stat-label">Montant périodique</div>
+            <div class="stat-value" style="font-size:1.5rem">
+                {% if subscription %}{{ subscription.price|money }}{% else %}—{% endif %}
+            </div>
+            <div class="stat-meta">Facturation mensuelle</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card tone-warn h-100">
+            <div class="stat-label">Prochaine échéance</div>
+            <div class="stat-value" style="font-size:1.35rem">
+                {% if subscription and subscription.nextDueAt %}
+                    {{ subscription.nextDueAt|date('d/m/Y') }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+            <div class="stat-meta">Paiement auprès du support plateforme</div>
+        </div>
+    </div>
+</div>
+
+<div class="panel mb-3">
+    <div class="panel-head"><h2>Tarifs catalogue</h2></div>
+    <div class="panel-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="fw-semibold">Gratuit</div>
+                <div class="text-muted small">Découverte limitée</div>
+                <div class="mt-1">{{ 0|money }} / mois</div>
+            </div>
+            <div class="col-md-4">
+                <div class="fw-semibold">Basique</div>
+                <div class="text-muted small">Commerce au quotidien</div>
+                <div class="mt-1">{{ catalogBasic|money }} / mois</div>
+            </div>
+            <div class="col-md-4">
+                <div class="fw-semibold">Pro</div>
+                <div class="text-muted small">Multi-équipes & pilotage</div>
+                <div class="mt-1">{{ catalogPro|money }} / mois</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head"><h2>Payer par Wave / Orange Money</h2></div>
+    <div class="panel-body">
+        <p class="mb-2">Envoyez le montant de votre formule sur le numéro suivant (Wave ou Orange Money) :</p>
+        <p class="mb-3">
+            <a class="btn btn-brand" href="tel:+221777901460">+221 77 790 14 60</a>
+        </p>
+        <p class="small text-muted mb-2">
+            Indiquez le nom de votre entreprise dans le motif / message du transfert, puis confirmez auprès du support.
+        </p>
+        <p class="mb-0">
+            Support :
+            <a href="mailto:{{ platform.email }}">{{ platform.email }}</a>
+            · <a href="tel:+221777901460">+221 77 790 14 60</a>
+            {% if platform.phone_alt %}
+            · <a href="tel:{{ platform.phone_alt|replace({' ': '', '-': ''}) }}">{{ platform.phone_alt }}</a>
+            {% endif %}
+        </p>
+        <a class="btn btn-outline-brand btn-sm mt-3" href="{{ path('app_contact') }}">Contacter le support</a>
+    </div>
+</div>
+{% endblock %}

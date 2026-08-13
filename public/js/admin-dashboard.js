@@ -23,13 +23,16 @@
   const resetBtn = document.getElementById('adminChartReset');
   const exportBtn = document.getElementById('adminChartExport');
 
+  const theme = (window.NdamDash && typeof window.NdamDash.theme === 'function')
+    ? window.NdamDash.theme()
+    : null;
   const COLORS = {
-    brand: '#0c5c50',
-    mid: '#147a6a',
-    soft: 'rgba(20,122,106,.22)',
-    grid: 'rgba(19,32,28,.08)',
-    muted: '#5f726c',
-    palette: ['#0c5c50', '#ef4444', '#6b7280', '#147a6a', '#3bb39e', '#f59e0b'],
+    brand: theme?.brand || '#0c5c50',
+    mid: theme?.mid || '#147a6a',
+    soft: theme?.soft || 'rgba(20,122,106,.22)',
+    grid: theme?.grid || 'rgba(19,32,28,.08)',
+    muted: theme?.muted || '#5f726c',
+    palette: [theme?.brand || '#0c5c50', '#3bb39e', '#ef4444', '#6b7280', theme?.mid || '#147a6a', '#f59e0b'],
   };
 
   const METRIC_META = {
@@ -114,6 +117,7 @@
       options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
+        animation: { duration: 850, easing: 'easeOutQuart' },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -165,6 +169,7 @@
       },
       options: {
         responsive: true,
+        animation: { duration: 800, easing: 'easeOutQuart' },
         plugins: {
           legend: {
             display: type !== 'bar',

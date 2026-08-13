@@ -2,6 +2,8 @@ parameters:
     app.name: 'NdamStore'
     app.tagline: 'La réussite de votre commerce.'
     app.mail_from: '%env(MAIL_FROM)%'
+    # Défaut si absente du .env serveur (évite HTTP 500)
+    env(PLATFORM_PHONE_ALT): '+212 684 088765'
     app.platform:
         name: '%env(PLATFORM_NAME)%'
         legal_name: '%env(PLATFORM_LEGAL_NAME)%'

@@ -34,6 +34,8 @@ Hostinger → Domaines → Domaine → **Racine du document** → `…/public`
 
 ## 4. Secrets sur le serveur (une seule fois)
 
+> **Important :** `APP_ENV=prod` et `APP_DEBUG=0` (sinon cache `var/cache/dev` et pages d’erreur détaillées).
+
 En SSH, à la racine du projet :
 
 ```bash

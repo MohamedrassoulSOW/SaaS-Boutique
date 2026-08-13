@@ -63,9 +63,25 @@ Ne jamais committer `.env.prod.local`.
 
 ## 5. Installer / mettre à jour l’app (SSH)
 
+PHP CLI doit être **8.4** (Symfony 8.1). Sur Hostinger :
+
 ```bash
-cd ~/chemin/vers/le/site
-composer prod:deploy
+php -v
+# Si < 8.4 :
+# hPanel → Avancé → Configuration PHP → 8.4
+# ou binaire : /opt/alt/php84/usr/bin/php
+
+cd ~/domains/ndamstore.sowcoder.com/public_html
+git pull origin main
+/opt/alt/php84/usr/bin/php /usr/bin/composer prod:deploy
+# ou :
+/opt/alt/php84/usr/bin/php tools/deploy_prod.php
+```
+
+Si `composer` n’est pas trouvé avec php84 :
+
+```bash
+/opt/alt/php84/usr/bin/php $(which composer) prod:deploy
 ```
 
 Équivalent manuel :

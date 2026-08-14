@@ -47,13 +47,17 @@ class MailTestCommand extends Command
 
         if (str_contains($this->mailerDsn, 'null://') || str_contains($this->mailerDsn, 'VOTRE_MOT_DE_PASSE')) {
             $io->error('MAILER_DSN n’est pas configuré (null:// ou placeholder).');
-            $io->writeln('Utilisez : php tools/configure_hostinger_mail.php "contact@…" "motdepasse" "test@…"');
+            $io->writeln('Diagnostic : php tools/smtp_probe.php "contact@…" "motdepasse"');
+            $io->writeln('Config    : php tools/configure_hostinger_mail.php "contact@…" "motdepasse" "test@…"');
+            $io->writeln('Fallback  : php tools/configure_hostinger_mail.php "contact@…" "-" "test@…" native');
 
             return Command::FAILURE;
         }
 
-        if (!extension_loaded('openssl')) {
+        $usesSmtp = str_starts_with($this->mailerDsn, 'smtp://') || str_starts_with($this->mailerDsn, 'smtps://');
+        if ($usesSmtp && !extension_loaded('openssl')) {
             $io->error('Extension OpenSSL absente — impossible d’utiliser SMTP sécurisé.');
+            $io->writeln('Fallback : php tools/configure_hostinger_mail.php "contact@…" "-" "'.$to.'" native');
 
             return Command::FAILURE;
         }
@@ -89,9 +93,10 @@ class MailTestCommand extends Command
                 FILE_APPEND
             );
             $io->section('Correction rapide');
-            $io->writeln('php tools/configure_hostinger_mail.php "contact@ndamstore.sowcoder.com" "VOTRE_MDP" "'.$to.'"');
-            $io->writeln('Si échec : ajoutez 587 à la fin pour tenter STARTTLS');
-            $io->writeln('php tools/configure_hostinger_mail.php "contact@ndamstore.sowcoder.com" "VOTRE_MDP" "'.$to.'" 587');
+            $io->writeln('1) Diagnostic : php tools/smtp_probe.php "contact@ndamstore.sowcoder.com" "VOTRE_MDP"');
+            $io->writeln('2) SMTP 465  : php tools/configure_hostinger_mail.php "contact@…" "VOTRE_MDP" "'.$to.'"');
+            $io->writeln('3) SMTP 587  : php tools/configure_hostinger_mail.php "contact@…" "VOTRE_MDP" "'.$to.'" 587');
+            $io->writeln('4) Fallback  : php tools/configure_hostinger_mail.php "contact@…" "-" "'.$to.'" native');
 
             return Command::FAILURE;
         }

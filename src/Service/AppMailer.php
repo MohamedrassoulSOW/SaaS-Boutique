@@ -268,6 +268,11 @@ class AppMailer
             $this->logger->error('Échec envoi email NdamStore : '.$e->getMessage(), [
                 'subject' => $email->getSubject(),
             ]);
+            @file_put_contents(
+                dirname(__DIR__, 2).'/var/log/mail-error.log',
+                date('c').' '.$e->getMessage()."\n".$e->getTraceAsString()."\n\n",
+                FILE_APPEND
+            );
             if ($strict) {
                 throw $e;
             }

@@ -95,7 +95,7 @@ class ProdCheckCommand extends Command
         $isRealMailer = !str_starts_with($this->mailerDsn, 'null://')
             && !str_contains($this->mailerDsn, '127.0.0.1')
             && !str_contains($this->mailerDsn, 'VOTRE_MOT_DE_PASSE');
-        $check($isRealMailer, 'MAILER_DSN SMTP réel configuré', 'Créer .env.prod.local depuis .env.prod.local.example');
+        $check($isRealMailer, 'MAILER_DSN réel (SMTP / native / failover)', 'php tools/fix_mail_prod.php "contact@…" "mdp" "test@…"');
 
         $prodLocal = $this->projectDir.'/.env.prod.local';
         $check(is_file($prodLocal), 'Fichier .env.prod.local présent', 'cp .env.prod.local.example .env.prod.local');

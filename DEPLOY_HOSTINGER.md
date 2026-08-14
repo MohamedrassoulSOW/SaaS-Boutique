@@ -52,6 +52,7 @@ APP_SECRET=   # php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
 DEFAULT_URI=https://VOTRE-DOMAINE
 DATABASE_URL="mysql://USER:PASSWORD@127.0.0.1:3306/NOM_DB?serverVersion=8.0&charset=utf8mb4"
 MAILER_DSN=smtps://contact%40VOTRE-DOMAINE:MOT_DE_PASSE@smtp.hostinger.com:465
+# Si SMTP échoue sur mutualisé : MAILER_DSN=native://default
 MAIL_FROM="NdamStore <contact@VOTRE-DOMAINE>"
 PLATFORM_EMAIL=contact@VOTRE-DOMAINE
 PLATFORM_TAX_ID="VOTRE-NINEA-REEL"

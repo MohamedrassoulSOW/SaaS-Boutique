@@ -11,3 +11,4 @@
 
 # Build temporaire du guide vidéo (le MP4 final reste dans public/videos/)
 /tools/guide-video-build/
+/tools/demo-record/node_modules/

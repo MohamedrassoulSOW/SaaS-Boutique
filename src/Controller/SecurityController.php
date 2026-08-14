@@ -110,7 +110,7 @@ class SecurityController extends AbstractController
     ): Response {
         $user = $users->findOneBy(['passwordResetToken' => hash('sha256', $token)]);
         if (!$user || !$user->getPasswordResetRequestedAt()
-            || $user->getPasswordResetRequestedAt() < new \DateTimeImmutable('-2 hours')) {
+            || $user->getPasswordResetRequestedAt() < new \DateTimeImmutable('-30 minutes')) {
             $this->addFlash('danger', 'Lien invalide ou expiré. Merci de refaire une demande.');
 
             return $this->redirectToRoute('app_reset_password_request');

@@ -44,7 +44,7 @@ class AppMailer
                 'user' => $user,
                 'resetUrl' => $resetUrl,
                 'appName' => $this->appName,
-                'expiresInHours' => 2,
+                'expiresInMinutes' => 30,
             ],
             strict: true
         );

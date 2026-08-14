@@ -4,23 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <meta name="application-name" content="{{ app_name }}">
+    <meta name="apple-mobile-web-app-title" content="{{ app_name }}">
+    <meta property="og:site_name" content="{{ app_name }}">
+    <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
     <meta name="description" content="{% block meta_description %}{{ app_name }} — {{ app_tagline }} Gestion multi-entreprises pour entrepreneurs.{% endblock %}">
     <meta name="theme-color" content="#0c5c50" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#121c19" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ app_name }}">
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-    <link rel="icon" href="{{ asset('icons/favicon-32.png') }}?v=2" type="image/png" sizes="32x32">
-    <link rel="icon" href="{{ asset('icons/favicon-16.png') }}?v=2" type="image/png" sizes="16x16">
-    <link rel="icon" href="{{ asset('icons/favicon-48.png') }}?v=2" type="image/png" sizes="48x48">
-    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}?v=2">
+    <link rel="icon" href="{{ asset('icons/favicon-32.png') }}?v=3" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('icons/favicon-16.png') }}?v=3" type="image/png" sizes="16x16">
+    <link rel="icon" href="{{ asset('icons/favicon-48.png') }}?v=3" type="image/png" sizes="48x48">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}?v=3">
     <script>
       (function () {
+        // Titre navigateur = uniquement NdamStore (évite un ancien onglet / préfixe parasite)
+        var pageTitle = document.title || {{ app_name|json_encode|raw }};
+        if (/soukexpat|expat-souk|marché mondial/i.test(pageTitle)) {
+          document.title = pageTitle
+            .replace(/\s*[—\-–]\s*SoukExpat[^—\-–]*/ig, '')
+            .replace(/SoukExpat[^—\-–]*\s*[—\-–]\s*/ig, '')
+            .replace(/^\s*[—\-–]\s*|\s*[—\-–]\s*$/g, '')
+            .trim() || {{ app_name|json_encode|raw }};
+        }
         try {
           var key = 'ndamstore-theme';
-          var saved = localStorage.getItem(key) || localStorage.getItem('boutiquesaas-theme');
+          var saved = localStorage.getItem(key);
           var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.setAttribute('data-bs-theme', theme);

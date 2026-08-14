@@ -1,0 +1,49 @@
+{# Guide vidéo MP4 + chapitres — nouveaux utilisateurs (FR) #}
+<section
+    class="mkt-guide-video reveal-up"
+    id="video"
+    data-guide-section
+    data-keywords="video tutoriel guide nouveaux utilisateurs demarrage francais narration mp4"
+    aria-label="Guide vidéo pour nouveaux utilisateurs"
+>
+    <div class="mkt-guide-video-frame">
+        <div class="mkt-guide-video-player-wrap">
+            <video
+                class="mkt-guide-video-el"
+                controls
+                playsinline
+                preload="metadata"
+                poster="{{ asset('videos/ndamstore-guide-poster.jpg') }}"
+                title="Guide NdamStore — nouveaux utilisateurs"
+            >
+                <source src="{{ asset('videos/ndamstore-guide-nouveaux-utilisateurs.mp4') }}" type="video/mp4">
+                Votre navigateur ne lit pas les vidéos HTML5.
+            </video>
+        </div>
+
+        <div class="mkt-guide-video-controls">
+            <div class="mkt-guide-video-meta">
+                <span class="mkt-guide-video-badge-inline">Guide vidéo · Français · ~3 min</span>
+                <a class="mkt-guide-video-download" href="{{ asset('videos/ndamstore-guide-nouveaux-utilisateurs.mp4') }}" download>
+                    Télécharger la vidéo
+                </a>
+            </div>
+            <p class="mkt-guide-video-hint">
+                Parcours complet pour démarrer : connexion, entreprise, produits, caisse, première vente,
+                clients, bénéfices et équipe. Voix française.
+            </p>
+            <ol class="mkt-guide-video-chapters mkt-guide-video-chapters-static" aria-label="Chapitres">
+                <li><span>01</span>Bienvenue sur NdamStore</li>
+                <li><span>02</span>Connexion à votre espace</li>
+                <li><span>03</span>Configurer l’entreprise</li>
+                <li><span>04</span>Ajouter des produits</li>
+                <li><span>05</span>Ouvrir la caisse</li>
+                <li><span>06</span>Première vente (POS)</li>
+                <li><span>07</span>Clients et crédits</li>
+                <li><span>08</span>Bénéfices</li>
+                <li><span>09</span>Inviter l’équipe</li>
+                <li><span>10</span>Vous êtes prêt</li>
+            </ol>
+        </div>
+    </div>
+</section>

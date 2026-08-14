@@ -8,3 +8,6 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+# Build temporaire du guide vidéo (le MP4 final reste dans public/videos/)
+/tools/guide-video-build/

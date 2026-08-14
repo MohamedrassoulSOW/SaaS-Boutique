@@ -1307,6 +1307,279 @@ html[data-theme="dark"] .mkt-input {
     word-break: break-word;
 }
 
+/* —— Guide vidéo interactif —— */
+.mkt-guide-video {
+    margin-bottom: 1.1rem;
+}
+
+.mkt-guide-video-frame {
+    border-radius: 1.15rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mkt-brand) 28%, transparent);
+    background:
+        linear-gradient(160deg, #0a3f37 0%, #0c5c50 48%, #147a6a 100%);
+    box-shadow: 0 18px 40px rgba(8, 40, 34, .22);
+}
+
+.mkt-guide-video-player-wrap {
+    background: #062822;
+    aspect-ratio: 16 / 9;
+}
+
+.mkt-guide-video-el {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(72vh, 720px);
+    background: #062822;
+}
+
+.mkt-guide-video-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .65rem 1rem;
+    margin-bottom: .55rem;
+}
+
+.mkt-guide-video-badge-inline {
+    font-size: .72rem;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--mkt-brand-dark);
+    background: color-mix(in srgb, var(--mkt-brand) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mkt-brand) 28%, transparent);
+    padding: .35rem .7rem;
+    border-radius: 999px;
+}
+
+.mkt-guide-video-download {
+    font-size: .9rem;
+    font-weight: 650;
+    color: var(--mkt-brand-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.mkt-guide-video-chapters-static {
+    list-style: none;
+}
+
+.mkt-guide-video-chapters-static li {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .55rem .65rem;
+    border-radius: .7rem;
+    border: 1px solid var(--mkt-line);
+    background: color-mix(in srgb, var(--mkt-paper) 80%, transparent);
+    font-size: .86rem;
+    line-height: 1.25;
+}
+
+.mkt-guide-video-chapters-static li span {
+    flex: 0 0 auto;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: .45rem;
+    display: grid;
+    place-items: center;
+    font-size: .72rem;
+    font-weight: 800;
+    background: color-mix(in srgb, var(--mkt-brand) 12%, transparent);
+    color: var(--mkt-brand-dark);
+}
+
+.mkt-guide-video-stage.is-swap {
+    animation: mkt-gv-swap .45s ease;
+}
+
+@keyframes mkt-gv-swap {
+    from { opacity: .55; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+.mkt-guide-video-badge {
+    justify-self: start;
+    font-size: .72rem;
+    font-weight: 750;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .35rem .7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.mkt-guide-video-kicker {
+    margin: .55rem 0 0;
+    font-size: .84rem;
+    font-weight: 650;
+    color: rgba(244, 250, 247, .78);
+}
+
+.mkt-guide-video-title {
+    margin: 0;
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    max-width: 18ch;
+}
+
+.mkt-guide-video-script {
+    margin: .15rem 0 0;
+    max-width: 46ch;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: rgba(244, 250, 247, .9);
+}
+
+.mkt-guide-video-visual {
+    position: absolute;
+    right: 1.2rem;
+    bottom: 1rem;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1.1rem;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .18);
+    font-size: 2rem;
+}
+
+.mkt-guide-video-controls {
+    padding: 1rem 1.15rem 1.15rem;
+    background: color-mix(in srgb, var(--mkt-paper) 92%, #0c5c50);
+    border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.mkt-guide-video-progress {
+    height: .42rem;
+    border-radius: 999px;
+    background: rgba(12, 92, 80, .15);
+    overflow: hidden;
+    margin-bottom: .85rem;
+}
+
+.mkt-guide-video-progress-bar {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #0c5c50, #1aa58c);
+    transition: width .08s linear;
+}
+
+.mkt-guide-video-toolbar {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+}
+
+.mkt-guide-video-btn {
+    width: 2.45rem;
+    height: 2.45rem;
+    border-radius: .8rem;
+    border: 1px solid color-mix(in srgb, var(--mkt-brand) 30%, transparent);
+    background: #fff;
+    color: var(--mkt-brand-dark);
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease;
+}
+
+.mkt-guide-video-btn:hover {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--mkt-brand) 10%, #fff);
+}
+
+.mkt-guide-video-btn-play {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    background: var(--mkt-brand);
+    color: #fff;
+    border-color: transparent;
+    font-size: 1.25rem;
+}
+
+.mkt-guide-video-btn-play:hover {
+    background: var(--mkt-brand-dark);
+    color: #fff;
+}
+
+.mkt-guide-video-time {
+    margin-left: auto;
+    font-size: .86rem;
+    font-weight: 700;
+    color: var(--mkt-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.mkt-guide-video-chapters {
+    list-style: none;
+    margin: .95rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .4rem;
+}
+
+.mkt-guide-video-chapter {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .55rem .65rem;
+    border-radius: .7rem;
+    border: 1px solid var(--mkt-line);
+    background: color-mix(in srgb, var(--mkt-paper) 80%, transparent);
+    color: inherit;
+    cursor: pointer;
+    font-size: .86rem;
+    line-height: 1.25;
+}
+
+.mkt-guide-video-chapter span {
+    flex: 0 0 auto;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: .45rem;
+    display: grid;
+    place-items: center;
+    font-size: .72rem;
+    font-weight: 800;
+    background: color-mix(in srgb, var(--mkt-brand) 12%, transparent);
+    color: var(--mkt-brand-dark);
+}
+
+.mkt-guide-video-chapter.is-active {
+    border-color: color-mix(in srgb, var(--mkt-brand) 45%, transparent);
+    background: color-mix(in srgb, var(--mkt-brand) 12%, transparent);
+    font-weight: 650;
+}
+
+.mkt-guide-video-hint {
+    margin: .85rem 0 0;
+    font-size: .84rem;
+    color: var(--mkt-muted);
+    line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+    .mkt-guide-video-chapters { grid-template-columns: 1fr; }
+    .mkt-guide-video-visual { width: 3.4rem; height: 3.4rem; font-size: 1.5rem; }
+    .mkt-guide-video-title { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mkt-guide-video-stage.is-swap { animation: none; }
+}
+
 @media (max-width: 960px) {
     .mkt-guide-shell { grid-template-columns: 1fr; }
     .mkt-guide-rail { position: relative; top: 0; }

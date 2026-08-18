@@ -172,7 +172,7 @@ class ProductController extends ShopAwareController
             $product->setPhotoMime($payload['mime']);
             $product->setPhotoName($payload['name']);
         } catch (\InvalidArgumentException $e) {
-            $this->addFlash('danger', $e->getMessage());
+            $this->addFlash('danger', 'Erreur lors du téléchargement de la photo. Vérifiez le format et la taille.');
         }
     }
 }

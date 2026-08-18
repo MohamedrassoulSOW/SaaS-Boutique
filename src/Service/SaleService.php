@@ -9,6 +9,7 @@ use App\Entity\Shop;
 use App\Entity\StockMovement;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
 
 class SaleService
 {
@@ -47,10 +48,24 @@ class SaleService
 
             $productRepo = $this->em->getRepository(\App\Entity\Product::class);
 
-            // 1) Valider toutes les lignes avant toute mutation de stock
+            // 1) Batch-load all products to avoid N+1
+            $allProductIds = [];
+            foreach ($lines as $line) {
+                $allProductIds[] = (int) $line['product_id'];
+            }
+            $allProductIds = array_unique($allProductIds);
+            $productsById = [];
+            if ($allProductIds !== []) {
+                $loadedProducts = $productRepo->findBy(['id' => $allProductIds]);
+                foreach ($loadedProducts as $p) {
+                    $productsById[$p->getId()] = $p;
+                }
+            }
+
+            // 2) Valider toutes les lignes avant toute mutation de stock
             $resolved = [];
             foreach ($lines as $line) {
-                $product = $productRepo->find($line['product_id']);
+                $product = $productsById[(int) $line['product_id']] ?? null;
                 if (!$product || $product->getShop()?->getId() !== $shop->getId() || !$product->isActive()) {
                     throw new \InvalidArgumentException('Produit invalide.');
                 }
@@ -121,7 +136,11 @@ class SaleService
             $sale->setInvoice($invoice);
 
             $this->em->persist($sale);
-            $this->em->flush();
+            try {
+                $this->em->flush();
+            } catch (OptimisticLockException) {
+                throw new \RuntimeException('Le stock a été modifié par un autre utilisateur. Veuillez réessayer.');
+            }
 
             $this->activityLogger->log(
                 'sale.create',
@@ -181,7 +200,11 @@ class SaleService
             }
 
             $sale->setStatus(Sale::STATUS_CANCELLED);
-            $this->em->flush();
+            try {
+                $this->em->flush();
+            } catch (OptimisticLockException) {
+                throw new \RuntimeException('La vente a été modifiée par un autre utilisateur. Veuillez réessayer.');
+            }
 
             $this->activityLogger->log(
                 'sale.cancel',

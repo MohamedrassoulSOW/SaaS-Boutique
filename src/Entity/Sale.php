@@ -9,7 +9,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SaleRepository::class)]
-#[ORM\Table(name: 'sales')]
+#[ORM\Table(name: 'sales', indexes: [
+    new ORM\Index(columns: ['shop_id', 'status', 'sold_at']),
+    new ORM\Index(columns: ['customer_id', 'sold_at']),
+    new ORM\Index(columns: ['sold_by_id']),
+])]
 class Sale
 {
     public const STATUS_COMPLETED = 'completed';
@@ -25,6 +29,9 @@ class Sale
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -82,7 +89,7 @@ class Sale
     {
         $this->soldAt = new \DateTimeImmutable();
         $this->items = new ArrayCollection();
-        $this->reference = 'VTE-'.date('Ymd').'-'.substr(uniqid(), -5);
+        $this->reference = 'VTE-'.date('Ymd').'-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
     public function getId(): ?int

@@ -7,7 +7,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CashSessionRepository::class)]
-#[ORM\Table(name: 'cash_sessions')]
+#[ORM\Table(name: 'cash_sessions', indexes: [
+    new ORM\Index(columns: ['shop_id', 'status']),
+    new ORM\Index(columns: ['opened_by_id']),
+    new ORM\Index(columns: ['closed_by_id']),
+])]
 class CashSession
 {
     public const STATUS_OPEN = 'open';
@@ -17,6 +21,10 @@ class CashSession
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Version]
+    private int $version = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]

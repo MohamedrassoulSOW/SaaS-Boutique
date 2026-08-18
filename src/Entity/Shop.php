@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ShopRepository::class)]
 #[ORM\Table(name: 'shops')]
+#[ORM\Index(name: 'IDX_SHOP_MERCHANT', columns: ['merchant_id'])]
 class Shop
 {
     use BinaryPayloadTrait;
@@ -19,6 +20,9 @@ class Shop
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\ManyToOne(inversedBy: 'shops')]
     #[ORM\JoinColumn(nullable: false)]
@@ -60,6 +64,49 @@ class Shop
     /** true = prix TTC, false = prix HT */
     #[ORM\Column(options: ['default' => true])]
     private bool $pricesIncludeTax = true;
+
+    /** Code ISO-4217 de la devise utilisée par cette boutique */
+    #[ORM\Column(length: 5, options: ['default' => 'XOF'])]
+    private string $currency = 'XOF';
+
+    /** Devise supportées par la plateforme */
+    public static function supportedCurrencies(): array
+    {
+        return [
+            'XOF' => 'FCFA (BCEAO — Sénégal, Mali, Côte d\'Ivoire…)',
+            'XAF' => 'FCFA (BEAC — Cameroun, Gabon, Congo…)',
+            'GMD' => 'Dalasi (Gambie)',
+            'GHS' => 'Cedi (Ghana)',
+            'NGN' => 'Naira (Nigeria)',
+            'CVE' => 'Escudo (Cap-Vert)',
+            'EUR' => 'Euro',
+            'USD' => 'Dollar américain',
+        ];
+    }
+
+    /** Symbole d'affichage pour une devise donnée */
+    public static function currencySymbol(string $code): string
+    {
+        return match ($code) {
+            'XOF', 'XAF' => 'FCFA',
+            'GMD' => 'D',
+            'GHS' => 'GH₵',
+            'NGN' => '₦',
+            'CVE' => '$',
+            'EUR' => '€',
+            'USD' => '$',
+            default => $code,
+        };
+    }
+
+    /** Nombre de décimales pour le formatage monétaire */
+    public static function currencyDecimals(string $code): int
+    {
+        return match ($code) {
+            'XOF', 'XAF', 'GMD', 'NGN' => 0,
+            default => 2,
+        };
+    }
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -257,6 +304,28 @@ class Shop
         $this->pricesIncludeTax = $pricesIncludeTax;
 
         return $this;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): static
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getCurrencySymbol(): string
+    {
+        return self::currencySymbol($this->currency);
+    }
+
+    public function getCurrencyDecimals(): int
+    {
+        return self::currencyDecimals($this->currency);
     }
 
     public function getCreatedAt(): \DateTimeImmutable

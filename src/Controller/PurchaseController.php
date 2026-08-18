@@ -12,9 +12,13 @@ use App\Repository\SupplierRepository;
 use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use App\Service\StockService;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -40,6 +44,8 @@ class PurchaseController extends ShopAwareController
         ProductRepository $products,
         EntityManagerInterface $em,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $financialLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $supplierList = $suppliers->findBy(['shop' => $shop], ['name' => 'ASC']);
@@ -48,6 +54,13 @@ class PurchaseController extends ShopAwareController
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('purchase_new', (string) $request->request->get('_token'))) {
                 $this->addFlash('danger', 'Session expirée. Réessayez.');
+
+                return $this->redirectToRoute('app_purchase_new');
+            }
+
+            $limiter = $financialLimiter->create((string) $this->getUser()->getId());
+            if (!$limiter->consume(1)->isAccepted()) {
+                $this->addFlash('danger', 'Trop d\'opérations. Veuillez patienter quelques instants.');
 
                 return $this->redirectToRoute('app_purchase_new');
             }
@@ -71,13 +84,14 @@ class PurchaseController extends ShopAwareController
                 foreach ($productIds as $i => $pid) {
                     $product = $products->find((int) $pid);
                     $qty = (int) ($quantities[$i] ?? 0);
-                    if (!$product || $qty < 1) {
+                    if (!$product || $qty < 1 || $product->getShop()?->getId() !== $shop->getId()) {
                         continue;
                     }
+                    $unitPrice = max(0, (float) ($prices[$i] ?? $product->getPurchasePrice()));
                     $item = new PurchaseOrderItem();
                     $item->setProduct($product);
                     $item->setQuantity($qty);
-                    $item->setUnitPrice(number_format((float) ($prices[$i] ?? $product->getPurchasePrice()), 2, '.', ''));
+                    $item->setUnitPrice(number_format($unitPrice, 2, '.', ''));
                     $order->addItem($item);
                 }
 
@@ -107,6 +121,7 @@ class PurchaseController extends ShopAwareController
     }
 
     #[Route('/{id}/receive', name: 'app_purchase_receive', methods: ['POST'])]
+    #[IsGranted('MODULE_PURCHASES_MANAGE')]
     public function receive(
         PurchaseOrder $order,
         Request $request,
@@ -134,30 +149,46 @@ class PurchaseController extends ShopAwareController
         $receivedAny = false;
         $fullyReceived = true;
 
-        foreach ($order->getItems() as $item) {
-            $remaining = $item->getRemainingQuantity();
-            $raw = $qtyMap[(string) $item->getId()] ?? $qtyMap[$item->getId()] ?? null;
-            // Sans saisie par ligne = réception du reste (comportement classique)
-            $qty = $raw === null || $raw === '' ? $remaining : max(0, min($remaining, (int) $raw));
-            if ($qty < 1) {
-                if ($remaining > 0) {
-                    $fullyReceived = false;
-                }
-                continue;
-            }
+        try {
+            $em->wrapInTransaction(function () use ($em, $order, $qtyMap, $user, $stockService, &$receivedAny, &$fullyReceived) {
+                foreach ($order->getItems() as $item) {
+                    $remaining = $item->getRemainingQuantity();
+                    $raw = $qtyMap[(string) $item->getId()] ?? $qtyMap[$item->getId()] ?? null;
+                    // Sans saisie par ligne = réception du reste (comportement classique)
+                    $qty = $raw === null || $raw === '' ? $remaining : max(0, min($remaining, (int) $raw));
+                    if ($qty < 1) {
+                        if ($remaining > 0) {
+                            $fullyReceived = false;
+                        }
+                        continue;
+                    }
 
-            $stockService->adjust(
-                $item->getProduct(),
-                $qty,
-                StockMovement::TYPE_PURCHASE,
-                $user,
-                'Réception '.$order->getReference()
-            );
-            $item->setReceivedQuantity($item->getReceivedQuantity() + $qty);
-            $receivedAny = true;
-            if ($item->getRemainingQuantity() > 0) {
-                $fullyReceived = false;
-            }
+                    $stockService->adjust(
+                        $item->getProduct(),
+                        $qty,
+                        StockMovement::TYPE_PURCHASE,
+                        $user,
+                        'Réception '.$order->getReference(),
+                        false
+                    );
+                    $item->setReceivedQuantity($item->getReceivedQuantity() + $qty);
+                    $receivedAny = true;
+                    if ($item->getRemainingQuantity() > 0) {
+                        $fullyReceived = false;
+                    }
+                }
+
+                if ($fullyReceived) {
+                    $order->setStatus(PurchaseOrder::STATUS_RECEIVED);
+                    $order->setReceivedAt(new \DateTimeImmutable());
+                } elseif ($receivedAny) {
+                    $order->setStatus(PurchaseOrder::STATUS_PARTIAL);
+                }
+            });
+        } catch (OptimisticLockException) {
+            $this->addFlash('danger', 'Conflit détecté — un autre utilisateur a modifié cette commande. Rafraîchissez et réessayez.');
+
+            return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);
         }
 
         if (!$receivedAny) {
@@ -167,15 +198,11 @@ class PurchaseController extends ShopAwareController
         }
 
         if ($fullyReceived) {
-            $order->setStatus(PurchaseOrder::STATUS_RECEIVED);
-            $order->setReceivedAt(new \DateTimeImmutable());
             $this->addFlash('success', 'Commande entièrement reçue, stock mis à jour.');
         } else {
-            $order->setStatus(PurchaseOrder::STATUS_PARTIAL);
             $this->addFlash('success', 'Réception partielle enregistrée, stock mis à jour.');
         }
 
-        $em->flush();
         $logger->log('purchase.receive', 'Réception '.$order->getReference(), $user, $shop);
 
         return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);

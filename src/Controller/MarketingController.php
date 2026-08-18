@@ -4,8 +4,11 @@ namespace App\Controller;
 
 use App\Form\ContactType;
 use App\Service\AppMailer;
+use App\Service\PptxGeneratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -29,6 +32,10 @@ class MarketingController extends AbstractController
      */
     public function __construct(
         private array $platform,
+        #[Autowire(param: 'app.name')]
+        private string $appName = 'NdamStore',
+        #[Autowire(param: 'app.tagline')]
+        private string $appTagline = 'La réussite de votre commerce.',
     ) {
     }
 
@@ -46,6 +53,40 @@ class MarketingController extends AbstractController
         return $this->render('marketing/about.html.twig', [
             'platform' => $this->platform,
         ]);
+    }
+
+    #[Route('/presentation', name: 'app_presentation')]
+    public function presentation(): Response
+    {
+        return $this->render('marketing/presentation.html.twig', [
+            'platform' => $this->platform,
+        ]);
+    }
+
+    #[Route('/presentation/powerpoint', name: 'app_presentation_pptx')]
+    public function presentationPptx(PptxGeneratorService $pptx): Response
+    {
+        $content = $pptx->generate($this->appName, $this->appTagline, $this->platform);
+
+        if ($content === '') {
+            $this->addFlash('error', 'Impossible de générer le fichier PowerPoint. Réessayez plus tard.');
+
+            return $this->redirectToRoute('app_presentation');
+        }
+
+        $filename = $this->appName . ' - Presentation.pptx';
+        $tmpFile = tempnam(sys_get_temp_dir(), 'pptx_dl_') . '.pptx';
+        file_put_contents($tmpFile, $content);
+
+        $response = new BinaryFileResponse($tmpFile);
+        $response->deleteFileAfterSend(true);
+        $response->setContentDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            $filename
+        );
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+
+        return $response;
     }
 
     #[Route('/guide', name: 'app_guide')]
@@ -97,7 +138,7 @@ class MarketingController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $clientKey = hash('sha256', ($request->getClientIp() ?: 'anon').'|'.(string) $request->headers->get('User-Agent', ''));
+            $clientKey = $request->getClientIp() ?: 'anon';
             $limiter = $contactFormLimiter->create($clientKey);
             if (!$limiter->consume(1)->isAccepted()) {
                 $this->addFlash('warning', 'Trop de messages envoyés. Réessayez dans une heure.');

@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'categories')]
+#[ORM\Index(name: 'IDX_CATEGORY_SHOP', columns: ['shop_id'])]
 class Category
 {
     #[ORM\Id]

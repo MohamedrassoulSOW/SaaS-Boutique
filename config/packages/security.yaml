@@ -32,6 +32,9 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
                 always_remember_me: false
+                samesite: strict
+                secure: true
+                httponly: true
             access_denied_handler: App\Security\AccessDeniedHandler
 
     access_control:

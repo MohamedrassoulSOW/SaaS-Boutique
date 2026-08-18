@@ -90,6 +90,7 @@ body {
     background: var(--body-bg);
     background-attachment: fixed;
     min-height: 100vh;
+    overflow-x: hidden;
     transition: background .35s ease, color .25s ease;
 }
 
@@ -236,11 +237,12 @@ a:hover { color: var(--brand); }
 .sidebar-nav a {
     display: flex;
     align-items: center;
-    gap: .7rem;
+    gap: .55rem;
+    padding: .62rem .75rem;
+    min-height: 44px;
     color: rgba(255,255,255,.86);
     text-decoration: none;
     border-radius: .75rem;
-    padding: .62rem .75rem;
     font-size: .9rem;
     font-weight: 500;
     transition: background .18s ease, transform .18s ease, color .18s ease;
@@ -384,6 +386,29 @@ a:hover { color: var(--brand); }
     color: #fff;
 }
 
+.sidebar-presentation-btn {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .6rem .75rem;
+    margin-bottom: .5rem;
+    min-height: 44px;
+    border-radius: .75rem;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.86);
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: background .22s ease, transform .25s var(--spring-soft);
+}
+.sidebar-presentation-btn:hover {
+    background: rgba(255,255,255,.16);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    transform: translateX(4px);
+    color: #fff;
+}
+
 .content-wrap {
     flex: 1;
     min-width: 0;
@@ -424,8 +449,8 @@ a:hover { color: var(--brand); }
     border: 1px solid var(--line);
     background: var(--panel);
     border-radius: .7rem;
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 2.75rem;
+    height: 2.75rem;
     align-items: center;
     justify-content: center;
 }
@@ -627,8 +652,8 @@ a:hover { color: var(--brand); }
 }
 
 .form-select option {
-    color: #13201c;
-    background: #fff;
+    color: var(--ink);
+    background: var(--input-bg);
 }
 
 .alert {
@@ -716,7 +741,7 @@ a:hover { color: var(--brand); }
     border-radius: 1.35rem;
     box-shadow: var(--shadow);
     padding: 2rem 1.75rem;
-    animation: rise .45s ease both;
+    animation: rise .5s var(--spring-soft) both;
 }
 
 .auth-card .brand-line {
@@ -738,7 +763,7 @@ a:hover { color: var(--brand); }
 }
 
 .reveal {
-    animation: rise .5s ease both;
+    animation: rise .55s var(--spring-soft) both;
 }
 
 .reveal-delay-1 { animation-delay: .06s; }
@@ -943,7 +968,7 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
 .ui-rise {
     opacity: 0;
     transform: translateY(14px);
-    transition: opacity .45s ease, transform .45s ease;
+    transition: opacity .5s var(--smooth), transform .6s var(--spring-soft);
     transition-delay: var(--rise-delay, 0ms);
 }
 
@@ -966,11 +991,11 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
 }
 
 .panel, .stat-card {
-    transition: box-shadow .2s ease, transform .2s ease;
+    transition: box-shadow .3s var(--smooth), transform .3s var(--spring-soft);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: 0 14px 34px rgba(8, 63, 55, .1);
 }
 
@@ -1033,6 +1058,18 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
         left: .75rem;
         width: auto;
     }
+    .sidebar-nav a,
+    .sidebar-foot a,
+    .sidebar-foot button.sidebar-logout,
+    .sidebar-presentation-btn {
+        padding: .8rem .75rem;
+        min-height: 44px;
+    }
+    .dash-guide-icon {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1rem;
+    }
 }
 
 /* PWA install banner */
@@ -1092,7 +1129,7 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
     color: var(--muted);
     font-size: 1.35rem;
     line-height: 1;
-    padding: .25rem .35rem;
+    padding: .55rem .65rem;
     cursor: pointer;
     border-radius: .4rem;
 }
@@ -1118,7 +1155,7 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.35rem;
+    min-width: 2.75rem;
 }
 
 .topbar-notify-badge {
@@ -1142,8 +1179,8 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.35rem;
-    min-width: 2.35rem;
+    width: 2.75rem;
+    min-width: 2.75rem;
     padding: 0;
 }
 
@@ -1392,9 +1429,9 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .topbar-icon-btn {
-    width: 2.35rem;
-    min-width: 2.35rem;
-    height: 2.35rem;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -1797,8 +1834,8 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .pos-qty-btn {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: .55rem;
     border: none;
     background: transparent;
@@ -1823,8 +1860,8 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .pos-qty-remove {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border: none;
     background: transparent;
     color: var(--muted);
@@ -1996,8 +2033,13 @@ html[data-theme="dark"] .stat-card:hover {
 .table-responsive {
     -webkit-overflow-scrolling: touch;
 }
+.table-responsive .table th,
+.table-responsive .table td {
+    white-space: nowrap;
+}
 
 .page-title {
+    font-size: clamp(1.35rem, 2.8vw, 1.8rem);
     max-width: 100%;
     overflow-wrap: anywhere;
 }
@@ -2519,7 +2561,7 @@ html[data-theme="dark"] .stat-card:hover {
 }
 
 .dash-mini-value {
-    font-size: 1.25rem !important;
+    font-size: clamp(1rem, 2vw, 1.25rem);
 }
 
 .dash-chart-panel {
@@ -2667,4 +2709,201 @@ html[data-theme="dark"] .stat-card.tone-muted .stat-icon {
     font-family: var(--font-brand);
     font-weight: 650;
     color: var(--brand-dark);
+}
+
+/* ═══════════════════════════════════════════════
+   DYNAMIC VISUAL OVERhaul — Spring, Glow, Motion
+   ═══════════════════════════════════════════════ */
+
+:root {
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --spring-soft: cubic-bezier(.25, 1.2, .5, 1);
+    --smooth: cubic-bezier(.4, 0, .2, 1);
+    --glow: rgba(20, 122, 106, .18);
+    --glow-strong: rgba(20, 122, 106, .3);
+}
+
+/* —— Page entrance —— */
+.content-wrap {
+    animation: page-enter .45s var(--spring-soft) both;
+}
+
+@keyframes page-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* —— Sidebar glassmorphism —— */
+.sidebar {
+    background:
+        linear-gradient(165deg, rgba(255,255,255,.1), transparent 40%),
+        linear-gradient(180deg, var(--brand-mid) 0%, var(--brand) 45%, var(--brand-dark) 100%) !important;
+    backdrop-filter: blur(1px);
+}
+
+/* —— Sidebar nav spring hover —— */
+.sidebar-nav a {
+    transition: background .22s var(--spring-soft), transform .28s var(--spring),
+                color .22s ease, box-shadow .28s ease;
+}
+
+.sidebar-nav a:hover {
+    transform: translateX(4px) !important;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.sidebar-nav a.active {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.15), 0 2px 8px rgba(0,0,0,.1);
+    background: rgba(255,255,255,.2) !important;
+}
+
+/* —— Stat card enhanced hover —— */
+.stat-card {
+    transition: box-shadow .35s var(--smooth), transform .35s var(--spring-soft),
+                border-color .35s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--brand-mid), transparent);
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+.stat-card:hover::after {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 16px 40px rgba(8, 63, 55, .12), 0 0 0 1px rgba(20, 122, 106, .08) !important;
+}
+
+.stat-card.tone-ok:hover { box-shadow: 0 16px 40px rgba(42, 155, 136, .15), 0 0 0 1px rgba(42, 155, 136, .12) !important; }
+.stat-card.tone-warn:hover { box-shadow: 0 16px 40px rgba(217, 119, 6, .12), 0 0 0 1px rgba(217, 119, 6, .1) !important; }
+.stat-card.tone-danger:hover { box-shadow: 0 16px 40px rgba(234, 88, 12, .12), 0 0 0 1px rgba(234, 88, 12, .1) !important; }
+.stat-card.tone-info:hover { box-shadow: 0 16px 40px rgba(14, 165, 164, .12), 0 0 0 1px rgba(14, 165, 164, .1) !important; }
+
+/* —— Panel glass effect —— */
+.panel {
+    transition: box-shadow .3s var(--smooth), transform .3s var(--spring-soft),
+                border-color .3s ease;
+}
+
+.panel:hover {
+    box-shadow: 0 12px 36px rgba(8, 63, 55, .08);
+}
+
+/* —— Table row hover slide —— */
+.table tbody tr {
+    transition: background-color .2s ease, transform .25s var(--spring-soft), box-shadow .25s ease;
+}
+
+.table tbody tr:hover {
+    transform: scale(1.005);
+    box-shadow: 0 1px 4px rgba(8, 63, 55, .06);
+}
+
+/* —— Button spring —— */
+.btn {
+    transition: background .22s var(--spring-soft), color .22s var(--spring-soft),
+                border-color .22s var(--spring-soft), transform .25s var(--spring),
+                box-shadow .25s var(--smooth);
+}
+
+.btn:active {
+    transform: scale(.96) !important;
+    transition-duration: .08s;
+}
+
+.btn-brand, .btn-outline-brand {
+    position: relative;
+}
+
+.btn-brand:hover, .btn-outline-brand:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(12, 92, 80, .2);
+}
+
+/* —— Toast spring bounce —— */
+.app-toast {
+    transition: opacity .3s var(--smooth), transform .35s var(--spring) !important;
+}
+
+.app-toast.show {
+    transform: translateX(0) scale(1) !important;
+}
+
+/* —— Sidebar brand glow —— */
+.sidebar-brand {
+    position: relative;
+}
+
+.sidebar-brand::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+}
+
+/* —— Topbar subtle glow —— */
+.topbar {
+    transition: box-shadow .3s ease;
+}
+
+/* —— Guide banner glow —— */
+.dash-guide-banner .panel-body {
+    transition: box-shadow .35s var(--smooth), transform .35s var(--spring-soft);
+}
+
+.dash-guide-banner:hover .panel-body {
+    box-shadow: 0 8px 28px rgba(8, 63, 55, .08);
+    transform: translateY(-1px);
+}
+
+/* —— Focus ring spring —— */
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 3px var(--glow), 0 2px 8px rgba(8, 63, 55, .06);
+    transition: border-color .2s ease, box-shadow .3s var(--spring-soft);
+}
+
+/* —— Badge pulse —— */
+.badge-soft {
+    transition: transform .25s var(--spring), box-shadow .25s ease;
+}
+
+.badge-soft:hover {
+    transform: scale(1.08);
+}
+
+/* —— Dark mode glow —— */
+html[data-theme="dark"] .stat-card:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .3), 0 0 0 1px rgba(42, 155, 136, .12) !important;
+}
+
+html[data-theme="dark"] .panel:hover {
+    box-shadow: 0 12px 36px rgba(0, 0, 0, .25);
+}
+
+html[data-theme="dark"] .table tbody tr:hover {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+}
+
+html[data-theme="dark"] .btn-brand:hover,
+html[data-theme="dark"] .btn-outline-brand:hover {
+    box-shadow: 0 4px 16px rgba(42, 155, 136, .25);
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+    .content-wrap { animation: none; }
+    .stat-card::after { display: none; }
+    .sidebar-nav a { transition-duration: .01s; }
 }

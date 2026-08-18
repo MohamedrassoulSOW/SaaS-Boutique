@@ -9,6 +9,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
 class ContractService
@@ -30,6 +31,7 @@ class ContractService
         private EntityManagerInterface $em,
         private Environment $twig,
         private ActivityLogger $activityLogger,
+        private LoggerInterface $logger,
         private array $platform,
     ) {
     }
@@ -202,29 +204,35 @@ class ContractService
 
     public function generatePdf(ShopContract $contract): string
     {
-        $html = $this->twig->render('contract/pdf.html.twig', [
-            'contract' => $contract,
-            'shop' => $contract->getShop(),
-            'merchant' => $contract->getMerchant(),
-            'user' => $contract->getMerchant()?->getUser(),
-            'platform' => $this->platform,
-            'for_print' => false,
-        ]);
+        try {
+            $html = $this->twig->render('contract/pdf.html.twig', [
+                'contract' => $contract,
+                'shop' => $contract->getShop(),
+                'merchant' => $contract->getMerchant(),
+                'user' => $contract->getMerchant()?->getUser(),
+                'platform' => $this->platform,
+                'for_print' => false,
+            ]);
 
-        $options = new Options();
-        $options->set('isRemoteEnabled', false);
-        $options->set('defaultFont', 'DejaVu Sans');
+            $options = new Options();
+            $options->set('isRemoteEnabled', false);
+            $options->set('defaultFont', 'DejaVu Sans');
 
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4');
-        $dompdf->render();
-        $pdf = $dompdf->output();
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4');
+            $dompdf->render();
+            $pdf = $dompdf->output();
 
-        $contract->setPdfData($pdf);
-        $this->em->flush();
+            $contract->setPdfData($pdf);
+            $this->em->flush();
 
-        return $pdf;
+            return $pdf;
+        } catch (\Throwable $e) {
+            $this->logger->error('PDF generation failed: '.$e->getMessage(), ['exception' => $e]);
+
+            return '';
+        }
     }
 
     public function signPlatform(ShopContract $contract, string $signerName, User $actor): void

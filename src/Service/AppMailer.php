@@ -7,6 +7,7 @@ use App\Entity\ShopContract;
 use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -24,6 +25,8 @@ class AppMailer
         private string $appName,
         /** @var array<string, string> */
         private array $platform,
+        #[Autowire('%env(APP_SECRET)%')]
+        private string $appSecret,
     ) {
     }
 
@@ -77,7 +80,7 @@ class AppMailer
     public function issueInviteToken(User $user): string
     {
         $plainToken = bin2hex(random_bytes(32));
-        $user->setPasswordResetToken(hash('sha256', $plainToken));
+        $user->setPasswordResetToken(hash_hmac('sha256', $plainToken, $this->appSecret));
         $user->setPasswordResetRequestedAt(new \DateTimeImmutable());
 
         return $plainToken;
@@ -265,14 +268,11 @@ class AppMailer
         try {
             $this->mailer->send($email);
         } catch (\Throwable $e) {
-            $this->logger->error('Échec envoi email NdamStore : '.$e->getMessage(), [
+            $this->logger->error('Échec envoi email NdamStore : {message}', [
                 'subject' => $email->getSubject(),
+                'message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
             ]);
-            @file_put_contents(
-                dirname(__DIR__, 2).'/var/log/mail-error.log',
-                date('c').' '.$e->getMessage()."\n".$e->getTraceAsString()."\n\n",
-                FILE_APPEND
-            );
             if ($strict) {
                 throw $e;
             }

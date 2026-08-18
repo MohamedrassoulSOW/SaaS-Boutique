@@ -1,44 +1,147 @@
 {% extends 'base.html.twig' %}
-{% block title %}Journal d'audit{% endblock %}
+{% block title %}Journal d'audit — {{ shop.name }}{% endblock %}
 {% block body %}
 <div class="mb-4">
     <div class="text-muted small mb-1">{{ shop.name }}</div>
     <h1 class="page-title h2 mb-1">Journal d'audit</h1>
-    <p class="text-muted mb-0">Chaque action (vente, stock, produit, connexion…) est signée par l'utilisateur pour la traçabilité.</p>
+    <p class="text-muted mb-0">Traçabilité des actions de l'entreprise. Utilisez les filtres pour affiner votre recherche.</p>
 </div>
+
+<div class="panel mb-4">
+    <form method="get" action="{{ path('app_audit_index') }}" class="p-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold" for="q">Recherche</label>
+                <input type="text" id="q" name="q" class="form-control form-control-sm"
+                       placeholder="Mot-clé dans la description…"
+                       value="{{ filters.q }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold" for="action">Action</label>
+                <select id="action" name="action" class="form-select form-select-sm">
+                    <option value="">Toutes</option>
+                    {% for a in actions %}
+                        <option value="{{ a.action }}" {{ filters.action == a.action ? 'selected' }}>{{ a.action }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold" for="user">Utilisateur</label>
+                <select id="user" name="user" class="form-select form-select-sm">
+                    <option value="">Tous</option>
+                    {% for m in members %}
+                        <option value="{{ m.user.id }}" {{ filters.user == m.user.id ? 'selected' }}>{{ m.user.fullName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold" for="from">Date début</label>
+                <input type="date" id="from" name="from" class="form-control form-control-sm"
+                       value="{{ filters.from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold" for="to">Date fin</label>
+                <input type="date" id="to" name="to" class="form-control form-control-sm"
+                       value="{{ filters.to }}">
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+                {% if hasFilters %}
+                    <a href="{{ path('app_audit_index') }}" class="btn btn-sm btn-outline-secondary" title="Réinitialiser">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="panel">
-<div class="table-responsive">
-<table class="table align-middle mb-0">
-<thead>
-<tr>
-    <th>Date</th>
-    <th>Utilisateur</th>
-    <th>Action</th>
-    <th>Détail</th>
-    <th>IP</th>
-</tr>
-</thead>
-<tbody>
-{% for log in logs %}
-<tr>
-    <td class="text-nowrap">{{ log.createdAt|date('d/m/Y H:i:s') }}</td>
-    <td>
-        {% if log.user %}
-            <div class="fw-semibold">{{ log.user.fullName }}</div>
-            <div class="small text-muted">{{ log.user.email }}</div>
-        {% else %}
-            <span class="text-muted">—</span>
+    <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-1">
+        <div class="text-muted small">
+            {{ total }} résultat{{ total > 1 ? 's' : '' }}
+            {% if hasFilters %}
+                <span class="badge bg-primary-subtle text-primary-emphasis ms-1">filtré{{ total > 1 ? 's' : '' }}</span>
+            {% endif %}
+        </div>
+        {% if totalPages > 1 %}
+            <div class="text-muted small">
+                Page {{ page }} / {{ totalPages }}
+            </div>
         {% endif %}
-    </td>
-    <td><code class="small">{{ log.action }}</code></td>
-    <td>{{ log.description }}</td>
-    <td class="text-muted small">{{ log.ipAddress ?: '—' }}</td>
-</tr>
-{% else %}
-<tr><td colspan="5" class="text-muted p-4">Aucune activité enregistrée pour cette entreprise.</td></tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
+    </div>
+    <div class="table-responsive">
+    <table class="table align-middle mb-0">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Utilisateur</th>
+        <th>Action</th>
+        <th>Détail</th>
+        <th>IP</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+    <tr>
+        <td class="text-nowrap">{{ log.createdAt|date('d/m/Y H:i:s') }}</td>
+        <td>
+            {% if log.user %}
+                <div class="fw-semibold">{{ log.user.fullName }}</div>
+                <div class="small text-muted">{{ log.user.email }}</div>
+            {% else %}
+                <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td><code class="small">{{ log.action }}</code></td>
+        <td>{{ log.description }}</td>
+        <td class="text-muted small">{{ log.ipAddress ?: '—' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-muted p-4 text-center">
+        {% if hasFilters %}
+            Aucun résultat ne correspond à vos critères de recherche.
+        {% else %}
+            Aucune activité enregistrée pour cette entreprise.
+        {% endif %}
+    </td></tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+
+    {% if totalPages > 1 %}
+    <nav class="px-3 pb-3 pt-2" aria-label="Pagination du journal">
+        <ul class="pagination pagination-sm mb-0 justify-content-center">
+            <li class="page-item {{ page <= 1 ? 'disabled' }}">
+                <a class="page-link" href="{{ path('app_audit_index', filters|merge({page: page - 1})) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                </a>
+            </li>
+            {% set startPage = max(1, page - 2) %}
+            {% set endPage = min(totalPages, page + 2) %}
+            {% if startPage > 1 %}
+                <li class="page-item"><a class="page-link" href="{{ path('app_audit_index', filters|merge({page: 1})) }}">1</a></li>
+                {% if startPage > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+            {% endif %}
+            {% for p in startPage..endPage %}
+                <li class="page-item {{ p == page ? 'active' }}">
+                    <a class="page-link" href="{{ path('app_audit_index', filters|merge({page: p})) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            {% if endPage < totalPages %}
+                {% if endPage < totalPages - 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+                <li class="page-item"><a class="page-link" href="{{ path('app_audit_index', filters|merge({page: totalPages})) }}">{{ totalPages }}</a></li>
+            {% endif %}
+            <li class="page-item {{ page >= totalPages ? 'disabled' }}">
+                <a class="page-link" href="{{ path('app_audit_index', filters|merge({page: page + 1})) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

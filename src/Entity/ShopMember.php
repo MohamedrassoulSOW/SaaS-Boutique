@@ -91,7 +91,7 @@ class ShopMember
         return match ($this->role) {
             self::ROLE_MANAGER => 'Responsable',
             self::ROLE_STOCK => 'Magasinier',
-            default => 'Vendeur / Caissier',
+            default => 'Agent',
         };
     }
 

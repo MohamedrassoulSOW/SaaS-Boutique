@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Shop;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -52,6 +53,10 @@ class ShopType extends AbstractType
             ->add('pricesIncludeTax', CheckboxType::class, [
                 'label' => 'Les prix produits sont en TTC',
                 'required' => false,
+            ])
+            ->add('currency', ChoiceType::class, [
+                'label' => 'Devise de l\'entreprise',
+                'choices' => array_flip(Shop::supportedCurrencies()),
             ]);
     }
 

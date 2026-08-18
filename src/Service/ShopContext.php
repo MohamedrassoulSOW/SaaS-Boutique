@@ -26,13 +26,12 @@ class ShopContext
             return null;
         }
 
-        if ($user->getPreferredShopId()) {
-            $shop = $this->shopRepository->find($user->getPreferredShopId());
+        if ($user->getPreferredShop()) {
+            $shop = $user->getPreferredShop();
             if ($shop && $this->userCanAccess($user, $shop)) {
                 return $shop;
             }
-            $user->setPreferredShopId(null);
-            $this->em->flush();
+            $user->setPreferredShop(null);
         }
 
         $shops = $this->getAccessibleShops($user);
@@ -43,8 +42,7 @@ class ShopContext
         // Auto-sélection sans lever d'exception (Twig globals appellent getCurrentShop)
         $first = $shops[0];
         if ($this->userCanAccess($user, $first)) {
-            $user->setPreferredShopId($first->getId());
-            $this->em->flush();
+            $user->setPreferredShop($first);
 
             return $first;
         }
@@ -62,14 +60,14 @@ class ShopContext
             throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette entreprise.');
         }
 
-        $user->setPreferredShopId($shop->getId());
+        $user->setPreferredShop($shop);
         $this->em->flush();
     }
 
     public function clearCurrentShop(?User $user = null): void
     {
         if ($user) {
-            $user->setPreferredShopId(null);
+            $user->setPreferredShop(null);
             $this->em->flush();
         }
     }

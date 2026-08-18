@@ -23,7 +23,7 @@
     <div class="dash-hero-aside">
         <div class="dash-clock" data-dash-clock>—</div>
         <div class="dash-actions">
-            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" target="_blank" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
+            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
             {% if can_module('fiscal') %}
             <a href="{{ path('app_fiscal_index') }}" class="btn btn-outline-brand"><i class="bi bi-percent me-1"></i>Impôts</a>
             {% endif %}
@@ -43,7 +43,7 @@
 {% include '_dash_guide.html.twig' %}
 
 <nav class="dash-quicklinks" aria-label="Accès rapides">
-    <a href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide</a>
+    <a href="{{ path('app_guide') }}" rel="noopener"><i class="bi bi-book"></i>Guide</a>
     {% if can_module('sales') %}
     <a href="{{ path('app_sale_index') }}"><i class="bi bi-receipt"></i>Ventes</a>
     {% endif %}
@@ -236,7 +236,7 @@
                         {% else %}<span class="badge-stock">{{ c.statusLabel }}</span>{% endif %}
                     </td>
                     <td class="text-end text-nowrap">
-                        <a class="btn btn-sm btn-outline-brand" href="{{ path('app_contract_pdf', {id: c.id}) }}" target="_blank">PDF</a>
+                        <a class="btn btn-sm btn-outline-brand" href="{{ path('app_contract_pdf', {id: c.id}) }}">PDF</a>
                         <a class="btn btn-sm btn-brand" href="{{ path('app_contract_show', {id: c.id}) }}">
                             {% if c.draft %}Consulter{% elseif not c.merchantSignedAt %}Signer{% else %}Ouvrir{% endif %}
                         </a>
@@ -334,7 +334,7 @@
 {% endblock %}
 {% block javascripts %}
 <script src="{{ asset('js/dashboard.js') }}?v=1"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   const el = document.getElementById('salesChart');
   if (!el || typeof Chart === 'undefined') return;

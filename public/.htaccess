@@ -56,12 +56,15 @@ DirectoryIndex index.php
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
     Header set Cross-Origin-Opener-Policy "same-origin"
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
 </IfModule>
 
 # Bloque l'accès direct aux fichiers sensibles éventuels
 <IfModule mod_authz_core.c>
-    <FilesMatch "(?i)\.(env|ini|log|sql|bak|swp)$">
+    <FilesMatch "(?i)\.(env|ini|log|sql|bak|swp|yaml|yml|dist|lock|json|xml|sh|git|local)$">
         Require all denied
     </FilesMatch>
+    <DirectoryMatch ".*\.git">
+        Require all denied
+    </DirectoryMatch>
 </IfModule>

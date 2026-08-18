@@ -43,7 +43,7 @@ class ShopMemberService
         $user->setPhone($profile['phone'] ?? null);
         $user->setRoles([User::ROLE_EMPLOYEE]);
         $user->setIsActive(true);
-        $user->setPreferredShopId($shop->getId());
+        $user->setPreferredShop($shop);
 
         $password = (string) ($profile['plainPassword'] ?? '');
         if ($password === '') {
@@ -64,7 +64,7 @@ class ShopMemberService
 
         $this->activityLogger->log(
             'staff.create',
-            sprintf('Accès vendeur créé : %s (%s)', $user->getFullName(), $user->getEmail()),
+            sprintf('Accès agent créé : %s (%s)', $user->getFullName(), $user->getEmail()),
             $merchant,
             $shop
         );
@@ -115,7 +115,7 @@ class ShopMemberService
 
         $this->activityLogger->log(
             'staff.update',
-            sprintf('Accès vendeur modifié : %s', $user->getEmail()),
+            sprintf('Accès agent modifié : %s', $user->getEmail()),
             $merchant,
             $member->getShop()
         );
@@ -134,14 +134,15 @@ class ShopMemberService
         $this->em->remove($member);
 
         if ($user && $user->isEmployee() && $user->getShopMemberships()->count() <= 1) {
-            $this->em->remove($user);
+            $user->setIsActive(false);
+            $user->setIsSuspended(true);
         }
 
         $this->em->flush();
 
         $this->activityLogger->log(
             'staff.delete',
-            sprintf('Accès vendeur supprimé : %s', $label),
+            sprintf('Accès agent supprimé : %s', $label),
             $merchant,
             $shop
         );

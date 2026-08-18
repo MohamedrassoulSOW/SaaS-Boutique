@@ -15,12 +15,12 @@
 <td><select name="product_id[]" class="form-select" required><option value="">Choisir...</option>{% for p in products %}<option value="{{ p.id }}" data-price="{{ p.purchasePrice }}">{{ p.name }} — {{ p.purchasePrice|money }}</option>{% endfor %}</select></td>
 <td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
 <td><input type="number" step="1" min="0" name="unit_price[]" class="form-control" value="0"></td>
-<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">×</button></td>
+<td><button type="button" class="btn btn-sm btn-outline-danger" data-remove-row>×</button></td>
 </tr>
 </tbody>
 </table>
 </div>
-<button type="button" class="btn btn-sm btn-outline-secondary" onclick="addLine()">+ Ligne</button>
+<button type="button" class="btn btn-sm btn-outline-secondary" data-add-line>+ Ligne</button>
 </div>
 </div>
 <div class="col-lg-4">
@@ -42,8 +42,16 @@
 <td><select name="product_id[]" class="form-select" required><option value="">Choisir...</option>{% for p in products %}<option value="{{ p.id }}">{{ p.name }} — {{ p.purchasePrice|money }}</option>{% endfor %}</select></td>
 <td><input type="number" min="1" value="1" name="quantity[]" class="form-control" required></td>
 <td><input type="number" step="1" min="0" name="unit_price[]" class="form-control" value="0"></td>
-<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">×</button></td>
+<td><button type="button" class="btn btn-sm btn-outline-danger" data-remove-row>×</button></td>
 </tr>
 </template>
 {% endblock %}
-{% block javascripts %}<script>function addLine(){document.querySelector('#lines tbody').appendChild(document.getElementById('lineTpl').content.cloneNode(true));}</script>{% endblock %}
+{% block javascripts %}<script nonce="{{ csp_nonce }}">
+document.addEventListener('click', function(e) {
+  if (e.target.closest('[data-add-line]')) {
+    e.preventDefault();
+    var tpl = document.getElementById('lineTpl');
+    if (tpl) document.querySelector('#lines tbody').appendChild(tpl.content.cloneNode(true));
+  }
+});
+</script>{% endblock %}

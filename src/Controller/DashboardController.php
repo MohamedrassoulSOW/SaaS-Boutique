@@ -239,9 +239,15 @@ class DashboardController extends AbstractController
         return $this->redirectToRoute('app_dashboard');
     }
 
-    #[Route('/shop/switch/{id}', name: 'app_shop_switch')]
-    public function switchShop(int $id, ShopContext $shopContext): Response
+    #[Route('/shop/switch/{id}', name: 'app_shop_switch', methods: ['POST'])]
+    public function switchShop(int $id, Request $request, ShopContext $shopContext): Response
     {
+        if (!$this->isCsrfTokenValid('shop_switch', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('app_dashboard');
+        }
+
         /** @var User $user */
         $user = $this->getUser();
         $target = null;

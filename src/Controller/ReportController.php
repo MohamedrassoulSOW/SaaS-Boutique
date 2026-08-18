@@ -205,12 +205,20 @@ class ReportController extends ShopAwareController
     {
         $fromInput = $request->query->getString('from');
         $toInput = $request->query->getString('to');
-        $from = $fromInput !== ''
-            ? new \DateTimeImmutable($fromInput.' 00:00:00')
-            : new \DateTimeImmutable('first day of this month midnight');
-        $toExclusive = $toInput !== ''
-            ? (new \DateTimeImmutable($toInput.' 00:00:00'))->modify('+1 day')
-            : (new \DateTimeImmutable('today'))->modify('+1 day');
+        try {
+            $from = $fromInput !== ''
+                ? new \DateTimeImmutable($fromInput.' 00:00:00')
+                : new \DateTimeImmutable('first day of this month midnight');
+        } catch (\Exception) {
+            $from = new \DateTimeImmutable('first day of this month midnight');
+        }
+        try {
+            $toExclusive = $toInput !== ''
+                ? (new \DateTimeImmutable($toInput.' 00:00:00'))->modify('+1 day')
+                : (new \DateTimeImmutable('today'))->modify('+1 day');
+        } catch (\Exception) {
+            $toExclusive = (new \DateTimeImmutable('today'))->modify('+1 day');
+        }
 
         if ($from >= $toExclusive) {
             $from = new \DateTimeImmutable('first day of this month midnight');
@@ -238,7 +246,7 @@ class ReportController extends ShopAwareController
             fclose($out);
         });
         $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-        $response->headers->set('Content-Disposition', 'attachment; filename="'.$filename.'"');
+        $response->headers->set('Content-Disposition', \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('attachment', $filename));
 
         return $response;
     }

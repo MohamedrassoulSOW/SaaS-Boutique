@@ -21,7 +21,14 @@
             </div>
             <p class="text-muted small mb-3">{{ shop.address ?: 'Adresse non renseignée' }}</p>
             <div class="d-flex gap-2">
-                <a class="btn btn-sm btn-brand" href="{{ path('app_shop_switch', {id: shop.id}) }}">Activer</a>
+                {% if current and current.id == shop.id %}
+                    <span class="btn btn-sm btn-brand disabled">Active</span>
+                {% else %}
+                    <form method="POST" action="{{ path('app_shop_switch', {id: shop.id}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('shop_switch') }}">
+                        <button type="submit" class="btn btn-sm btn-brand">Activer</button>
+                    </form>
+                {% endif %}
                 {% if is_granted('ROLE_MERCHANT') %}
                     <a class="btn btn-sm btn-outline-brand" href="{{ path('app_shop_edit', {id: shop.id}) }}">Modifier</a>
                     {% if shop.contract %}

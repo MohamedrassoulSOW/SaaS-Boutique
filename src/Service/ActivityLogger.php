@@ -30,6 +30,5 @@ class ActivityLogger
         }
 
         $this->em->persist($log);
-        $this->em->flush();
     }
 }

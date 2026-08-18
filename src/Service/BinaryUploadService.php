@@ -51,6 +51,10 @@ class BinaryUploadService
             throw new \InvalidArgumentException('Fichier image illisible ou corrompu.');
         }
 
+        if ($imageInfo[0] > 4096 || $imageInfo[1] > 4096) {
+            throw new \RuntimeException('Les dimensions de l\'image ne doivent pas dépasser 4096×4096 pixels.');
+        }
+
         $typeMime = $imageInfo['mime'] ?? null;
         if (!\is_string($typeMime) || !\in_array($typeMime, self::ALLOWED_MIME, true)) {
             throw new \InvalidArgumentException('Contenu image non autorisé.');

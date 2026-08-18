@@ -52,6 +52,8 @@ class ProfileController extends AbstractController
             );
             if ($passwordChanged) {
                 $mailer->sendPasswordChanged($user);
+                $this->getSession()->invalidate();
+                $this->getSession()->migrate(true);
             }
             $this->addFlash('success', 'Profil mis à jour.');
 

@@ -30,6 +30,12 @@ class SubscriptionEnforcementService
 
         /** @var Subscription[] $list */
         $list = $this->subscriptions->createQueryBuilder('s')
+            ->leftJoin('s.merchant', 'm')
+            ->addSelect('m')
+            ->leftJoin('m.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('m.shops', 'ms')
+            ->addSelect('ms')
             ->andWhere('s.status IN (:statuses)')
             ->setParameter('statuses', [Subscription::STATUS_ACTIVE, Subscription::STATUS_EXPIRED])
             ->getQuery()
@@ -143,6 +149,9 @@ class SubscriptionEnforcementService
 
         $alreadySuspended = $subscription->getLastEnforcementAction() === 'suspend'
             || $subscription->getLastEnforcementAction() === 'terminate';
+        if ($alreadySuspended) {
+            return;
+        }
 
         $user = $merchant->getUser();
         if ($user && !$user->isSuspended()) {
@@ -159,10 +168,6 @@ class SubscriptionEnforcementService
         $subscription->setLastEnforcementAction('suspend');
         $subscription->setLastEnforcementAt(new \DateTimeImmutable());
 
-        if ($alreadySuspended) {
-            return;
-        }
-
         $this->activityLogger->log(
             'subscription.suspend',
             sprintf(
@@ -178,6 +183,10 @@ class SubscriptionEnforcementService
 
     private function terminate(Subscription $subscription, int $daysOverdue, int $grace): void
     {
+        if ($subscription->getLastEnforcementAction() === 'terminate') {
+            return;
+        }
+
         $this->notify($subscription, $daysOverdue, $grace, true);
         $this->suspend($subscription, $daysOverdue, $grace);
 

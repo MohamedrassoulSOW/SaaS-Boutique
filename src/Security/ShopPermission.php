@@ -11,7 +11,7 @@ use App\Service\ShopContext;
  * Droits métier par rôle entreprise.
  *
  * - entrepreneur : tout
- * - manager : opérations entreprise (sauf vendeurs / contrats / réglages entreprise)
+ * - manager : opérations entreprise (sauf agents / contrats / réglages entreprise)
  * - cashier : caisse, clients, consultation catalogue
  * - stock : stock, catalogue, achats, inventaires
  */
@@ -117,7 +117,7 @@ class ShopPermission
         return match ($role) {
             ShopMember::ROLE_MANAGER => 'Responsable',
             ShopMember::ROLE_STOCK => 'Magasinier',
-            ShopMember::ROLE_CASHIER => 'Vendeur / Caissier',
+            ShopMember::ROLE_CASHIER => 'Agent',
             default => 'Employé',
         };
     }

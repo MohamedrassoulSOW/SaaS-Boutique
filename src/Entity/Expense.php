@@ -7,7 +7,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ExpenseRepository::class)]
-#[ORM\Table(name: 'expenses')]
+#[ORM\Table(name: 'expenses', indexes: [
+    new ORM\Index(columns: ['shop_id', 'spent_at']),
+    new ORM\Index(columns: ['recorded_by_id']),
+])]
 class Expense
 {
     public const CATEGORIES = [

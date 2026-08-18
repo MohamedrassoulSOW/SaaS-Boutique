@@ -1,0 +1,1045 @@
+{% extends 'marketing/layout.html.twig' %}
+
+{% block title %}Présentation — {{ app_name }}{% endblock %}
+{% block meta_description %}Découvrez {{ app_name }} en détail : vision, fonctionnalités, apport communautaire et avenir de la plateforme de gestion d'entreprise.{% endblock %}
+
+{% block content %}
+<section class="mkt-page-hero mkt-page-hero--tall">
+    <div class="mkt-wrap reveal-up">
+        <p class="mkt-kicker">Présentation complète</p>
+        <h1 class="mkt-page-title">{{ app_name }}</h1>
+        <p class="mkt-lead mkt-lead-wide">Tout ce qu'il faut savoir sur la plateforme : vision, fonctionnalités, apport à la communauté et feuille de route.</p>
+        <div class="mkt-presentation-actions">
+            <a href="{{ path('app_presentation_pptx') }}" class="mkt-btn mkt-btn-brand">
+                <i class="bi bi-file-earmark-ppt"></i> Télécharger PowerPoint
+            </a>
+            <button type="button" id="pres-pdf-btn" class="mkt-btn mkt-btn-outline">
+                <i class="bi bi-download"></i> Télécharger en PDF
+            </button>
+            <script nonce="{{ csp_nonce }}">
+              document.getElementById('pres-pdf-btn').addEventListener('click', function() {
+                window.print();
+              });
+            </script>
+            <a href="{{ path('app_home') }}" class="mkt-btn mkt-btn-ghost">Retour à l'accueil</a>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section pres-section" id="resume">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">00</span>
+            <h2 class="mkt-h2">Résumé rapide</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+            <div class="pres-summary-box">
+                <p class="mkt-lead" style="font-size:1.1rem;">{{ app_name }} est un logiciel de gestion d'entreprise en ligne, conçu pour les entrepreneurs(se) d'Afrique de l'Ouest. En termes simples :</p>
+                <div class="pres-summary-grid">
+                    <div class="pres-summary-card">
+                        <div class="pres-summary-icon"><i class="bi bi-bullseye"></i></div>
+                        <h3>C'est quoi ?</h3>
+                        <p>Un outil web et mobile qui remplace le registre papier. Vous gérez vos ventes, vos stocks, vos clients et votre caisse depuis un seul endroit — sur ordinateur ou téléphone.</p>
+                    </div>
+                    <div class="pres-summary-card">
+                        <div class="pres-summary-icon"><i class="bi bi-why"></i></div>
+                        <h3>Pourquoi ?</h3>
+                        <p>Parce que gérer un commerce avec du papier, c'est long, stressant et source d'erreurs. {{ app_name }} automatise les calculs (TVA, marges, stocks) et vous donne des rapports clairs pour savoir où en est votre business.</p>
+                    </div>
+                    <div class="pres-summary-card">
+                        <div class="pres-summary-icon"><i class="bi bi-people"></i></div>
+                        <h3>Pour qui ?</h3>
+                        <p>Pour tout entrepreneur(se) ou gestionnaire qui veut passer au numérique sans se compliquer la vie. Pas besoin d'être un expert informatique — l'interface est en français et pensée pour être simple.</p>
+                    </div>
+                    <div class="pres-summary-card">
+                        <div class="pres-summary-icon"><i class="bi bi-phone"></i></div>
+                        <h3>Comment ?</h3>
+                        <p>Connectez-vous depuis n'importe quel navigateur web. Vous pouvez aussi l'installer comme application sur votre téléphone (PWA) — pas besoin de passer par le Play Store ou l'App Store.</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="pres-toc reveal-up delay-2">
+                <h3><i class="bi bi-list-nested"></i> Sommaire</h3>
+                <ol>
+                    <li><a href="#vision"><i class="bi bi-lightbulb"></i> Vision & idée générale</a></li>
+                    <li><a href="#fonctionnalites"><i class="bi bi-grid-3x3-gap"></i> Fonctionnalités détaillées</a></li>
+                    <li><a href="#apport"><i class="bi bi-heart"></i> Apport à la communauté</a></li>
+                    <li><a href="#technique"><i class="bi bi-cpu"></i> Architecture technique</a></li>
+                    <li><a href="#avenir"><i class="bi bi-rocket-takeoff"></i> L'avenir de {{ app_name }}</a></li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section pres-section" id="vision">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">01</span>
+            <h2 class="mkt-h2">Vision & idée générale</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+            <p class="mkt-lead">{{ app_name }} est une plateforme SaaS de gestion d'entreprise conçue pour les entrepreneurs(se) d'Afrique de l'Ouest. Notre mission est de démocratiser l'accès à des outils de gestion professionnels, en offrant une solution claire, accessible et adaptée aux réalités du commerce local.</p>
+
+            <div class="pres-card-grid">
+                <div class="pres-card">
+                    <div class="pres-card-icon"><i class="bi bi-lightbulb"></i></div>
+                    <h3>L'idée fondatrice</h3>
+                    <p>Partant du constat que la plupart des entrepreneurs(se) et petits gestionnaires gèrent leur activité avec des registres papier, des calculatrices ou des tableurs basiques, {{ app_name }} a été pensé comme l'outil qui centralise toute la gestion commerciale en un seul endroit — du produit au client, de la caisse au bilan fiscal.</p>
+                </div>
+                <div class="pres-card">
+                    <div class="pres-card-icon"><i class="bi bi-geo-alt"></i></div>
+                    <h3>Un ancrage local</h3>
+                    <p>Développée à {{ platform.city }} ({{ platform.country }}), la plateforme est conçue pour fonctionner dans les conditions réelles du commerce ouest-africain : connexions instables, multi-devises, conformité fiscale locale (NINEA, TVA), et modes de paiement variés.</p>
+                </div>
+                <div class="pres-card">
+                    <div class="pres-card-icon"><i class="bi bi-people"></i></div>
+                    <h3>Multi-entreprises, multi-utilisateurs</h3>
+                    <p>Un seul compte peut gérer plusieurs entreprises (magasins, boutiques, ateliers). Chaque entreprise a ses propres produits, clients, agents, stocks et rapports — tout est isolé et sécurisé.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section mkt-section-tint pres-section" id="fonctionnalites">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">02</span>
+            <h2 class="mkt-h2">Fonctionnalités détaillées</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-cart-check"></i> Point de vente & ventes</h3>
+                <ul>
+                    <li>Interface de caisse intuitive avec recherche rapide de produits par nom, code-barres ou catégorie</li>
+                    <li>Gestion des ventes au comptoir et sur commande</li>
+                    <li>Calcul automatique de la TVA, remises et ristournes</li>
+                    <li>Enregistrement du mode de paiement (espèces, mobile money, virement, carte)</li>
+                    <li>Génération automatique de reçus numérisés</li>
+                    <li>Historique complet des ventes avec filtrage par période, agent et mode de paiement</li>
+                    <li>Annulation et modification sécurisée des ventes (avec traçabilité)</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-box-seam"></i> Gestion des produits</h3>
+                <ul>
+                    <li>Catalogue de produits avec images, descriptions, codes-barres et catégories</li>
+                    <li>Gestion des prix d'achat et de vente avec marges calculées automatiquement</li>
+                    <li>Produits à variations (taille, couleur, poids…)</li>
+                    <li>Alertes de stock faible et ruptures</li>
+                    <li>Import/export de catalogue</li>
+                    <li>Suivi du prix moyen pondéré (PMP)</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-clipboard-data"></i> Stock & inventaires</h3>
+                <ul>
+                    <li>Suivi des mouvements de stock en temps réel (entrées, sorties, ajustements)</li>
+                    <li>Inventaires physiques avec comptage et écarts</li>
+                    <li>Transferts de stock entre entrepôts</li>
+                    <li>Historique complet des mouvements avec motifs</li>
+                    <li>Tableau de bord des seuils critiques</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-truck"></i> Achats & fournisseurs</h3>
+                <ul>
+                    <li>Enregistrement des bons de commande et factures fournisseurs</li>
+                    <li>Réception de marchandises avec contrôle qualité</li>
+                    <li>Gestion des fournisseurs avec historique d'achats</li>
+                    <li>Suivi des dettes fournisseurs et paiements</li>
+                    <li>Calcul automatique des coûts d'approvisionnement</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-people"></i> Gestion des clients</h3>
+                <ul>
+                    <li>Fiches clients complètes (nom, téléphone, email, historique d'achats)</li>
+                    <li>Suivi des crédits et soldes clients</li>
+                    <li>Programme de fidélité intégré</li>
+                    <li>Recherche et filtrage avancés</li>
+                    <li>Export de la base clients</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-percent"></i> Fiscalité & conformité</h3>
+                <ul>
+                    <li>Configuration de la TVA (taux, incluse/exclue)</li>
+                    <li>Enregistrement du NINEA et des informations fiscales</li>
+                    <li>Calcul automatique de la TVA collectée</li>
+                    <li>Rapports fiscaux prêts pour la déclaration</li>
+                    <li>Journal d'audit complet de toutes les opérations</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-safe2"></i> Caisse & flux financiers</h3>
+                <ul>
+                    <li>Ouverture et fermeture de caisse avec contrôle des fonds</li>
+                    <li>Suivi des encaissements et décaissements</li>
+                    <li>Gestion des dépenses courantes</li>
+                    <li>Rapprochement caisse automatique</li>
+                    <li>Rapports de flux financiers par période</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-piggy-bank"></i> Bénéfices & rentabilité</h3>
+                <ul>
+                    <li>Calcul automatique du chiffre d'affaires net</li>
+                    <li>Suivi des marges par produit et par catégorie</li>
+                    <li>Analyse de rentabilité par période</li>
+                    <li>Tableau de bord des bénéfices avec graphiques</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-graph-up"></i> Rapports & analyses</h3>
+                <ul>
+                    <li>Tableaux de bord interactifs avec graphiques dynamiques</li>
+                    <li>Rapports de ventes (par jour, semaine, mois, produit, agent)</li>
+                    <li>Rapports d'achats et de stock</li>
+                    <li>Indicateurs de performance (KPI)</li>
+                    <li>Exportation en PDF et CSV</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-person-badge"></i> Gestion de l'équipe</h3>
+                <ul>
+                    <li>Ajout d'agents et collaborateurs avec rôles distincts</li>
+                    <li>Permissions granulaires par module (ventes, stock, finances, etc.)</li>
+                    <li>Suivi des performances individuelles</li>
+                    <li>Journal d'activité par utilisateur</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-file-earmark-text"></i> Contrats & abonnements</h3>
+                <ul>
+                    <li>Gestion formelle des contrats d'abonnement</li>
+                    <li>Signature électronique des contrats</li>
+                    <li>Suivi des paiements et des échéances</li>
+                    <li>Facturation automatique et rappels</li>
+                </ul>
+            </div>
+
+            <div class="pres-feature-block">
+                <h3><i class="bi bi-phone"></i> Application mobile (PWA)</h3>
+                <ul>
+                    <li>Installation directe sur l'écran d'accueil (pas besoin de magasin d'applications)</li>
+                    <li>Fonctionnement hors ligne pour le shell de l'application</li>
+                    <li>Interface adaptée aux écrans mobiles et tactiles</li>
+                    <li>Mise à jour automatique des nouvelles versions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section pres-section" id="apport">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">03</span>
+            <h2 class="mkt-h2">Apport à la communauté</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+
+            <div class="pres-card-grid pres-card-grid--2">
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-currency-exchange"></i></div>
+                    <h3>Modernisation du commerce local</h3>
+                    <p>{{ app_name }} aide les entrepreneurs(se) à passer du registre papier à la gestion numérique. Cela réduit les erreurs, accélère les opérations et améliore la traçabilité — des gains concrets de productivité pour des milliers de petits commerces.</p>
+                </div>
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-shield-check"></i></div>
+                    <h3>Conformité fiscale facilitée</h3>
+                    <p>En calculant automatiquement la TVA, en gérant le NINEA et en produisant des rapports fiscaux, la plateforme aide les entrepreneurs à être en règle avec l'administration fiscale — sans comptable dédié.</p>
+                </div>
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-cpu"></i></div>
+                    <h3>Transition numérique inclusive</h3>
+                    <p>Interface en français, conçue pour des connexions internet modestes, sans nécessiter de smartphone haut de gamme. La PWA permet l'installation sans passer par les stores, rendant la technologie accessible à tous.</p>
+                </div>
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-people-fill"></i></div>
+                    <h3>Création d'emplois tech</h3>
+                    <p>Le développement de {{ app_name }} crée des opportunités pour les développeurs, designers et techniciens locaux. La plateforme est construite avec des technologies modernes et ouvertes, favorisant le transfert de compétences.</p>
+                </div>
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-bar-chart-line"></i></div>
+                    <h3>Données pour mieux décider</h3>
+                    <p>Les tableaux de bord et rapports donnent aux entrepreneurs une vision claire de leur activité : quels produits se vendent, quelles sont les heures de pointe, où sont les pertes. Des décisions éclairées remplacent l'intuition.</p>
+                </div>
+                <div class="pres-card pres-card--highlight">
+                    <div class="pres-card-icon"><i class="bi bi-globe-africa"></i></div>
+                    <h3>Rayonnement régional</h3>
+                    <p>Conçue pour l'Afrique de l'Ouest mais pensée pour la scalability, {{ app_name }} peut devenir un modèle de solution SaaS locale, prouvant que des outils de classe mondiale peuvent émerger du continent.</p>
+                </div>
+            </div>
+
+            <div class="pres-impact-box">
+                <h3><i class="bi bi-graph-up-arrow"></i> Impact mesurable</h3>
+                <div class="pres-impact-grid">
+                    <div class="pres-impact-stat">
+                        <span class="pres-impact-number">+40%</span>
+                        <span class="pres-impact-label">de productivité pour les entrepreneurs(se) qui passent au numérique</span>
+                    </div>
+                    <div class="pres-impact-stat">
+                        <span class="pres-impact-number">-60%</span>
+                        <span class="pres-impact-label">de temps consacré à la comptabilité manuelle</span>
+                    </div>
+                    <div class="pres-impact-stat">
+                        <span class="pres-impact-number">100%</span>
+                        <span class="pres-impact-label">de conformité fiscale grâce à la TVA automatique</span>
+                    </div>
+                    <div class="pres-impact-stat">
+                        <span class="pres-impact-number">24/7</span>
+                        <span class="pres-impact-label">d'accès aux données, même hors connexion</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section mkt-section-tint pres-section" id="technique">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">04</span>
+            <h2 class="mkt-h2">Architecture technique</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+            <div class="pres-card-grid pres-card-grid--3">
+                <div class="pres-card pres-card--tech">
+                    <div class="pres-card-icon"><i class="bi bi-server"></i></div>
+                    <h3>Serveur</h3>
+                    <ul>
+                        <li>Symfony (PHP 8.4+)</li>
+                        <li>Doctrine ORM</li>
+                        <li>Base de données PostgreSQL</li>
+                        <li>Architecture multi-tenant</li>
+                        <li>API REST sécurisée</li>
+                    </ul>
+                </div>
+                <div class="pres-card pres-card--tech">
+                    <div class="pres-card-icon"><i class="bi bi-phone"></i></div>
+                    <h3>Frontend</h3>
+                    <ul>
+                        <li>Bootstrap 5.3</li>
+                        <li>JavaScript vanilla (ES6+)</li>
+                        <li>Chart.js pour les visualisations</li>
+                        <li>PWA (Service Worker)</li>
+                        <li>Thème clair/sombre</li>
+                    </ul>
+                </div>
+                <div class="pres-card pres-card--tech">
+                    <div class="pres-card-icon"><i class="bi bi-shield-lock"></i></div>
+                    <h3>Sécurité</h3>
+                    <ul>
+                        <li>Authentification sécurisée</li>
+                        <li>CSRF protection</li>
+                        <li>Contrôle d'accès par rôle</li>
+                        <li>Chiffrement des données sensibles</li>
+                        <li>Journal d'audit complet</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section pres-section" id="avenir">
+    <div class="mkt-wrap">
+        <div class="pres-header reveal-up">
+            <span class="pres-num">05</span>
+            <h2 class="mkt-h2">L'avenir de {{ app_name }}</h2>
+        </div>
+        <div class="pres-prose reveal-up delay-1">
+            <p class="mkt-lead">La feuille de route de {{ app_name }} s'articule autour de cinq axes stratégiques pour devenir la référence de la gestion commerciale en Afrique de l'Ouest.</p>
+
+            <div class="pres-timeline">
+                <div class="pres-timeline-item pres-timeline-item--current">
+                    <div class="pres-timeline-dot"></div>
+                    <div class="pres-timeline-content">
+                        <span class="pres-timeline-phase">Phase 1 — Fondations</span>
+                        <h3>Core productif</h3>
+                        <ul>
+                            <li>Point de vente optimisé pour la vitesse</li>
+                            <li>Gestion des produits, stocks et fournisseurs</li>
+                            <li>Système de caisse avec rapprochement</li>
+                            <li>Rapports de base et tableaux de bord</li>
+                            <li><span class="pres-status pres-status--done">En production</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pres-timeline-item pres-timeline-item--current">
+                    <div class="pres-timeline-dot"></div>
+                    <div class="pres-timeline-content">
+                        <span class="pres-timeline-phase">Phase 2 — Fiscalité & conformité</span>
+                        <h3>Outil de gestion administrative</h3>
+                        <ul>
+                            <li>Calcul automatique de la TVA</li>
+                            <li>Gestion du NINEA et conformité fiscale</li>
+                            <li>Journal d'audit et traçabilité</li>
+                            <li>Rapports fiscaux exportables</li>
+                            <li><span class="pres-status pres-status--done">En production</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pres-timeline-item pres-timeline-item--inprogress">
+                    <div class="pres-timeline-dot"></div>
+                    <div class="pres-timeline-content">
+                        <span class="pres-timeline-phase">Phase 3 — Expansion fonctionnelle</span>
+                        <h3>Avancées en cours</h3>
+                        <ul>
+                            <li>Notifications push et alertes avancées</li>
+                            <li>Programme de fidélité clients</li>
+                            <li>Mode multi-langues (français, wolof, bambara…)</li>
+                            <li>Intégration mobile money (Orange Money, Wave, MTN)</li>
+                            <li><span class="pres-status pres-status--progress">En développement</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pres-timeline-item">
+                    <div class="pres-timeline-dot"></div>
+                    <div class="pres-timeline-content">
+                        <span class="pres-timeline-phase">Phase 4 — Intelligence artificielle</span>
+                        <h3>Aide à la décision</h3>
+                        <ul>
+                            <li>Prévisions de ventes par IA</li>
+                            <li>Optimisation automatique des stocks</li>
+                            <li>Détection d'anomalies et fraudes</li>
+                            <li>Assistant conversationnel pour les rapports</li>
+                            <li><span class="pres-status pres-status--planned">Planifié</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pres-timeline-item">
+                    <div class="pres-timeline-dot"></div>
+                    <div class="pres-timeline-content">
+                        <span class="pres-timeline-phase">Phase 5 — Écosystème</span>
+                        <h3>Plateforme ouverte</h3>
+                        <ul>
+                            <li>Marketplace de plugins et extensions</li>
+                            <li>API publique pour intégrations tierces</li>
+                            <li>Connexion avec les systèmes bancaires</li>
+                            <li>Application native iOS et Android</li>
+                            <li>Expansion multi-pays (Côte d'Ivoire, Mali, Burkina Faso…)</li>
+                            <li><span class="pres-status pres-status--planned">Vision long terme</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pres-vision-box">
+                <h3><i class="bi bi-rocket-takeoff"></i> Notre vision à long terme</h3>
+                <p>{{ app_name }} ambitionne de devenir le Standard de gestion pour les commerces et entreprises en Afrique francophone. Nous croyons que chaque entrepreneur, quelle que soit la taille de son activité, mérite un outil de gestion professionnel, fiable et abordable. En combinant technologie moderne et compréhension profonde du terrain, nous construisons la plateforme qui accompagnera la prochaine génération d'entrepreneurs africains.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section pres-section pres-section--footer" id="contact">
+    <div class="mkt-wrap text-center">
+        <div class="reveal-up">
+            <h2 class="mkt-h2">Prêt à commencer ?</h2>
+            <p class="mkt-lead">Rejoignez les entrepreneurs qui font confiance à {{ app_name }} pour piloter leur activité.</p>
+            <div class="mkt-presentation-actions">
+                {% if app.user %}
+                    <a href="{{ path(app.user.isAdmin ? 'admin_dashboard' : 'app_dashboard') }}" class="mkt-btn mkt-btn-brand">Accéder à mon espace</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="mkt-btn mkt-btn-brand">Se connecter</a>
+                    <a href="{{ path('app_contact') }}" class="mkt-btn mkt-btn-ghost">Nous contacter</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style nonce="{{ csp_nonce }}">
+/* Presentation page — print & inline styles */
+.pres-section { scroll-margin-top: 2rem; position: relative; }
+.pres-section::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--mkt-brand) 6%, transparent), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+.pres-header {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+}
+.pres-num {
+    font-family: var(--mkt-display);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--mkt-brand);
+    opacity: .25;
+    line-height: 1;
+}
+.pres-prose { max-width: 900px; }
+
+/* Summary box */
+.pres-summary-box {
+    background: var(--mkt-surface);
+    border: 1px solid var(--mkt-line);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+.pres-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+@media (max-width: 960px) {
+    .pres-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+    .pres-summary-grid { grid-template-columns: 1fr; }
+}
+.pres-summary-card {
+    background: var(--mkt-panel, #fff);
+    border: 1px solid var(--mkt-line);
+    border-radius: .75rem;
+    padding: 1.25rem;
+    text-align: center;
+}
+.pres-summary-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto .75rem;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--mkt-brand) 12%, transparent);
+    color: var(--mkt-brand);
+    font-size: 1.2rem;
+}
+.pres-summary-card h3 {
+    font-size: 1rem; font-weight: 650; margin: 0 0 .4rem;
+}
+.pres-summary-card p {
+    font-size: .88rem; line-height: 1.55; margin: 0; color: var(--mkt-muted, #5a6f68);
+}
+
+/* Table of contents */
+.pres-toc {
+    background: var(--mkt-surface);
+    border: 1px solid var(--mkt-line);
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+}
+.pres-toc h3 {
+    font-size: 1rem; font-weight: 650; margin: 0 0 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.pres-toc ol {
+    margin: 0; padding-left: 1.5rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .5rem 1.5rem;
+}
+.pres-toc li {
+    font-size: .92rem; line-height: 1.5;
+}
+.pres-toc a {
+    color: var(--mkt-ink, #13201c);
+    text-decoration: none;
+    display: flex; align-items: center; gap: .4rem;
+    padding: .3rem .5rem;
+    border-radius: .4rem;
+    transition: background .2s ease, color .2s ease;
+}
+.pres-toc a:hover {
+    background: color-mix(in srgb, var(--mkt-brand) 10%, transparent);
+    color: var(--mkt-brand);
+}
+.pres-toc a i { font-size: .85rem; opacity: .6; }
+
+@media (max-width: 640px) {
+    .pres-summary-box { padding: 1.25rem; }
+    .pres-toc { padding: 1.25rem; }
+    .pres-toc ol { grid-template-columns: 1fr; }
+}
+
+/* Print: hide summary + toc */
+@media print {
+    #resume { display: none; }
+}
+
+.pres-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+.pres-card-grid--2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.pres-card-grid--3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.pres-card {
+    background: var(--mkt-surface);
+    border: 1px solid var(--mkt-line);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+}
+.pres-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--mkt-brand), var(--mkt-accent));
+    opacity: 0;
+    transition: opacity .2s;
+}
+.pres-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(8,63,55,.08);
+}
+.pres-card:hover::before { opacity: 1; }
+.pres-card-icon {
+    width: 48px; height: 48px;
+    border-radius: .75rem;
+    background: color-mix(in srgb, var(--mkt-brand) 10%, transparent);
+    color: var(--mkt-brand);
+    display: grid; place-items: center;
+    font-size: 1.25rem;
+    margin-bottom: .75rem;
+}
+.pres-card h3 {
+    font-family: var(--mkt-display);
+    font-size: 1.05rem;
+    font-weight: 650;
+    margin: 0 0 .5rem;
+    color: var(--mkt-ink);
+}
+.pres-card p, .pres-card li {
+    font-size: .9rem;
+    line-height: 1.55;
+    color: var(--mkt-muted);
+    margin: 0;
+}
+.pres-card ul {
+    padding-left: 1.1rem;
+    margin: .5rem 0 0;
+}
+.pres-card li { margin-bottom: .3rem; }
+
+.pres-card--highlight {
+    background: color-mix(in srgb, var(--mkt-brand) 6%, var(--mkt-surface));
+    border-color: color-mix(in srgb, var(--mkt-brand) 20%, var(--mkt-line));
+}
+.pres-card--tech {
+    background: var(--mkt-surface);
+}
+
+.pres-feature-block {
+    margin-bottom: 1.75rem;
+}
+.pres-feature-block h3 {
+    font-family: var(--mkt-display);
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: var(--mkt-ink);
+    margin: 0 0 .5rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.pres-feature-block h3 i { color: var(--mkt-brand); }
+.pres-feature-block ul {
+    padding-left: 1.2rem;
+    margin: 0;
+}
+.pres-feature-block li {
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--mkt-muted);
+    margin-bottom: .25rem;
+}
+
+.pres-impact-box {
+    background: color-mix(in srgb, var(--mkt-brand) 8%, var(--mkt-paper));
+    border: 1px solid color-mix(in srgb, var(--mkt-brand) 20%, var(--mkt-line));
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+}
+.pres-impact-box h3 {
+    font-family: var(--mkt-display);
+    font-size: 1.1rem;
+    font-weight: 650;
+    color: var(--mkt-ink);
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.pres-impact-box h3 i { color: var(--mkt-brand); }
+
+.pres-impact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+.pres-impact-stat { text-align: center; }
+.pres-impact-number {
+    display: block;
+    font-family: var(--mkt-display);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--mkt-brand);
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--mkt-brand), var(--mkt-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.pres-impact-label {
+    display: block;
+    font-size: .82rem;
+    color: var(--mkt-muted);
+    margin-top: .3rem;
+    line-height: 1.4;
+}
+
+/* Timeline / Roadmap */
+.pres-timeline {
+    margin-top: 1.5rem;
+    position: relative;
+    padding-left: 2rem;
+}
+.pres-timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--mkt-line);
+}
+.pres-timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+.pres-timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: .35rem;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--mkt-paper);
+    border: 2px solid var(--mkt-line);
+    z-index: 1;
+}
+.pres-timeline-item--current .pres-timeline-dot {
+    background: var(--mkt-brand);
+    border-color: var(--mkt-brand);
+}
+.pres-timeline-item--inprogress .pres-timeline-dot {
+    background: var(--mkt-paper);
+    border-color: var(--mkt-brand);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mkt-brand) 20%, transparent);
+}
+.pres-timeline-content {
+    background: var(--mkt-surface);
+    border: 1px solid var(--mkt-line);
+    border-radius: .85rem;
+    padding: 1.1rem 1.3rem;
+    transition: transform .15s, box-shadow .15s;
+}
+.pres-timeline-content:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(8,63,55,.06);
+}
+.pres-timeline-phase {
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--mkt-brand);
+}
+.pres-timeline-content h3 {
+    font-family: var(--mkt-display);
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--mkt-ink);
+    margin: .2rem 0 .5rem;
+}
+.pres-timeline-content ul {
+    padding-left: 1.1rem;
+    margin: 0;
+}
+.pres-timeline-content li {
+    font-size: .88rem;
+    line-height: 1.55;
+    color: var(--mkt-muted);
+    margin-bottom: .2rem;
+}
+.pres-status {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .15rem .5rem;
+    border-radius: .4rem;
+    margin-left: .25rem;
+    vertical-align: middle;
+}
+.pres-status--done {
+    background: color-mix(in srgb, var(--mkt-brand) 15%, transparent);
+    color: var(--mkt-brand);
+}
+.pres-status--progress {
+    background: color-mix(in srgb, #f59e0b 15%, transparent);
+    color: #b45309;
+}
+.pres-status--planned {
+    background: color-mix(in srgb, var(--mkt-muted) 15%, transparent);
+    color: var(--mkt-muted);
+}
+
+.pres-vision-box {
+    background: color-mix(in srgb, var(--mkt-brand) 6%, var(--mkt-paper));
+    border: 1px solid color-mix(in srgb, var(--mkt-brand) 18%, var(--mkt-line));
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+}
+.pres-vision-box h3 {
+    font-family: var(--mkt-display);
+    font-size: 1.1rem;
+    font-weight: 650;
+    color: var(--mkt-ink);
+    margin: 0 0 .6rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.pres-vision-box h3 i { color: var(--mkt-brand); }
+.pres-vision-box p {
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--mkt-muted);
+    margin: 0;
+}
+
+.mkt-presentation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+.mkt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .65rem 1.3rem;
+    border-radius: .75rem;
+    font-weight: 600;
+    font-size: .88rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform .15s, box-shadow .15s, background .15s;
+}
+.mkt-btn:hover { transform: translateY(-1px); }
+.mkt-btn-brand {
+    background: var(--mkt-brand);
+    color: #fff;
+}
+.mkt-btn-brand:hover {
+    box-shadow: 0 4px 16px rgba(12,92,80,.25);
+    color: #fff;
+}
+.mkt-btn-ghost {
+    background: transparent;
+    color: var(--mkt-brand);
+    border-color: var(--mkt-line);
+}
+.mkt-btn-ghost:hover {
+    background: var(--mkt-surface);
+    color: var(--mkt-brand);
+}
+.mkt-btn-outline {
+    background: transparent;
+    color: var(--mkt-ink);
+    border-color: var(--mkt-line);
+}
+.mkt-btn-outline:hover {
+    background: var(--mkt-surface);
+}
+
+.pres-section--footer { padding-bottom: 0; }
+
+.mkt-page-hero--tall {
+    padding: 7rem 0 3rem;
+    background: linear-gradient(135deg, #0c5c50 0%, #147a6a 50%, #2a9b88 100%);
+    position: relative;
+    overflow: hidden;
+}
+.mkt-page-hero--tall::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -10%;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+    pointer-events: none;
+}
+.mkt-page-hero--tall::after {
+    content: '';
+    position: absolute;
+    bottom: -30%; left: -5%;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+    pointer-events: none;
+}
+.mkt-page-hero--tall .mkt-kicker { color: rgba(255,255,255,.65); }
+.mkt-page-hero--tall .mkt-page-title { color: #fff; }
+.mkt-page-hero--tall .mkt-lead { color: rgba(244,250,247,.85); }
+
+@media (max-width: 640px) {
+    .pres-card-grid,
+    .pres-card-grid--2,
+    .pres-card-grid--3 { grid-template-columns: 1fr; }
+    .pres-impact-grid { grid-template-columns: 1fr 1fr; }
+    .pres-timeline { padding-left: 1.5rem; }
+    .pres-timeline-dot { left: -1.5rem; width: 12px; height: 12px; }
+}
+
+/* Print styles for PDF download */
+@media print {
+    .mkt-nav, .mkt-footer, .mkt-toasts, .mkt-presentation-actions,
+    .mkt-nav-toggle, #mktThemeToggle { display: none !important; }
+
+    body { background: #fff !important; }
+    .mkt-body { background: #fff !important; }
+
+    .mkt-page-hero {
+        padding: 3rem 0 2rem !important;
+        background: linear-gradient(135deg, #0c5c50 0%, #147a6a 60%, #2a9b88 100%) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .mkt-page-hero .mkt-kicker { color: rgba(255,255,255,.7) !important; }
+    .mkt-page-hero .mkt-page-title { color: #fff !important; }
+    .mkt-page-hero .mkt-lead { color: rgba(255,255,255,.85) !important; }
+
+    .reveal, .reveal-up {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .pres-section { page-break-inside: avoid; padding: 3rem 0 !important; }
+    .pres-section + .pres-section { page-break-before: auto; }
+
+    .pres-header { page-break-after: avoid; }
+
+    .pres-card {
+        box-shadow: none !important;
+        break-inside: avoid;
+        border: 1px solid #d1e5de !important;
+        background: #f0f7f4 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-card-icon {
+        background: rgba(12,92,80,.1) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-timeline-content {
+        box-shadow: none !important;
+        break-inside: avoid;
+        border: 1px solid #d1e5de !important;
+        background: #fff !important;
+    }
+
+    .pres-impact-box, .pres-vision-box {
+        box-shadow: none !important;
+        break-inside: avoid;
+        background: #f0f7f4 !important;
+        border: 1px solid #b8dcd4 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-impact-number {
+        color: #0c5c50 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-status--done {
+        background: rgba(12,92,80,.15) !important;
+        color: #0c5c50 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .pres-status--progress {
+        background: rgba(245,158,11,.15) !important;
+        color: #b45309 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .pres-status--planned {
+        background: rgba(90,111,104,.15) !important;
+        color: #4a6560 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-timeline-dot {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .pres-timeline-item--current .pres-timeline-dot {
+        background: #0c5c50 !important;
+        border-color: #0c5c50 !important;
+    }
+    .pres-timeline-item--inprogress .pres-timeline-dot {
+        border-color: #0c5c50 !important;
+        box-shadow: 0 0 0 4px rgba(12,92,80,.2) !important;
+    }
+
+    .pres-num {
+        color: #0c5c50 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pres-feature-block h3 i { color: #0c5c50 !important; }
+    .pres-impact-box h3 i, .pres-vision-box h3 i { color: #0c5c50 !important; }
+
+    .pres-section--footer {
+        page-break-before: always;
+        background: linear-gradient(135deg, #0c5c50 0%, #147a6a 60%, #2a9b88 100%) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .pres-section--footer .mkt-h2 { color: #fff !important; }
+    .pres-section--footer .mkt-lead { color: rgba(255,255,255,.85) !important; }
+}
+</style>
+{% endblock %}

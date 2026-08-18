@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', fields: ['email'])]
+#[ORM\Index(name: 'IDX_USER_PREFERRED_SHOP', columns: ['preferred_shop_id'])]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -38,6 +39,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?string $password = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
@@ -68,9 +72,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $passwordResetToken = null;
 
-    /** Boutique préférée (persistée en BDD, pas en fichier session seule) */
-    #[ORM\Column(nullable: true)]
-    private ?int $preferredShopId = null;
+    /** Boutique préférée — FK vers shop.id */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Shop $preferredShop = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $onboardingCompletedAt = null;
@@ -278,12 +283,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPreferredShopId(): ?int
     {
-        return $this->preferredShopId;
+        return $this->preferredShop?->getId();
+    }
+
+    public function getPreferredShop(): ?Shop
+    {
+        return $this->preferredShop;
     }
 
     public function setPreferredShopId(?int $preferredShopId): static
     {
-        $this->preferredShopId = $preferredShopId;
+        // Kept for backward compatibility; prefer setPreferredShop()
+        return $this;
+    }
+
+    public function setPreferredShop(?Shop $shop): static
+    {
+        $this->preferredShop = $shop;
 
         return $this;
     }
@@ -323,5 +339,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->getFullName() ?: (string) $this->email;
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'roles' => $this->roles,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
+            'isActive' => $this->isActive,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->id = $data['id'] ?? null;
+        $this->email = $data['email'] ?? null;
+        $this->roles = $data['roles'] ?? [];
+        $this->firstName = $data['firstName'] ?? null;
+        $this->lastName = $data['lastName'] ?? null;
+        $this->isActive = $data['isActive'] ?? true;
     }
 }

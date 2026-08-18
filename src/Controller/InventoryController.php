@@ -54,6 +54,10 @@ class InventoryController extends ShopAwareController
             }
 
             $type = $request->request->get('type', Inventory::TYPE_FULL);
+            $allowedTypes = [Inventory::TYPE_FULL, Inventory::TYPE_PARTIAL];
+            if (!in_array($type, $allowedTypes, true)) {
+                $type = Inventory::TYPE_FULL;
+            }
             $inventory = new Inventory();
             $inventory->setShop($shop);
             $inventory->setType($type);
@@ -103,6 +107,7 @@ class InventoryController extends ShopAwareController
     }
 
     #[Route('/{id}/complete', name: 'app_inventory_complete', methods: ['POST'])]
+    #[IsGranted('MODULE_INVENTORIES_MANAGE')]
     public function complete(
         Inventory $inventory,
         Request $request,
@@ -126,24 +131,33 @@ class InventoryController extends ShopAwareController
         if (!\is_array($realQtys)) {
             $realQtys = [];
         }
-        foreach ($inventory->getItems() as $item) {
-            $id = (string) $item->getId();
-            if (isset($realQtys[$id])) {
-                $item->setRealQty((int) $realQtys[$id]);
-            }
-            if ($item->getDifference() !== 0) {
-                $stockService->setQuantity(
-                    $item->getProduct(),
-                    $item->getRealQty(),
-                    $user,
-                    'Inventaire '.$inventory->getReference()
-                );
-            }
+
+        try {
+            $em->wrapInTransaction(function () use ($inventory, $realQtys, $stockService, $em, $user) {
+                foreach ($inventory->getItems() as $item) {
+                    $id = (string) $item->getId();
+                    if (isset($realQtys[$id])) {
+                        $item->setRealQty((int) $realQtys[$id]);
+                    }
+                    if ($item->getDifference() !== 0) {
+                        $stockService->setQuantity(
+                            $item->getProduct(),
+                            $item->getRealQty(),
+                            $user,
+                            'Inventaire '.$inventory->getReference()
+                        );
+                    }
+                }
+
+                $inventory->setStatus(Inventory::STATUS_COMPLETED);
+                $inventory->setCompletedAt(new \DateTimeImmutable());
+            });
+        } catch (\Throwable) {
+            $this->addFlash('danger', 'Conflit de modification. Réessayez.');
+
+            return $this->redirectToRoute('app_inventory_show', ['id' => $inventory->getId()]);
         }
 
-        $inventory->setStatus(Inventory::STATUS_COMPLETED);
-        $inventory->setCompletedAt(new \DateTimeImmutable());
-        $em->flush();
         $logger->log('inventory.complete', 'Inventaire '.$inventory->getReference().' terminé', $user, $shop);
         $this->addFlash('success', 'Inventaire terminé et stocks ajustés.');
 

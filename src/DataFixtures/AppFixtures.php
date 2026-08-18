@@ -37,13 +37,13 @@ class AppFixtures extends Fixture
         $admin->setLastName('Plateforme');
         $admin->setPhone('+221770000001');
         $admin->setRoles([User::ROLE_ADMIN]);
-        $admin->setPassword($this->hasher->hashPassword($admin, 'admin123'));
+        $admin->setPassword($this->hasher->hashPassword($admin, bin2hex(random_bytes(16))));
         $manager->persist($admin);
 
         $merchantsData = [
             [
-                'email' => 'commercant@demo.test',
-                'password' => 'demo1234',
+                'email' => 'entrepreneur@demo.test',
+                'password' => bin2hex(random_bytes(16)),
                 'firstName' => 'Amina',
                 'lastName' => 'Diallo',
                 'phone' => '+221770000010',
@@ -76,7 +76,7 @@ class AppFixtures extends Fixture
             ],
             [
                 'email' => 'almadies@demo.test',
-                'password' => 'demo1234',
+                'password' => bin2hex(random_bytes(16)),
                 'firstName' => 'Omar',
                 'lastName' => 'Sy',
                 'phone' => '+221770000020',
@@ -108,7 +108,7 @@ class AppFixtures extends Fixture
             ],
             [
                 'email' => 'guediawaye@demo.test',
-                'password' => 'demo1234',
+                'password' => bin2hex(random_bytes(16)),
                 'firstName' => 'Khady',
                 'lastName' => 'Ba',
                 'phone' => '+221770000030',
@@ -137,7 +137,7 @@ class AppFixtures extends Fixture
             ],
             [
                 'email' => 'thies@demo.test',
-                'password' => 'demo1234',
+                'password' => bin2hex(random_bytes(16)),
                 'firstName' => 'Ibrahima',
                 'lastName' => 'Kane',
                 'phone' => '+221770000040',
@@ -166,7 +166,7 @@ class AppFixtures extends Fixture
             ],
             [
                 'email' => 'mbour@demo.test',
-                'password' => 'demo1234',
+                'password' => bin2hex(random_bytes(16)),
                 'firstName' => 'Fatou',
                 'lastName' => 'Sarr',
                 'phone' => '+221770000050',
@@ -261,18 +261,18 @@ class AppFixtures extends Fixture
             $shop->setContract($contract);
             $manager->persist($contract);
 
-            if ($data['email'] === 'commercant@demo.test') {
+            if ($data['email'] === 'entrepreneur@demo.test') {
                 $seller = new User();
-                $seller->setEmail('vendeur@demo.test');
+                $seller->setEmail('agent@demo.test');
                 $seller->setFirstName('Moussa');
                 $seller->setLastName('Fall');
                 $seller->setPhone('+221770000099');
                 $seller->setRoles([User::ROLE_EMPLOYEE]);
-                $seller->setPassword($this->hasher->hashPassword($seller, 'demo1234'));
+                $seller->setPassword($this->hasher->hashPassword($seller, bin2hex(random_bytes(16))));
                 $manager->persist($seller);
                 $manager->flush();
 
-                $seller->setPreferredShopId($shop->getId());
+                $seller->setPreferredShop($shop);
                 $member = new ShopMember();
                 $member->setShop($shop);
                 $member->setUser($seller);

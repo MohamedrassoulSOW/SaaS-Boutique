@@ -10,8 +10,10 @@ use App\Repository\CustomerRepository;
 use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -47,11 +49,19 @@ class CustomerController extends ShopAwareController
         EntityManagerInterface $em,
         ShopContext $shopContext,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
         if (!$this->isCsrfTokenValid('customer_pay'.$customer->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
+        }
+        $limiterKey = 'customer_pay_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
 
             return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
         }
@@ -63,8 +73,6 @@ class CustomerController extends ShopAwareController
             return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
         }
 
-        $balance = (float) $customer->getBalance();
-        $paid = min($amount, $balance);
         $method = (string) $request->request->get('method', CustomerPayment::METHOD_CASH);
         if (!\in_array($method, [
             CustomerPayment::METHOD_CASH,
@@ -75,17 +83,32 @@ class CustomerController extends ShopAwareController
             $method = CustomerPayment::METHOD_CASH;
         }
 
-        $payment = new CustomerPayment();
-        $payment->setCustomer($customer);
-        $payment->setShop($shop);
-        $payment->setRecordedBy($this->getShopUser());
-        $payment->setAmount(number_format($paid, 2, '.', ''));
-        $payment->setMethod($method);
-        $payment->setNote(trim((string) $request->request->get('note', '')) ?: null);
+        try {
+            $em->wrapInTransaction(function () use ($customer, $amount, $method, $shop, $em, $request) {
+                $balance = (float) $customer->getBalance();
+                $paid = min($amount, $balance);
+                if ($paid <= 0) {
+                    return;
+                }
 
-        $customer->setBalance(number_format(max(0, $balance - $paid), 2, '.', ''));
-        $em->persist($payment);
-        $em->flush();
+                $payment = new CustomerPayment();
+                $payment->setCustomer($customer);
+                $payment->setShop($shop);
+                $payment->setRecordedBy($this->getShopUser());
+                $payment->setAmount(number_format($paid, 2, '.', ''));
+                $payment->setMethod($method);
+                $payment->setNote(trim((string) $request->request->get('note', '')) ?: null);
+
+                $customer->setBalance(number_format(max(0, $balance - $paid), 2, '.', ''));
+                $em->persist($payment);
+            });
+        } catch (\Throwable) {
+            $this->addFlash('danger', 'Erreur lors du paiement. Réessayez.');
+
+            return $this->redirectToRoute('app_customer_show', ['id' => $customer->getId()]);
+        }
+
+        $paid = (float) $request->request->get('amount', 0);
         $logger->log(
             'customer.payment',
             sprintf('Paiement crédit %s FCFA — %s', number_format($paid, 0, ',', ' '), $customer->getFullName()),

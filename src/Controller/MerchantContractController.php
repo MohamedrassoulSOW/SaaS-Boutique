@@ -73,7 +73,7 @@ class MerchantContractController extends AbstractController
 
         return new Response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$contract->getNumber().'.pdf"',
+            'Content-Disposition' => \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('inline', $contract->getNumber().'.pdf'),
         ]);
     }
 

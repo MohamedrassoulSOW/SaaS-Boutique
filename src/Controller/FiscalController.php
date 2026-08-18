@@ -34,12 +34,20 @@ class FiscalController extends ShopAwareController
 
         $fromInput = $request->query->getString('from');
         $toInput = $request->query->getString('to');
-        $from = $fromInput !== ''
-            ? new \DateTimeImmutable($fromInput.' 00:00:00')
-            : new \DateTimeImmutable('first day of this month midnight');
-        $toExclusive = $toInput !== ''
-            ? (new \DateTimeImmutable($toInput.' 00:00:00'))->modify('+1 day')
-            : (new \DateTimeImmutable('first day of next month midnight'));
+        try {
+            $from = $fromInput !== ''
+                ? new \DateTimeImmutable($fromInput.' 00:00:00')
+                : new \DateTimeImmutable('first day of this month midnight');
+        } catch (\Exception) {
+            $from = new \DateTimeImmutable('first day of this month midnight');
+        }
+        try {
+            $toExclusive = $toInput !== ''
+                ? (new \DateTimeImmutable($toInput.' 00:00:00'))->modify('+1 day')
+                : (new \DateTimeImmutable('first day of next month midnight'));
+        } catch (\Exception) {
+            $toExclusive = (new \DateTimeImmutable('first day of next month midnight'));
+        }
 
         if ($from >= $toExclusive) {
             $from = new \DateTimeImmutable('first day of this month midnight');

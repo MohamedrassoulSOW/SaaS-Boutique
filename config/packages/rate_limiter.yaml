@@ -8,3 +8,11 @@ framework:
             policy: fixed_window
             limit: 5
             interval: '1 hour'
+        financial_operations:
+            policy: sliding_window
+            limit: 30
+            interval: '1 minute'
+        admin_operations:
+            policy: sliding_window
+            limit: 60
+            interval: '1 minute'

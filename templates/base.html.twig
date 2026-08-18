@@ -18,7 +18,7 @@
     <link rel="icon" href="{{ asset('icons/favicon-16.png') }}?v=3" type="image/png" sizes="16x16">
     <link rel="icon" href="{{ asset('icons/favicon-48.png') }}?v=3" type="image/png" sizes="48x48">
     <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}?v=3">
-    <script>
+    <script nonce="{{ csp_nonce }}">
       (function () {
         var pageTitle = document.title || {{ app_name|json_encode|raw }};
         if (/soukexpat|expat-souk|marché mondial/i.test(pageTitle)) {
@@ -40,8 +40,8 @@
         }
       })();
     </script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}?v=48" rel="stylesheet">
     {% block stylesheets %}{% endblock %}
@@ -70,13 +70,18 @@
         {% if accessible_shops|length > 1 and not is_granted('ROLE_ADMIN') %}
         <div class="shop-switch mb-3 px-1">
             <label class="form-label small text-white-50 mb-1">Entreprise active</label>
-            <select class="form-select form-select-sm" onchange="if(this.value) location.href=this.value">
+            <div class="d-flex flex-column gap-1">
                 {% for shop in accessible_shops %}
-                    <option value="{{ path('app_shop_switch', {id: shop.id}) }}" {% if current_shop and current_shop.id == shop.id %}selected{% endif %}>
-                        {{ shop.name }}
-                    </option>
+                    {% if current_shop and current_shop.id == shop.id %}
+                        <span class="form-select form-select-sm text-decoration-underline" style="pointer-events:none">{{ shop.name }}</span>
+                    {% else %}
+                        <form method="POST" action="{{ path('app_shop_switch', {id: shop.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_switch') }}">
+                            <button type="submit" class="btn btn-sm btn-outline-light w-100 text-start">{{ shop.name }}</button>
+                        </form>
+                    {% endif %}
                 {% endfor %}
-            </select>
+            </div>
         </div>
         {% endif %}
 
@@ -91,13 +96,13 @@
                 <a class="{{ route == 'admin_subscriptions' ? 'active' }}" href="{{ path('admin_subscriptions') }}"><i class="bi bi-credit-card"></i>Abonnements</a>
                 <a class="{{ route == 'admin_fiscal' ? 'active' }}" href="{{ path('admin_fiscal') }}"><i class="bi bi-percent"></i>Fiscalité</a>
                 <a class="{{ route == 'admin_activity' ? 'active' }}" href="{{ path('admin_activity') }}"><i class="bi bi-journal-text"></i>Journal</a>
-                <a href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide d'utilisation</a>
+                <a href="{{ path('app_guide') }}" rel="noopener"><i class="bi bi-book"></i>Guide d'utilisation</a>
             {% else %}
                 <div class="nav-section">Pilot</div>
                 {% if can_module('dashboard') %}
                 <a class="{{ route == 'app_dashboard' ? 'active' }}" href="{{ path('app_dashboard') }}"><i class="bi bi-speedometer2"></i>Tableau de bord</a>
                 {% endif %}
-                <a class="{{ route == 'app_guide' ? 'active' }}" href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide d'utilisation</a>
+                <a class="{{ route == 'app_guide' ? 'active' }}" href="{{ path('app_guide') }}" rel="noopener"><i class="bi bi-book"></i>Guide d'utilisation</a>
                 {% if can_module('sales') %}
                 <a class="{{ route == 'app_sale_new' ? 'active' }}" href="{{ path('app_sale_new') }}"><i class="bi bi-cart-check"></i>Nouvelle vente</a>
                 <a class="{{ route == 'app_sale_index' or route == 'app_sale_show' ? 'active' }}" href="{{ path('app_sale_index') }}"><i class="bi bi-receipt"></i>Ventes</a>
@@ -154,7 +159,7 @@
                 {% if is_granted('ROLE_MERCHANT') or can_module('billing') %}
                 <div class="nav-section">Compte</div>
                 {% if is_granted('ROLE_MERCHANT') %}
-                <a class="{{ route starts with 'app_staff_' ? 'active' }}" href="{{ path('app_staff_index') }}"><i class="bi bi-person-badge"></i>Vendeurs</a>
+                <a class="{{ route starts with 'app_staff_' ? 'active' }}" href="{{ path('app_staff_index') }}"><i class="bi bi-person-badge"></i>Agents</a>
                 <a class="{{ route starts with 'app_contract_' or route starts with 'app_shop_contract' ? 'active' }}" href="{{ path('app_dashboard') }}#contrats"><i class="bi bi-file-earmark-text"></i>Contrats</a>
                 {% endif %}
                 {% if can_module('billing') %}
@@ -165,15 +170,15 @@
         </nav>
 
         <div class="sidebar-foot">
+            <a href="{{ path('app_presentation') }}" class="sidebar-presentation-btn" rel="noopener" title="Présentation complète de {{ app_name }}">
+                <i class="bi bi-book-half"></i><span>Présentation</span>
+            </a>
             <form action="{{ path('app_logout') }}" method="post" class="sidebar-logout-form">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
                 <button type="submit" class="sidebar-logout">
                     <i class="bi bi-box-arrow-right"></i>Déconnexion
                 </button>
             </form>
-            {% if not is_granted('ROLE_ADMIN') and not is_granted('ROLE_MERCHANT') %}
-            <div class="sidebar-credit">Réalisé par <a href="https://sowcoder.com/" target="_blank" rel="noopener noreferrer">SowCoder</a></div>
-            {% endif %}
         </div>
     </aside>
 
@@ -232,6 +237,7 @@
                 </a>
                 <a href="{{ path('app_profile') }}" class="btn btn-outline-brand btn-sm">
                     <i class="bi bi-person"></i><span class="d-none d-sm-inline ms-1">{{ app.user.firstName }}</span>
+                    <span class="badge rounded-pill {{ role_badge(current_user_role) }} d-none d-sm-inline ms-1" style="font-size:.65rem">{{ role_badge_label(current_user_role) }}</span>
                 </a>
             </div>
         </div>
@@ -293,15 +299,15 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<script nonce="{{ csp_nonce }}">
   window.AppRoutes = {
     saleNew: {{ path('app_sale_new')|json_encode|raw }}
   };
 </script>
 <script src="{{ asset('js/app.js') }}?v=7"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 (() => {
   // Thème clair/sombre — indépendant du cache de app.js
   const KEY = 'ndamstore-theme';
@@ -360,6 +366,38 @@
       return;
     }
     window.location.href = fallback;
+  });
+
+  document.addEventListener('click', (e) => {
+    const goBack = e.target.closest('[data-go-back]');
+    if (goBack) {
+      e.preventDefault();
+      history.back();
+      return;
+    }
+    const printBtn = e.target.closest('[data-print]');
+    if (printBtn) {
+      e.preventDefault();
+      window.print();
+      return;
+    }
+    const removeRow = e.target.closest('[data-remove-row]');
+    if (removeRow) {
+      e.preventDefault();
+      const row = removeRow.closest('tr');
+      if (row) row.remove();
+      return;
+    }
+    const addLine = e.target.closest('[data-add-line]');
+    if (addLine) {
+      e.preventDefault();
+      const tpl = document.getElementById(addLine.dataset.tpl || 'lineTpl');
+      if (tpl) {
+        const target = addLine.dataset.target || '#lines tbody';
+        const container = document.querySelector(target);
+        if (container) container.appendChild(tpl.content.cloneNode(true));
+      }
+    }
   });
 })();
 </script>

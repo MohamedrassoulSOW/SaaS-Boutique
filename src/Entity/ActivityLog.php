@@ -6,7 +6,10 @@ use App\Repository\ActivityLogRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActivityLogRepository::class)]
-#[ORM\Table(name: 'activity_logs')]
+#[ORM\Table(name: 'activity_logs', indexes: [
+    new ORM\Index(columns: ['shop_id', 'created_at']),
+    new ORM\Index(columns: ['user_id']),
+])]
 class ActivityLog
 {
     #[ORM\Id]

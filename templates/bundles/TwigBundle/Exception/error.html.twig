@@ -1,0 +1,14 @@
+{% extends 'marketing/layout.html.twig' %}
+{% block title %}Erreur serveur — {{ app_name }}{% endblock %}
+{% block body %}
+<section class="mkt-page-hero mkt-page-hero--tall">
+    <div class="mkt-wrap reveal-up">
+        <p class="mkt-kicker">Erreur 500</p>
+        <h1 class="mkt-page-title">Erreur serveur</h1>
+        <p class="mkt-lead mkt-lead-wide">Une erreur inattendue s'est produite. Notre équipe a été notifiée.<br>Veuillez réessayer dans quelques instants.</p>
+        <div class="mkt-presentation-actions">
+            <a href="{{ path('app_home') }}" class="mkt-btn mkt-btn-brand">Retour à l'accueil</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

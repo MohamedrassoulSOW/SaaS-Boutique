@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PurchaseOrderRepository::class)]
 #[ORM\Table(name: 'purchase_orders')]
+#[ORM\Index(name: 'IDX_PO_SHOP', columns: ['shop_id'])]
+#[ORM\Index(name: 'IDX_PO_SUPPLIER', columns: ['supplier_id'])]
+#[ORM\Index(name: 'IDX_PO_CREATED_BY', columns: ['created_by_id'])]
 class PurchaseOrder
 {
     public const STATUS_DRAFT = 'draft';
@@ -22,6 +25,9 @@ class PurchaseOrder
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -57,7 +63,7 @@ class PurchaseOrder
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->items = new ArrayCollection();
-        $this->reference = 'PO-'.date('Ymd').'-'.substr(uniqid(), -5);
+        $this->reference = 'PO-'.date('Ymd').'-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
     public function getId(): ?int

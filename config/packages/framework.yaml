@@ -4,9 +4,9 @@ framework:
     session:
         handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
         name: NDAMSESSID
-        cookie_secure: auto
+        cookie_secure: true
         cookie_httponly: true
-        cookie_samesite: lax
+        cookie_samesite: strict
         cookie_lifetime: 0
         gc_maxlifetime: 7200
 

@@ -24,7 +24,7 @@
 </form>
 {% endblock %}
 {% block javascripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.getElementById('invType').addEventListener('change', e => {
   document.getElementById('partialBox').style.display = e.target.value === 'partial' ? 'block' : 'none';
 });

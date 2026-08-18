@@ -19,8 +19,8 @@
         {% if contract.status != 'signed' %}
             <a class="btn btn-outline-brand" href="{{ path('admin_contract_edit', {id: contract.id}) }}">Modifier</a>
         {% endif %}
-        <a class="btn btn-outline-brand" href="{{ path('admin_contract_print', {id: contract.id}) }}" target="_blank">Imprimer</a>
-        <a class="btn btn-outline-brand" href="{{ path('admin_contract_pdf', {id: contract.id}) }}" target="_blank">PDF</a>
+        <a class="btn btn-outline-brand" href="{{ path('admin_contract_print', {id: contract.id}) }}">Imprimer</a>
+        <a class="btn btn-outline-brand" href="{{ path('admin_contract_pdf', {id: contract.id}) }}">PDF</a>
         <a class="btn btn-outline-secondary" href="{{ path('admin_contracts') }}">Liste</a>
     </div>
 </div>

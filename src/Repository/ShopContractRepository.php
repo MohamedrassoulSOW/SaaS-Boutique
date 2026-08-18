@@ -28,7 +28,7 @@ class ShopContractRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /** Contrats visibles par le commerçant (partagés). */
+    /** Contrats visibles par l'entrepreneur(se) (partagés). */
     /** @return list<ShopContract> */
     public function findVisibleForMerchant(Merchant $merchant): array
     {

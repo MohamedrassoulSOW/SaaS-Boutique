@@ -5,6 +5,7 @@ namespace App\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
@@ -21,12 +22,14 @@ class AccessDeniedHandler implements AccessDeniedHandlerInterface
         $from = $request->attributes->get('_route');
         $loopKey = 'access_denied_loop';
 
+        $flash = $session instanceof FlashBagAwareSessionInterface ? $session->getFlashBag() : null;
+
         // Évite la boucle dashboard ↔ shops pour les employés sans entreprise active
         if (\in_array($from, ['app_dashboard', 'app_shop_index', 'app_shop_switch'], true)
             || $session->get($loopKey) === $from
         ) {
             $session->remove($loopKey);
-            $session->getFlashBag()->add(
+            $flash?->add(
                 'warning',
                 'Aucune entreprise accessible pour votre compte. Contactez l\'administrateur ou reconnectez-vous.'
             );
@@ -35,7 +38,7 @@ class AccessDeniedHandler implements AccessDeniedHandlerInterface
         }
 
         $session->set($loopKey, $from ?: 'unknown');
-        $session->getFlashBag()->add(
+        $flash?->add(
             'warning',
             'Vous n\'avez pas accès à cette section avec votre rôle actuel.'
         );

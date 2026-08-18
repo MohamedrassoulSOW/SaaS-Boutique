@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CustomerPaymentRepository::class)]
 #[ORM\Table(name: 'customer_payments')]
+#[ORM\Index(name: 'IDX_CUSTPAY_CUSTOMER', columns: ['customer_id'])]
+#[ORM\Index(name: 'IDX_CUSTPAY_SHOP', columns: ['shop_id'])]
+#[ORM\Index(name: 'IDX_CUSTPAY_RECORDED_BY', columns: ['recorded_by_id'])]
 class CustomerPayment
 {
     public const METHOD_CASH = 'cash';
@@ -19,6 +22,10 @@ class CustomerPayment
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Version]
+    private int $version = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]

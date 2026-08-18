@@ -9,6 +9,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'products')]
+#[ORM\Index(name: 'IDX_PRODUCT_SHOP', columns: ['shop_id'])]
+#[ORM\Index(name: 'IDX_PRODUCT_CATEGORY', columns: ['category_id'])]
 class Product
 {
     use BinaryPayloadTrait;
@@ -17,6 +19,9 @@ class Product
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
     #[ORM\JoinColumn(nullable: false)]

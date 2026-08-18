@@ -23,11 +23,11 @@
                     <td>
                         {% if c.phone %}
                             <a href="tel:{{ c.phone }}">{{ c.phone }}</a>
-                            <a class="btn btn-sm btn-outline-brand ms-1" target="_blank" rel="noopener"
+                            <a class="btn btn-sm btn-outline-brand ms-1" rel="noopener"
                                href="https://wa.me/{{ c.phone|replace({' ': '', '+': '', '-': ''}) }}?text={{ ('Bonjour '~c.fullName~', votre solde chez '~shop.name~' est de '~(c.balance|money)~'. Merci de régulariser.')|url_encode }}">WhatsApp</a>
                         {% else %}—{% endif %}
                     </td>
-                    <td>{{ c.email ? '<a href="mailto:' ~ c.email ~ '">' ~ c.email ~ '</a>'|raw : '—' }}</td>
+                    <td>{{ c.email ? '<a href="mailto:' ~ c.email ~ '">' ~ c.email ~ '</a>' : '—' }}</td>
                     <td><span class="badge-stock">{{ c.balance|money }}</span></td>
                     <td class="text-end"><a class="btn btn-sm btn-brand" href="{{ path('app_customer_show', {id: c.id}) }}">Encaisser</a></td>
                 </tr>

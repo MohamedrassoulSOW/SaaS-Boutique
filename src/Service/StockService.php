@@ -25,7 +25,10 @@ class StockService
         bool $flush = true,
     ): StockMovement {
         $before = $product->getQuantity();
-        $after = max(0, $before + $delta);
+        $after = $before + $delta;
+        if ($after < 0) {
+            throw new \RuntimeException('Stock insuffisant pour ce produit.');
+        }
         $product->setQuantity($after);
         $product->setUpdatedAt(new \DateTimeImmutable());
 

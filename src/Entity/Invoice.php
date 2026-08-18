@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 #[ORM\Table(name: 'invoices')]
+#[ORM\Index(name: 'IDX_INVOICE_SALE', columns: ['sale_id'])]
 class Invoice
 {
     use BinaryPayloadTrait;
@@ -20,6 +21,10 @@ class Invoice
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Version]
+    private int $version = 0;
 
     #[ORM\OneToOne(inversedBy: 'invoice')]
     #[ORM\JoinColumn(nullable: false)]
@@ -45,7 +50,7 @@ class Invoice
     {
         $this->issuedAt = new \DateTimeImmutable();
         // Numéro attribué lors de la persistance (séquence boutique)
-        $this->number = 'FAC-TMP-'.substr(uniqid(), -6);
+        $this->number = 'FAC-TMP-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
     public function getId(): ?int
@@ -118,6 +123,6 @@ class Invoice
 
     public function hasPdf(): bool
     {
-        return $this->getPdfData() !== null;
+        return $this->pdfMime !== null && $this->pdfMime !== '';
     }
 }

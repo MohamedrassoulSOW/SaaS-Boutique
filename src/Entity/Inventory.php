@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InventoryRepository::class)]
 #[ORM\Table(name: 'inventories')]
+#[ORM\Index(name: 'IDX_INVENTORY_SHOP', columns: ['shop_id'])]
+#[ORM\Index(name: 'IDX_INVENTORY_CREATED_BY', columns: ['created_by_id'])]
 class Inventory
 {
     public const TYPE_FULL = 'full';
@@ -20,6 +22,9 @@ class Inventory
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -51,7 +56,7 @@ class Inventory
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->items = new ArrayCollection();
-        $this->reference = 'INV-'.date('Ymd').'-'.substr(uniqid(), -5);
+        $this->reference = 'INV-'.date('Ymd').'-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
     public function getId(): ?int

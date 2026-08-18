@@ -71,7 +71,7 @@ class ShopController extends ShopAwareController
                     $shop->setLogoMime($payload['mime']);
                     $shop->setLogoName($payload['name']);
                 } catch (\InvalidArgumentException $e) {
-                    $this->addFlash('danger', $e->getMessage());
+                    $this->addFlash('danger', 'Erreur lors du téléchargement du logo. Vérifiez le format et la taille.');
                 }
             }
 
@@ -146,7 +146,7 @@ class ShopController extends ShopAwareController
 
         return new Response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$contract->getNumber().'.pdf"',
+            'Content-Disposition' => \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('inline', $contract->getNumber().'.pdf'),
         ]);
     }
 

@@ -20,6 +20,15 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
+    private string $appSecret;
+
+    public function __construct(
+        #[Autowire('%env(APP_SECRET)%')]
+        string $appSecret,
+    ) {
+        $this->appSecret = $appSecret;
+    }
+
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -69,7 +78,7 @@ class SecurityController extends AbstractController
 
             if ($user && $user->isActive() && !$user->isSuspended()) {
                 $plainToken = bin2hex(random_bytes(32));
-                $user->setPasswordResetToken(hash('sha256', $plainToken));
+                $user->setPasswordResetToken(hash_hmac('sha256', $plainToken, $this->appSecret));
                 $user->setPasswordResetRequestedAt(new \DateTimeImmutable());
                 $em->flush();
 
@@ -84,7 +93,7 @@ class SecurityController extends AbstractController
                     );
                     $this->addFlash(
                         'danger',
-                        'Impossible d’envoyer l’email pour le moment. Vérifiez MAILER_DSN SMTP Hostinger (voir app:mail:test).'
+                        'Impossible d\'envoyer l\'email pour le moment. Veuillez réessayer plus tard.'
                     );
 
                     return $this->render('security/reset_request.html.twig', ['form' => $form]);
@@ -108,7 +117,7 @@ class SecurityController extends AbstractController
         EntityManagerInterface $em,
         ActivityLogger $activityLogger,
     ): Response {
-        $user = $users->findOneBy(['passwordResetToken' => hash('sha256', $token)]);
+        $user = $users->findOneBy(['passwordResetToken' => hash_hmac('sha256', $token, $this->appSecret)]);
         if (!$user || !$user->getPasswordResetRequestedAt()
             || $user->getPasswordResetRequestedAt() < new \DateTimeImmutable('-30 minutes')) {
             $this->addFlash('danger', 'Lien invalide ou expiré. Merci de refaire une demande.');
@@ -125,6 +134,9 @@ class SecurityController extends AbstractController
             $user->setPasswordResetRequestedAt(null);
             $user->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
+
+            $this->getSession()->invalidate();
+            $this->getSession()->migrate(true);
 
             $activityLogger->log('user.reset_done', 'Mot de passe réinitialisé pour '.$user->getEmail(), $user);
             $this->addFlash('success', 'Mot de passe mis à jour. Vous pouvez vous connecter.');

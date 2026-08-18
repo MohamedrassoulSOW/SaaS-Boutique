@@ -36,10 +36,10 @@ $passEnc = rawurlencode($pass);
 
 $dsn = match ($mode) {
     'native', 'sendmail' => 'native://default',
-    '465', 'smtps' => sprintf('smtps://%s:%s@smtp.hostinger.com:465?verify_peer=0', $userEnc, $passEnc),
-    '587', 'tls' => sprintf('smtp://%s:%s@smtp.hostinger.com:587?verify_peer=0', $userEnc, $passEnc),
+    '465', 'smtps' => sprintf('smtps://%s:%s@smtp.hostinger.com:465', $userEnc, $passEnc),
+    '587', 'tls' => sprintf('smtp://%s:%s@smtp.hostinger.com:587', $userEnc, $passEnc),
     default => sprintf(
-        'failover(smtps://%s:%s@smtp.hostinger.com:465?verify_peer=0 native://default)',
+        'failover(smtps://%s:%s@smtp.hostinger.com:465 native://default)',
         $userEnc,
         $passEnc
     ),

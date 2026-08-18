@@ -11,8 +11,10 @@ use App\Service\FiscalService;
 use App\Service\InvoicePdfService;
 use App\Service\SaleService;
 use App\Service\ShopContext;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -39,6 +41,8 @@ class SaleController extends ShopAwareController
         SaleService $saleService,
         FiscalService $fiscal,
         \App\Repository\CashSessionRepository $cashSessions,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $financialLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $productList = $products->findActiveForPos($shop);
@@ -56,6 +60,13 @@ class SaleController extends ShopAwareController
                     'taxConfig' => $taxConfig,
                     'openCash' => $openCash,
                 ]);
+            }
+
+            $limiter = $financialLimiter->create((string) $this->getUser()->getId());
+            if (!$limiter->consume(1)->isAccepted()) {
+                $this->addFlash('danger', 'Trop d\'opérations. Veuillez patienter quelques instants.');
+
+                return $this->redirectToRoute('app_sale_new');
             }
 
             if (!$openCash) {
@@ -107,14 +118,18 @@ class SaleController extends ShopAwareController
                     $amountPaidRaw = $request->request->get('amount_paid');
                     $amountPaid = ($amountPaidRaw === null || $amountPaidRaw === '')
                         ? null
-                        : (float) $amountPaidRaw;
+                        : max(0.0, (float) $amountPaidRaw);
+
+                    $allowedMethods = [Sale::PAYMENT_CASH, Sale::PAYMENT_CARD, Sale::PAYMENT_MOBILE, Sale::PAYMENT_CREDIT];
+                    $paymentMethod = (string) $request->request->get('payment_method', Sale::PAYMENT_CASH);
+                    $paymentMethod = in_array($paymentMethod, $allowedMethods, true) ? $paymentMethod : Sale::PAYMENT_CASH;
 
                     $sale = $saleService->createSale(
                         $shop,
                         $user,
                         $lines,
-                        (float) ($request->request->get('discount') ?: 0),
-                        (string) ($request->request->get('payment_method') ?: Sale::PAYMENT_CASH),
+                        max(0, (float) $request->request->get('discount', 0)),
+                        $paymentMethod,
                         $amountPaid,
                         $customer,
                     );
@@ -131,7 +146,7 @@ class SaleController extends ShopAwareController
 
                     return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
                 } catch (\InvalidArgumentException|\RuntimeException $e) {
-                    $this->addFlash('sale_error', $e->getMessage() ?: 'L\'encaissement a été refusé.');
+                    $this->addFlash('sale_error', 'L\'encaissement a été refusé. Vérifiez les données et réessayez.');
                 } catch (\Throwable $e) {
                     $this->addFlash('sale_error', 'L\'encaissement a échoué. Réessayez ou contactez le support.');
                 }
@@ -166,7 +181,7 @@ class SaleController extends ShopAwareController
             $saleService->cancelSale($sale, $this->getShopUser());
             $this->addFlash('success', 'Vente annulée. Stock et crédit client recalculés.');
         } catch (\RuntimeException $e) {
-            $this->addFlash('danger', $e->getMessage());
+            $this->addFlash('danger', 'Impossible d\'annuler cette vente. Vérifiez l\'état de la vente.');
         }
 
         return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
@@ -192,7 +207,7 @@ class SaleController extends ShopAwareController
 
         return new Response($content, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$number.'.pdf"',
+            'Content-Disposition' => \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('attachment', $number.'.pdf'),
         ]);
     }
 

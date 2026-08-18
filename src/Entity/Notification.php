@@ -6,7 +6,10 @@ use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
-#[ORM\Table(name: 'notifications')]
+#[ORM\Table(name: 'notifications', indexes: [
+    new ORM\Index(columns: ['user_id', 'is_read', 'created_at']),
+    new ORM\Index(columns: ['shop_id']),
+])]
 class Notification
 {
     public const TYPE_LOW_STOCK = 'low_stock';

@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ShopContractRepository::class)]
 #[ORM\Table(name: 'shop_contracts')]
+#[ORM\Index(name: 'IDX_SC_SHOP', columns: ['shop_id'])]
+#[ORM\Index(name: 'IDX_SC_MERCHANT', columns: ['merchant_id'])]
+#[ORM\Index(name: 'IDX_SC_CREATED_BY', columns: ['created_by_id'])]
 class ShopContract
 {
     use BinaryPayloadTrait;
@@ -26,16 +29,13 @@ class ShopContract
     /** Délai max de retard (jours) — abonnement annuel — avant rupture immédiate (1 mois) */
     public const ANNUAL_UNPAID_DAYS_BEFORE_TERMINATION = 30;
 
-    /** @deprecated Utiliser MONTHLY_UNPAID_DAYS_BEFORE_TERMINATION */
-    public const UNPAID_DAYS_BEFORE_TERMINATION = 15;
-
-    /** @deprecated */
-    public const UNPAID_MONTHS_BEFORE_TERMINATION = 2;
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\Column(length: 40)]
     private string $number;
@@ -64,7 +64,7 @@ class ShopContract
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $discussionNotes = null;
 
-    /** Visible par le commerçant sur son dashboard (discussions) */
+    /** Visible par l'entrepreneur(se) sur son dashboard (discussions) */
     #[ORM\Column]
     private bool $sharedWithMerchant = false;
 
@@ -126,7 +126,7 @@ class ShopContract
         $this->createdAt = $now;
         $this->startsAt = $now;
         $this->endsAt = $now->modify('+12 months');
-        $this->number = 'CTR-'.$now->format('Ymd').'-'.strtoupper(substr(uniqid(), -5));
+        $this->number = 'CTR-'.$now->format('Ymd').'-'.strtoupper(bin2hex(random_bytes(4)));
     }
 
     public function getId(): ?int
@@ -346,7 +346,7 @@ class ShopContract
 
     public function getUnpaidMonthsBeforeTermination(): int
     {
-        return self::UNPAID_MONTHS_BEFORE_TERMINATION;
+        return 2;
     }
 
     public function getAnnualUnpaidDaysBeforeTermination(): int
@@ -518,7 +518,7 @@ class ShopContract
 
     public function hasPdf(): bool
     {
-        return $this->getPdfData() !== null;
+        return $this->pdfMime !== null && $this->pdfMime !== '';
     }
 
     public function isFullySigned(): bool

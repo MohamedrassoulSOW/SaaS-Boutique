@@ -19,7 +19,7 @@
     <link rel="icon" href="{{ asset('icons/favicon-16.png') }}?v=3" type="image/png" sizes="16x16">
     <link rel="icon" href="{{ asset('icons/favicon-48.png') }}?v=3" type="image/png" sizes="48x48">
     <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}?v=3">
-    <script>
+    <script nonce="{{ csp_nonce }}">
       (function () {
         // Titre navigateur = uniquement NdamStore (évite un ancien onglet / préfixe parasite)
         var pageTitle = document.title || {{ app_name|json_encode|raw }};
@@ -124,6 +124,16 @@
             <a href="tel:{{ platform.phone_alt|replace({' ': '', '-': ''}) }}">{{ platform.phone_alt }}</a>
             {% endif %}
             <p>{{ platform.city }}, {{ platform.country }}</p>
+        </div>
+        <div>
+            <div class="mkt-footer-label">Présentation</div>
+            <p class="mkt-footer-pres-text">Découvrez {{ app_name }} en détail : vision, fonctionnalités et avenir.</p>
+            <a href="{{ path('app_presentation') }}" class="mkt-footer-pres-btn" rel="noopener">
+                <i class="bi bi-file-earmark-pdf"></i> Présentation PDF
+            </a>
+            <a href="{{ path('app_presentation_pptx') }}" class="mkt-footer-pres-btn mkt-footer-pres-btn--pptx">
+                <i class="bi bi-file-earmark-ppt"></i> Présentation PowerPoint
+            </a>
         </div>
     </div>
     <div class="mkt-wrap mkt-footer-copy">

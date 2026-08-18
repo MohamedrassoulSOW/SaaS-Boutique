@@ -14,7 +14,7 @@
     <div class="dash-hero-aside">
         <div class="dash-clock" data-dash-clock>—</div>
         <div class="dash-actions">
-            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" target="_blank" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
+            <a href="{{ path('app_guide') }}" class="btn btn-outline-brand" rel="noopener"><i class="bi bi-book me-1"></i>Guide</a>
             <a href="{{ path('admin_subscriptions') }}" class="btn btn-brand"><i class="bi bi-credit-card me-1"></i>Gérer les abonnements</a>
         </div>
     </div>
@@ -23,7 +23,7 @@
 {% include '_dash_guide.html.twig' %}
 
 <nav class="dash-quicklinks" aria-label="Navigation admin">
-    <a href="{{ path('app_guide') }}" target="_blank" rel="noopener"><i class="bi bi-book"></i>Guide</a>
+    <a href="{{ path('app_guide') }}" rel="noopener"><i class="bi bi-book"></i>Guide</a>
     <a href="{{ path('admin_users') }}"><i class="bi bi-people"></i>Utilisateurs</a>
     <a href="{{ path('admin_merchants') }}"><i class="bi bi-briefcase"></i>Entrepreneurs</a>
     <a href="{{ path('admin_shops') }}"><i class="bi bi-shop"></i>Entreprises</a>

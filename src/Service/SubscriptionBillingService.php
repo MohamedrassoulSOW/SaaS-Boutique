@@ -213,6 +213,10 @@ class SubscriptionBillingService
 
     public function restoreAccess(Subscription $subscription): void
     {
+        if ($subscription->getStatus() !== Subscription::STATUS_ACTIVE) {
+            return;
+        }
+
         $merchant = $subscription->getMerchant();
         if (!$merchant) {
             return;

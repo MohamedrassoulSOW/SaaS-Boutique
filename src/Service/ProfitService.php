@@ -240,7 +240,8 @@ class ProfitService
             $format = 'd/m';
         }
 
-        $series = [];
+        // Build all bucket boundaries first
+        $buckets = [];
         $cursor = $from;
         while ($cursor < $to) {
             $next = match ($step) {
@@ -252,27 +253,58 @@ class ProfitService
                 $next = $to;
             }
 
-            $bucket = $this->baseQb($shop, $cursor, $next, $productId)
-                ->select(
-                    'COALESCE(SUM(si.quantity * si.unitPrice), 0) AS revenue',
-                    'COALESCE(SUM(si.quantity * COALESCE(si.unitCost, p.purchasePrice)), 0) AS cost'
-                )
-                ->getQuery()
-                ->getSingleResult();
-
-            $dayRevenue = (float) $bucket['revenue'];
-            $dayCost = (float) $bucket['cost'];
             $label = $step === 'week'
                 ? $cursor->format('d/m').'–'.$next->modify('-1 day')->format('d/m')
                 : $cursor->format($format);
 
-            $series[] = [
+            $buckets[] = [
                 'label' => $label,
-                'revenue' => $dayRevenue,
-                'cost' => $dayCost,
-                'profit' => $dayRevenue - $dayCost,
+                'from' => $cursor,
+                'to' => $next,
+                'revenue' => 0.0,
+                'cost' => 0.0,
             ];
             $cursor = $next;
+        }
+
+        // Single query for the entire date range
+        $data = $this->baseQb($shop, $from, $to, $productId)
+            ->select(
+                's.soldAt AS soldAt',
+                'COALESCE(SUM(si.quantity * si.unitPrice), 0) AS revenue',
+                'COALESCE(SUM(si.quantity * COALESCE(si.unitCost, p.purchasePrice)), 0) AS cost'
+            )
+            ->groupBy('s.id')
+            ->getQuery()
+            ->getResult();
+
+        // Post-process: assign each sale to its bucket (index lookup)
+        $count = count($buckets);
+        foreach ($data as $row) {
+            $soldAt = $row['soldAt'] instanceof \DateTimeImmutable
+                ? $row['soldAt']
+                : new \DateTimeImmutable($row['soldAt']);
+            $revenue = (float) $row['revenue'];
+            $cost = (float) $row['cost'];
+
+            for ($i = 0; $i < $count; $i++) {
+                if ($soldAt >= $buckets[$i]['from'] && $soldAt < $buckets[$i]['to']) {
+                    $buckets[$i]['revenue'] += $revenue;
+                    $buckets[$i]['cost'] += $cost;
+                    break;
+                }
+            }
+        }
+
+        // Build final series
+        $series = [];
+        foreach ($buckets as $bucket) {
+            $series[] = [
+                'label' => $bucket['label'],
+                'revenue' => $bucket['revenue'],
+                'cost' => $bucket['cost'],
+                'profit' => $bucket['revenue'] - $bucket['cost'],
+            ];
         }
 
         return $series;

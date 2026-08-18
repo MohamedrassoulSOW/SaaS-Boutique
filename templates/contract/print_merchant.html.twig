@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Impression {{ contract.number }}</title>
-<style>
+<style nonce="{{ csp_nonce }}">
 @media print { .no-print { display: none !important; } }
 body { margin: 0; background: #f4f4f4; }
 .toolbar { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ddd; padding: 10px 16px; display: flex; gap: 8px; }
@@ -13,12 +13,17 @@ body { margin: 0; background: #f4f4f4; }
 <body>
 <div class="toolbar no-print">
   <strong>{{ contract.number }}</strong>
-  <button type="button" onclick="window.print()">Imprimer</button>
+  <button type="button" data-print>Imprimer</button>
   <a href="{{ path('app_shop_contract', {id: shop.id}) }}">Retour</a>
 </div>
 <div class="sheet">
 {% include 'contract/pdf.html.twig' %}
 </div>
-<script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));</script>
+<script nonce="{{ csp_nonce }}">
+document.addEventListener('click', function(e) {
+  if (e.target.closest('[data-print]')) { e.preventDefault(); window.print(); }
+});
+window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 400); });
+</script>
 </body>
 </html>

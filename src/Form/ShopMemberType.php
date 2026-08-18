@@ -47,7 +47,7 @@ class ShopMemberType extends AbstractType
             ->add('role', ChoiceType::class, [
                 'label' => 'Rôle dans l\'entreprise',
                 'choices' => [
-                    'Vendeur / Caissier' => ShopMember::ROLE_CASHIER,
+                    'Agent' => ShopMember::ROLE_CASHIER,
                     'Responsable' => ShopMember::ROLE_MANAGER,
                     'Magasinier (stock)' => ShopMember::ROLE_STOCK,
                 ],

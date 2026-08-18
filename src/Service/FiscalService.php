@@ -35,7 +35,12 @@ class FiscalService
         $settings->setDefaultPricesIncludeTax(true);
         $settings->setTaxOnSubscriptions(true);
         $this->em->persist($settings);
-        $this->em->flush();
+        try {
+            $this->em->flush();
+        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException) {
+            $this->em->clear();
+            return $repo->find(1);
+        }
 
         return $settings;
     }

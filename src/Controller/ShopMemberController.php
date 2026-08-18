@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/vendeurs')]
+#[Route('/agents')]
 #[IsGranted('ROLE_MERCHANT')]
 class ShopMemberController extends ShopAwareController
 {
@@ -56,17 +56,17 @@ class ShopMemberController extends ShopAwareController
                     'plainPassword' => $form->get('plainPassword')->getData(),
                 ], (string) $form->get('role')->getData());
 
-                $this->addFlash('success', 'Accès vendeur créé. Un email d\'accès a été envoyé.');
+                $this->addFlash('success', 'Accès agent créé. Un email d\'accès a été envoyé.');
 
                 return $this->redirectToRoute('app_staff_index');
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('danger', $e->getMessage());
+                $this->addFlash('danger', 'Erreur lors de la création. Vérifiez les données saisies.');
             }
         }
 
         return $this->render('staff/form.html.twig', [
             'form' => $form,
-            'title' => 'Nouvel accès vendeur',
+            'title' => 'Nouvel accès agent',
             'member' => null,
         ]);
     }
@@ -105,17 +105,17 @@ class ShopMemberController extends ShopAwareController
                     (bool) $form->get('isActive')->getData(),
                 );
 
-                $this->addFlash('success', 'Accès vendeur mis à jour.');
+                $this->addFlash('success', 'Accès agent mis à jour.');
 
                 return $this->redirectToRoute('app_staff_index');
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('danger', $e->getMessage());
+                $this->addFlash('danger', 'Erreur lors de la mise à jour. Vérifiez les données saisies.');
             }
         }
 
         return $this->render('staff/form.html.twig', [
             'form' => $form,
-            'title' => 'Modifier l\'accès vendeur',
+            'title' => 'Modifier l\'accès agent',
             'member' => $member,
         ]);
     }
@@ -137,7 +137,7 @@ class ShopMemberController extends ShopAwareController
 
         if ($this->isCsrfTokenValid('delete_staff'.$member->getId(), $request->request->get('_token'))) {
             $service->delete($member, $this->getShopUser());
-            $this->addFlash('success', 'Accès vendeur supprimé.');
+            $this->addFlash('success', 'Accès agent supprimé.');
         }
 
         return $this->redirectToRoute('app_staff_index');

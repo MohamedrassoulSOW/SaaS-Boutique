@@ -6,7 +6,7 @@
         {% if sale.status == 'cancelled' %}<span class="badge-stock ms-2">Annulée</span>{% endif %}
     </h1>
     <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-outline-secondary" href="{{ path('app_sale_print', {id: sale.id}) }}" target="_blank">Imprimer</a>
+        <a class="btn btn-outline-secondary" href="{{ path('app_sale_print', {id: sale.id}) }}">Imprimer</a>
         <a class="btn btn-brand" href="{{ path('app_sale_invoice_pdf', {id: sale.id}) }}">PDF</a>
         {% if can_module('sale_cancel') and sale.status != 'cancelled' %}
         <form method="post" action="{{ path('app_sale_cancel', {id: sale.id}) }}" data-confirm="Annuler cette vente ? Le stock sera rétabli." data-confirm-title="Annuler la vente" data-confirm-label="Annuler la vente">
@@ -22,7 +22,7 @@
             <div><strong>Entreprise:</strong> {{ sale.shop.name }}</div>
             <div><strong>Client:</strong> {{ sale.customer ? sale.customer.fullName : 'Comptoir' }}</div>
             <div><strong>Date:</strong> {{ sale.soldAt|date('d/m/Y H:i') }}</div>
-            <div><strong>Vendeur:</strong> {{ sale.soldBy ? sale.soldBy.fullName ~ ' (' ~ sale.soldBy.email ~ ')' : '—' }}</div>
+            <div><strong>Agent:</strong> {{ sale.soldBy ? sale.soldBy.fullName ~ ' (' ~ sale.soldBy.email ~ ')' : '—' }}</div>
         </div>
         <div class="col-md-6 text-md-end">
             <div><strong>Facture:</strong> {{ sale.invoice ? sale.invoice.number : '—' }}</div>
@@ -57,7 +57,7 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (() => {
   try {
     const shopId = {{ sale.shop.id }};

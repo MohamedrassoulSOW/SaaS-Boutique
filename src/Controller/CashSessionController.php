@@ -8,9 +8,12 @@ use App\Repository\CashSessionRepository;
 use App\Repository\SaleRepository;
 use App\Service\ActivityLogger;
 use App\Service\ShopContext;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -57,10 +60,18 @@ class CashSessionController extends ShopAwareController
         CashSessionRepository $sessions,
         EntityManagerInterface $em,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         if (!$this->isCsrfTokenValid('cash_open', (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_cash_index');
+        }
+        $limiterKey = 'cash_open_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
 
             return $this->redirectToRoute('app_cash_index');
         }
@@ -77,7 +88,13 @@ class CashSessionController extends ShopAwareController
         $session->setOpeningFloat(number_format($float, 2, '.', ''));
         $session->setStatus(CashSession::STATUS_OPEN);
         $em->persist($session);
-        $em->flush();
+        try {
+            $em->flush();
+        } catch (UniqueConstraintViolationException) {
+            $this->addFlash('warning', 'Une session de caisse est déjà ouverte.');
+
+            return $this->redirectToRoute('app_cash_index');
+        }
         $logger->log('cash.open', 'Ouverture caisse fond ' . $session->getOpeningFloat(), $this->getShopUser(), $shop);
         $this->addFlash('success', 'Caisse ouverte.');
 
@@ -92,11 +109,19 @@ class CashSessionController extends ShopAwareController
         SaleRepository $sales,
         EntityManagerInterface $em,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $session->getShop());
         if (!$this->isCsrfTokenValid('cash_close'.$session->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_cash_index');
+        }
+        $limiterKey = 'cash_close_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
 
             return $this->redirectToRoute('app_cash_index');
         }
@@ -125,7 +150,7 @@ class CashSessionController extends ShopAwareController
         $session->setExpectedCash(number_format($expected, 2, '.', ''));
         $session->setClosingCounted(number_format($counted, 2, '.', ''));
         $session->setDifference(number_format($diff, 2, '.', ''));
-        $session->setNotes($request->request->getString('notes') ?: null);
+        $session->setNotes(strip_tags($request->request->getString('notes') ?: ''));
         $session->setClosedBy($this->getShopUser());
         $session->setClosedAt(new \DateTimeImmutable());
         $session->setStatus(CashSession::STATUS_CLOSED);

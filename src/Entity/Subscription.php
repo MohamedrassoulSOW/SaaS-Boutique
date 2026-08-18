@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
 #[ORM\Table(name: 'subscriptions')]
+#[ORM\Index(name: 'IDX_SUBSCRIPTION_MERCHANT', columns: ['merchant_id'])]
 class Subscription
 {
     public const PLAN_FREE = 'free';
@@ -42,6 +43,9 @@ class Subscription
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Version]
+    private int $version;
 
     #[ORM\OneToOne(inversedBy: 'subscription')]
     #[ORM\JoinColumn(nullable: false)]

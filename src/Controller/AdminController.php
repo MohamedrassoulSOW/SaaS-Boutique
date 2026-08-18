@@ -35,9 +35,11 @@ use App\Service\SubscriptionBillingService;
 use App\Service\SubscriptionEnforcementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -57,11 +59,6 @@ class AdminController extends AbstractController
     ): Response {
         $allSubs = $subscriptions->findAll();
         $today = new \DateTimeImmutable('today');
-
-        foreach ($allSubs as $sub) {
-            $billing->ensureNextDueAt($sub);
-        }
-        $em->flush();
 
         $paidCount = 0;
         $unpaidCount = 0;
@@ -197,18 +194,34 @@ class AdminController extends AbstractController
     }
 
     #[Route('/users', name: 'admin_users')]
-    public function users(UserRepository $users): Response
+    public function users(Request $request, UserRepository $users): Response
     {
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 50;
+        $offset = ($page - 1) * $perPage;
+        $total = $users->count([]);
+        $pages = (int) ceil($total / $perPage);
+
         return $this->render('admin/users.html.twig', [
-            'users' => $users->findBy([], ['createdAt' => 'DESC']),
+            'users' => $users->findBy([], ['createdAt' => 'DESC'], $perPage, $offset),
+            'page' => $page,
+            'pages' => $pages,
         ]);
     }
 
     #[Route('/merchants', name: 'admin_merchants')]
-    public function merchants(MerchantRepository $merchants): Response
+    public function merchants(Request $request, MerchantRepository $merchants): Response
     {
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 50;
+        $offset = ($page - 1) * $perPage;
+        $total = $merchants->count([]);
+        $pages = (int) ceil($total / $perPage);
+
         return $this->render('admin/merchants.html.twig', [
-            'merchants' => $merchants->findBy([], ['createdAt' => 'DESC']),
+            'merchants' => $merchants->findBy([], ['createdAt' => 'DESC'], $perPage, $offset),
+            'page' => $page,
+            'pages' => $pages,
         ]);
     }
 
@@ -386,9 +399,16 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         if (!$this->isCsrfTokenValid('delete_merchant'.$merchant->getId(), $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('admin_merchants');
+        }
+        if (!$rateLimiter->create('admin_delete')->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
 
             return $this->redirectToRoute('admin_merchants');
         }
@@ -397,16 +417,17 @@ class AdminController extends AbstractController
         $label = $user?->getEmail() ?? $merchant->getCompanyName() ?? 'inconnu';
 
         try {
-            $this->purgeMerchant($em, $merchant);
-            $em->flush();
+            $em->wrapInTransaction(function () use ($em, $merchant) {
+                $this->purgeMerchant($em, $merchant);
+            });
 
             /** @var User $admin */
             $admin = $this->getUser();
             $logger->log('admin.merchant_delete', 'Entrepreneur supprimé : '.$label, $admin);
 
             $this->addFlash('success', 'Entrepreneur supprimé.');
-        } catch (\Throwable $e) {
-            $this->addFlash('danger', 'Impossible de supprimer cet entrepreneur : '.$e->getMessage());
+        } catch (\Throwable) {
+            $this->addFlash('danger', 'Une erreur est survenue lors de la suppression. L\'entité est peut-être liée à des données existantes.');
         }
 
         return $this->redirectToRoute('admin_merchants');
@@ -525,10 +546,18 @@ class AdminController extends AbstractController
     }
 
     #[Route('/shops', name: 'admin_shops')]
-    public function shops(ShopRepository $shops): Response
+    public function shops(Request $request, ShopRepository $shops): Response
     {
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 50;
+        $offset = ($page - 1) * $perPage;
+        $total = $shops->count([]);
+        $pages = (int) ceil($total / $perPage);
+
         return $this->render('admin/shops.html.twig', [
-            'shops' => $shops->findBy([], ['createdAt' => 'DESC']),
+            'shops' => $shops->findBy([], ['createdAt' => 'DESC'], $perPage, $offset),
+            'page' => $page,
+            'pages' => $pages,
         ]);
     }
 
@@ -587,7 +616,7 @@ class AdminController extends AbstractController
                     $shop->setLogoMime($payload['mime']);
                     $shop->setLogoName($payload['name']);
                 } catch (\InvalidArgumentException $e) {
-                    $this->addFlash('danger', $e->getMessage());
+                    $this->addFlash('danger', 'Erreur lors du téléchargement du logo. Vérifiez le format et la taille.');
                 }
             }
 
@@ -682,7 +711,7 @@ class AdminController extends AbstractController
 
                 return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('danger', $e->getMessage());
+                $this->addFlash('danger', 'Erreur lors de la sauvegarde du contrat. Vérifiez les données saisies.');
             }
         }
 
@@ -717,7 +746,7 @@ class AdminController extends AbstractController
 
                 return $this->redirectToRoute('admin_contract_show', ['id' => $contract->getId()]);
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('danger', $e->getMessage());
+                $this->addFlash('danger', 'Erreur lors de la mise à jour du contrat. Vérifiez les données saisies.');
             }
         }
 
@@ -857,7 +886,7 @@ class AdminController extends AbstractController
 
         return new Response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$contract->getNumber().'.pdf"',
+            'Content-Disposition' => \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('inline', $contract->getNumber().'.pdf'),
         ]);
     }
 
@@ -957,6 +986,10 @@ class AdminController extends AbstractController
             /** @var User $admin */
             $admin = $this->getUser();
             $status = (string) $request->request->get('payment_status', 'paid');
+            $allowedStatuses = ['paid', 'unpaid', 'cancelled'];
+            if (!in_array($status, $allowedStatuses, true)) {
+                $status = 'paid';
+            }
             $reference = $request->request->getString('reference') ?: null;
 
             try {
@@ -973,16 +1006,21 @@ class AdminController extends AbstractController
                     if ($subscription->getStatus() === Subscription::STATUS_CANCELLED) {
                         $subscription->setStatus(Subscription::STATUS_ACTIVE);
                     }
+                    $method = (string) $request->request->get('method', 'manuel');
+                    $allowedMethods = ['cash', 'card', 'mobile', 'transfer', 'other', 'manuel'];
+                    if (!in_array($method, $allowedMethods, true)) {
+                        $method = 'cash';
+                    }
                     $billing->recordPayment(
                         $subscription,
                         $admin,
-                        (string) $request->request->get('method', 'manuel'),
+                        $method,
                         $reference,
                     );
                     $this->addFlash('success', 'Abonnement marqué comme payé. Accès rétabli si nécessaire.');
                 }
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('danger', $e->getMessage());
+                $this->addFlash('danger', 'Opération refusée. Vérifiez les données et réessayez.');
             }
         }
 
@@ -1026,6 +1064,10 @@ class AdminController extends AbstractController
     ): Response {
         if ($this->isCsrfTokenValid('plan'.$subscription->getId(), $request->request->get('_token'))) {
             $plan = (string) $request->request->get('plan', Subscription::PLAN_FREE);
+            $allowedPlans = [Subscription::PLAN_FREE, Subscription::PLAN_BASIC, Subscription::PLAN_PRO];
+            if (!in_array($plan, $allowedPlans, true)) {
+                $plan = Subscription::PLAN_FREE;
+            }
             $subscription->setPlan($plan);
             $subscription->setPrice(Subscription::catalogPrice($plan));
             $subscription->setEndsAt((new \DateTimeImmutable())->modify('+30 days'));

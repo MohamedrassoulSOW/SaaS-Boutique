@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
 #[ORM\Table(name: 'payments')]
+#[ORM\Index(name: 'IDX_PAYMENT_SUBSCRIPTION', columns: ['subscription_id'])]
 class Payment
 {
     public const STATUS_PENDING = 'pending';
@@ -18,6 +19,10 @@ class Payment
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Version]
+    private int $version = 0;
 
     #[ORM\ManyToOne(inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: false)]

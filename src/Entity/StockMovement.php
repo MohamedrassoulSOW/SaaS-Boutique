@@ -6,7 +6,10 @@ use App\Repository\StockMovementRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StockMovementRepository::class)]
-#[ORM\Table(name: 'stock_movements')]
+#[ORM\Table(name: 'stock_movements', indexes: [
+    new ORM\Index(columns: ['shop_id', 'product_id', 'created_at']),
+    new ORM\Index(columns: ['created_by_id']),
+])]
 class StockMovement
 {
     public const TYPE_IN = 'in';

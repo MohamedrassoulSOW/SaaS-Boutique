@@ -265,7 +265,7 @@
 
 {% block javascripts %}
 <script src="{{ asset('js/dashboard.js') }}?v=1"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   const form = document.getElementById('profitFilters');
   const period = document.getElementById('period');

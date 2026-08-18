@@ -25,8 +25,9 @@ class ProductRepository extends ServiceEntityRepository
     public function findActiveForPos(Shop $shop): array
     {
         return $this->createQueryBuilder('p')
-            ->select('PARTIAL p.{id, name, reference, barcode, brand, salePrice, quantity, minStock, photoMime, photoName, isActive}, PARTIAL c.{id, name}')
-            ->leftJoin('p.category', 'c')
+            ->select('p.id, p.name, p.reference, p.barcode, p.salePrice, p.purchasePrice, p.quantity, p.minStock, p.photoMime, p.brand')
+            ->leftJoin('p.category', 'c', 'WITH', 'c.id = p.category')
+            ->addSelect('c.id AS categoryId, c.name AS categoryName')
             ->andWhere('p.shop = :shop')
             ->andWhere('p.isActive = true')
             ->setParameter('shop', $shop)

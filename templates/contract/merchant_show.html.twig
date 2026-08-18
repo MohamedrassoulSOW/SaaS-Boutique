@@ -8,8 +8,8 @@
         <p class="text-muted mb-0">Statut : <strong>{{ contract.statusLabel }}</strong></p>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-brand" href="{{ path('app_contract_print', {id: contract.id}) }}" target="_blank">Imprimer</a>
-        <a class="btn btn-outline-brand" href="{{ path('app_contract_pdf', {id: contract.id}) }}" target="_blank">PDF</a>
+        <a class="btn btn-outline-brand" href="{{ path('app_contract_print', {id: contract.id}) }}">Imprimer</a>
+        <a class="btn btn-outline-brand" href="{{ path('app_contract_pdf', {id: contract.id}) }}">PDF</a>
         <a class="btn btn-outline-secondary" href="{{ path('app_dashboard') }}">Retour</a>
     </div>
 </div>

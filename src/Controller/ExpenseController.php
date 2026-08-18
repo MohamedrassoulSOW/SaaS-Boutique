@@ -71,7 +71,7 @@ class ExpenseController extends ShopAwareController
             }
 
             $amount = (float) $request->request->get('amount', 0);
-            $label = trim((string) $request->request->get('label', ''));
+            $label = strip_tags(trim((string) $request->request->get('label', '')));
             $category = (string) $request->request->get('category', 'autres');
             if ($amount <= 0 || $label === '') {
                 $this->addFlash('warning', 'Libellé et montant obligatoires.');
@@ -96,7 +96,24 @@ class ExpenseController extends ShopAwareController
             $expense->setCategory($category);
             $expense->setAmount(number_format($amount, 2, '.', ''));
             $expense->setSpentAt($spentAt);
-            $expense->setNote(trim((string) $request->request->get('note', '')) ?: null);
+            $expense->setNote(strip_tags(trim((string) $request->request->get('note', ''))) ?: null);
+
+            $recentDup = $em->getRepository(Expense::class)->createQueryBuilder('e')
+                ->andWhere('e.shop = :shop')
+                ->andWhere('e.label = :label')
+                ->andWhere('e.amount = :amount')
+                ->andWhere('e.spentAt >= :recent')
+                ->setParameter('shop', $shop)
+                ->setParameter('label', $label)
+                ->setParameter('amount', number_format($amount, 2, '.', ''))
+                ->setParameter('recent', (new \DateTimeImmutable('-1 minute')))
+                ->getQuery()
+                ->getOneOrNullResult();
+            if ($recentDup) {
+                $this->addFlash('warning', 'Dépense similaire enregistrée il y a moins d\'une minute.');
+                return $this->redirectToRoute('app_expense_index');
+            }
+
             $em->persist($expense);
             $em->flush();
             $logger->log('expense.create', 'Dépense : '.$label, $this->getShopUser(), $shop);

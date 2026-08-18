@@ -1,7 +1,7 @@
 {% extends 'marketing/layout.html.twig' %}
 
 {% block title %}Guide d'utilisation — {{ app_name }}{% endblock %}
-{% block meta_description %}Guide vidéo et documentation {{ app_name }} : démarrage, ventes, caisse, bénéfices, glossaire (CA, TVA, NINEA) et support.{% endblock %}
+{% block meta_description %}Documentation {{ app_name }} : démarrage, ventes, caisse, bénéfices, glossaire (CA, TVA, NINEA) et support.{% endblock %}
 {% block body_class %} mkt-guide-page{% endblock %}
 
 {% block content %}
@@ -15,9 +15,8 @@
         <p class="mkt-kicker">Documentation interactive</p>
         <h1 class="mkt-page-title">Guide d'utilisation</h1>
         <p class="mkt-lead mkt-lead-wide">
-            Explorez {{ app_name }} module par module. Commencez par le
-            <a href="#video" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">guide vidéo en français</a>,
-            puis recherchez une notion, une abréviation ou un mot-clé.
+            Explorez {{ app_name }} module par module. Recherchez une notion,
+            une abréviation ou un mot-clé.
         </p>
         <div class="mkt-guide-search-wrap">
             <label class="visually-hidden" for="guideSearch">Rechercher dans le guide</label>
@@ -25,7 +24,6 @@
             <span class="mkt-guide-search-hint" data-guide-count></span>
         </div>
         <div class="mkt-guide-hero-actions">
-            <a class="mkt-btn mkt-btn-primary" href="#video">Regarder le guide vidéo</a>
             {% if app.user %}
                 <a class="mkt-btn mkt-btn-ghost" href="{{ path(app.user.isAdmin ? 'admin_dashboard' : 'app_dashboard') }}">Mon espace</a>
             {% else %}
@@ -42,7 +40,6 @@
         <div class="mkt-guide-rail-card">
             <div class="mkt-guide-rail-label">Sommaire</div>
             <nav class="mkt-guide-rail-nav" id="guideRail">
-                <a href="#video" data-guide-nav>Guide vidéo</a>
                 <a href="#demarrer" data-guide-nav>Démarrer</a>
                 <a href="#ventes" data-guide-nav>Ventes</a>
                 <a href="#catalogue" data-guide-nav>Catalogue</a>
@@ -65,16 +62,14 @@
     </aside>
 
     <div class="mkt-guide-main" id="guideMain">
-        {% include 'marketing/_guide_video.html.twig' %}
-
-        <article class="mkt-guide-card reveal-up" id="demarrer" data-guide-section data-keywords="demarrer onboarding entrepreneur vendeur produits tva ninea caisse">
+        <article class="mkt-guide-card reveal-up" id="demarrer" data-guide-section data-keywords="demarrer onboarding entrepreneur agent produits tva ninea caisse">
             <div class="mkt-guide-card-top">
                 <span class="mkt-guide-step">01</span>
                 <h2>Démarrer</h2>
             </div>
             <p class="mkt-copy">Mettez votre entreprise en ligne en quelques minutes.</p>
             <ol class="mkt-guide-steps">
-                <li><span>Compte</span>Créez / recevez votre accès entrepreneur ou vendeur.</li>
+                <li><span>Compte</span>Créez / recevez votre accès entrepreneur ou agent.</li>
                 <li><span>Entreprise</span>Vérifiez l’entreprise active (sélecteur si plusieurs).</li>
                 <li><span>Catalogue</span>Ajoutez les produits avec prix de vente et prix d’achat.</li>
                 <li><span>Fiscalité</span>Configurez TVA, HT/TTC et NINEA.</li>
@@ -301,7 +296,7 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (() => {
   const search = document.getElementById('guideSearch');
   const countEl = document.querySelector('[data-guide-count]');

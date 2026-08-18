@@ -24,7 +24,6 @@ class NotificationService
         $notification->setShop($shop);
 
         $this->em->persist($notification);
-        $this->em->flush();
 
         return $notification;
     }

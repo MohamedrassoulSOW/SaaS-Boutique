@@ -123,6 +123,24 @@ class AppMailer
         );
     }
 
+    public function sendWelcomeAdmin(User $user, string $plainInviteToken): void
+    {
+        $this->sendToUser(
+            $user,
+            sprintf('Votre accès administrateur — %s', $this->appName),
+            'emails/welcome_account.html.twig',
+            null,
+            [
+                'user' => $user,
+                'inviteUrl' => $this->inviteUrl($plainInviteToken),
+                'roleLabel' => 'administrateur',
+                'loginUrl' => $this->loginUrl(),
+                'appName' => $this->appName,
+                'platform' => $this->platform,
+            ]
+        );
+    }
+
     public function sendPasswordChanged(User $user): void
     {
         $this->sendToUser(

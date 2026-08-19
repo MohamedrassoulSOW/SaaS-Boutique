@@ -16,6 +16,7 @@ use App\Entity\User;
 use App\Form\AdminContractDraftType;
 use App\Form\AdminMerchantType;
 use App\Form\AdminShopType;
+use App\Form\AdminUserType;
 use App\Form\ContractSignType;
 use App\Form\PlatformFiscalSettingsType;
 use App\Repository\ActivityLogRepository;
@@ -207,6 +208,161 @@ class AdminController extends AbstractController
             'page' => $page,
             'pages' => $pages,
         ]);
+    }
+
+    #[Route('/admins', name: 'admin_admins')]
+    public function adminList(Request $request, UserRepository $users): Response
+    {
+        $admins = $users->createQueryBuilder('u')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_ADMIN%')
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('admin/admins.html.twig', [
+            'admins' => $admins,
+        ]);
+    }
+
+    #[Route('/admins/new', name: 'admin_admin_new')]
+    public function createAdmin(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+        UserRepository $users,
+        ActivityLogger $logger,
+        AppMailer $mailer,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
+    ): Response {
+        $form = $this->createForm(AdminUserType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = strtolower(trim((string) $form->get('email')->getData()));
+            if ($users->findOneBy(['email' => $email])) {
+                $this->addFlash('danger', 'Cet email est déjà utilisé.');
+            } else {
+                $plainPassword = (string) ($form->get('plainPassword')->getData() ?? '');
+                if ($plainPassword === '') {
+                    $plainPassword = bin2hex(random_bytes(16));
+                }
+                $user = new User();
+                $user->setEmail($email);
+                $user->setFirstName((string) $form->get('firstName')->getData());
+                $user->setLastName((string) $form->get('lastName')->getData());
+                $user->setPhone($form->get('phone')->getData());
+                $user->setRoles([User::ROLE_ADMIN]);
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+
+                $inviteToken = $mailer->issueInviteToken($user);
+
+                $em->persist($user);
+                $em->flush();
+
+                /** @var User $admin */
+                $admin = $this->getUser();
+                $logger->log('admin.admin_create', 'Administrateur créé : '.$user->getEmail(), $admin);
+
+                $mailer->sendWelcomeAdmin($user, $inviteToken);
+
+                $this->addFlash('success', 'Compte administrateur créé. Un email d\'invitation a été envoyé.');
+
+                return $this->redirectToRoute('admin_admins');
+            }
+        }
+
+        return $this->render('admin/admin_form.html.twig', [
+            'form' => $form,
+            'title' => 'Créer un compte administrateur',
+        ]);
+    }
+
+    #[Route('/admins/{id}/delete', name: 'admin_admin_delete', methods: ['POST'])]
+    public function deleteAdmin(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em,
+        ActivityLogger $logger,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
+    ): Response {
+        if (!$user->isAdmin()) {
+            $this->addFlash('danger', 'Ce compte n\'est pas un administrateur.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+        if ($user->getId() === $this->getUser()?->getId()) {
+            $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+        if (!$this->isCsrfTokenValid('delete_admin'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+        if (!$rateLimiter->create('admin_delete')->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+
+        $email = $user->getEmail();
+
+        try {
+            $em->createQuery('DELETE FROM App\Entity\Notification n WHERE n.user = :user')
+                ->setParameter('user', $user)
+                ->execute();
+            $em->createQuery('UPDATE App\Entity\ActivityLog a SET a.user = NULL WHERE a.user = :user')
+                ->setParameter('user', $user)
+                ->execute();
+            $em->remove($user);
+            $em->flush();
+
+            /** @var User $admin */
+            $admin = $this->getUser();
+            $logger->log('admin.admin_delete', 'Administrateur supprimé : '.$email, $admin);
+
+            $this->addFlash('success', 'Compte administrateur supprimé.');
+        } catch (\Throwable) {
+            $this->addFlash('danger', 'Une erreur est survenue lors de la suppression.');
+        }
+
+        return $this->redirectToRoute('admin_admins');
+    }
+
+    #[Route('/admins/{id}/toggle-suspend', name: 'admin_admin_toggle_suspend', methods: ['POST'])]
+    public function toggleSuspendAdmin(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em,
+        ActivityLogger $logger,
+        AppMailer $mailer,
+    ): Response {
+        if (!$user->isAdmin()) {
+            $this->addFlash('danger', 'Ce compte n\'est pas un administrateur.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+        if ($user->getId() === $this->getUser()?->getId()) {
+            $this->addFlash('danger', 'Vous ne pouvez pas suspendre votre propre compte.');
+
+            return $this->redirectToRoute('admin_admins');
+        }
+        if ($this->isCsrfTokenValid('suspend_admin'.$user->getId(), $request->request->get('_token'))) {
+            $user->setIsSuspended(!$user->isSuspended());
+            $user->setIsActive(!$user->isSuspended());
+            $em->flush();
+            /** @var User $admin */
+            $admin = $this->getUser();
+            $logger->log('admin.suspend', ($user->isSuspended() ? 'Suspension' : 'Réactivation').' de l\'admin '.$user->getEmail(), $admin);
+            $mailer->sendAccountStatus($user, $user->isSuspended());
+            $this->addFlash('success', 'Statut administrateur mis à jour. Un email a été envoyé.');
+        }
+
+        return $this->redirectToRoute('admin_admins');
     }
 
     #[Route('/merchants', name: 'admin_merchants')]

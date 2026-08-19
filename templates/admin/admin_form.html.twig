@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}
+<div class="mb-4">
+    <div class="text-muted small mb-1">Administration</div>
+    <h1 class="page-title h2 mb-1">{{ title }}</h1>
+    <p class="text-muted mb-0">
+        Créez un compte administrateur pour un partenaire. Un email d'invitation lui sera envoyé pour définir son mot de passe.
+    </p>
+</div>
+<div class="panel p-4" style="max-width:720px">
+    {{ form_start(form) }}
+        <div class="row g-2">
+            <div class="col-md-6">{{ form_row(form.firstName) }}</div>
+            <div class="col-md-6">{{ form_row(form.lastName) }}</div>
+            <div class="col-md-6">{{ form_row(form.email) }}</div>
+            <div class="col-md-6">{{ form_row(form.phone) }}</div>
+            <div class="col-md-6">{{ form_row(form.plainPassword.first) }}</div>
+            <div class="col-md-6">{{ form_row(form.plainPassword.second) }}</div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-brand">Créer le compte</button>
+            <a class="btn btn-outline-brand" href="{{ path('admin_admins') }}">Annuler</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

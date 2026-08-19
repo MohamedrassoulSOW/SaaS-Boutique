@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% block title %}Administrateurs{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <div class="text-muted small mb-1">Plateforme</div>
+        <h1 class="page-title h2 mb-0">Administrateurs</h1>
+        <p class="text-muted mb-0">Comptes avec accès complet à la gestion de la plateforme.</p>
+    </div>
+    <a href="{{ path('admin_admin_new') }}" class="btn btn-brand">Nouvel admin</a>
+</div>
+<div class="panel">
+<div class="table-responsive">
+<table class="table mb-0 align-middle">
+<thead>
+<tr>
+    <th>Nom</th>
+    <th>Email</th>
+    <th>Téléphone</th>
+    <th>Statut</th>
+    <th>Créé</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for a in admins %}
+<tr>
+    <td class="fw-semibold">{{ a.fullName }}</td>
+    <td>{{ a.email }}</td>
+    <td>{{ a.phone ?: '—' }}</td>
+    <td>
+        {% if a.suspended %}
+            <span class="badge text-bg-danger">Suspendu</span>
+        {% elseif a.active %}
+            <span class="badge text-bg-success">Actif</span>
+        {% else %}
+            <span class="badge text-bg-secondary">Inactif</span>
+        {% endif %}
+    </td>
+    <td>{{ a.createdAt|date('d/m/Y') }}</td>
+    <td class="text-end text-nowrap">
+        {% if a.id != app.user.id %}
+            <form class="d-inline" method="post" action="{{ path('admin_admin_toggle_suspend', {id: a.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('suspend_admin' ~ a.id) }}">
+                <button class="btn btn-sm btn-outline-warning">{{ a.suspended ? 'Réactiver' : 'Suspendre' }}</button>
+            </form>
+            <form class="d-inline" method="post" action="{{ path('admin_admin_delete', {id: a.id}) }}" data-confirm="Supprimer ce compte administrateur ?" data-confirm-title="Supprimer l'admin" data-confirm-label="Supprimer">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_admin' ~ a.id) }}">
+                <button class="btn btn-sm btn-outline-danger">Suppr.</button>
+            </form>
+        {% else %}
+            <span class="text-muted small">Vous</span>
+        {% endif %}
+    </td>
+</tr>
+{% else %}
+<tr><td colspan="6" class="text-muted p-4">Aucun administrateur autre que vous.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

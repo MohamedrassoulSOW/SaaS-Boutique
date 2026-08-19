@@ -4,7 +4,7 @@ twig:
     globals:
         app_name: 'NdamStore'
         app_tagline: 'La réussite de votre commerce.'
-        app_logo: 'images/ndamstore-logo.png'
+        app_logo: 'images/ndamstore-logo.jpg'
         currency: 'FCFA'
         currency_code: 'XOF'
         platform: '%app.platform%'

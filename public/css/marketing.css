@@ -371,15 +371,15 @@ html[data-theme="dark"] .mkt-theme-toggle .mkt-icon-moon { display: block; }
 .mkt-hero-title {
     margin: 0 auto 1rem;
     font-family: var(--mkt-display);
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 600;
-    line-height: 1.2;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.15;
     max-width: 22ch;
 }
 
 .mkt-hero-lead {
-    margin: 0 auto 1.75rem;
-    font-size: 1.15rem;
+    margin: 0 auto 2rem;
+    font-size: 1.3rem;
     color: rgba(244, 250, 247, .88);
     max-width: 42ch;
 }
@@ -387,8 +387,13 @@ html[data-theme="dark"] .mkt-theme-toggle .mkt-icon-moon { display: block; }
 .mkt-hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: .75rem;
+    gap: .85rem;
     justify-content: center;
+}
+
+.mkt-hero-actions .mkt-btn {
+    font-size: 1.05rem;
+    padding: .8rem 1.6rem;
 }
 
 html[data-theme="dark"] .mkt-btn-primary {

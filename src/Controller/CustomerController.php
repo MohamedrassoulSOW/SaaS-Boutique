@@ -188,9 +188,17 @@ class CustomerController extends ShopAwareController
         EntityManagerInterface $em,
         ShopContext $shopContext,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $customer->getShop());
+        $limiterKey = 'delete_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
+
+            return $this->redirectToRoute('app_customer_index');
+        }
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->request->get('_token'))) {
             $label = $customer->getFullName();
             $em->remove($customer);

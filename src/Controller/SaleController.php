@@ -168,11 +168,19 @@ class SaleController extends ShopAwareController
         Request $request,
         ShopContext $shopContext,
         SaleService $saleService,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $sale->getShop());
         if (!$this->isCsrfTokenValid('sale_cancel'.$sale->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Session expirée.');
+
+            return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
+        }
+        $limiterKey = 'sale_cancel_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
 
             return $this->redirectToRoute('app_sale_show', ['id' => $sale->getId()]);
         }

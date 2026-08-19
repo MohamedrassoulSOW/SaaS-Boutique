@@ -17,7 +17,7 @@
                        href="https://wa.me/{{ customer.phone|replace({' ': '', '+': '', '-': ''}) }}?text={{ ('Bonjour '~customer.fullName~', votre solde est de '~(customer.balance|money)~'. Merci.')|url_encode }}">WhatsApp</a>
                 {% endif %}
             </p>
-            <p class="mb-1"><strong>Email</strong> {{ customer.email ? '<a href="mailto:' ~ customer.email ~ '">' ~ customer.email ~ '</a>' : '—' }}</p>
+            <p class="mb-1"><strong>Email</strong> {% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}—{% endif %}</p>
             <p class="mb-0"><strong>Adresse</strong> {{ customer.address ?: '—' }}</p>
         </div>
     </div>

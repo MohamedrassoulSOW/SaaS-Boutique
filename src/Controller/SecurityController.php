@@ -62,8 +62,8 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $clientIp = $request->getClientIp() ?: 'unknown';
-            $limiter = $passwordResetLimiter->create($clientIp);
+            $email = strtolower(trim((string) $form->get('email')->getData()));
+            $limiter = $passwordResetLimiter->create($email);
             if (!$limiter->consume(1)->isAccepted()) {
                 $this->addFlash('danger', 'Trop de demandes. Réessayez dans une heure.');
 

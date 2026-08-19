@@ -129,9 +129,17 @@ class PurchaseController extends ShopAwareController
         EntityManagerInterface $em,
         StockService $stockService,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.financial_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $order->getShop());
+        $limiterKey = 'purchase_receive_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
+
+            return $this->redirectToRoute('app_purchase_show', ['id' => $order->getId()]);
+        }
 
         if (!$this->isCsrfTokenValid('receive'.$order->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();

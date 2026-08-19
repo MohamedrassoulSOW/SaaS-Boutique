@@ -8,8 +8,10 @@ use App\Repository\CategoryRepository;
 use App\Service\ActivityLogger;
 use App\Service\ShopContext;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -83,9 +85,17 @@ class CategoryController extends ShopAwareController
         EntityManagerInterface $em,
         ShopContext $shopContext,
         ActivityLogger $logger,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->assertShopData($shopContext, $category->getShop());
+        $limiterKey = 'delete_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
+
+            return $this->redirectToRoute('app_category_index');
+        }
 
         if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
             $name = (string) $category->getName();

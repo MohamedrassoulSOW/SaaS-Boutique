@@ -56,7 +56,7 @@
             </nav>
             <div class="mkt-guide-rail-contact">
                 <a href="mailto:{{ support_email }}">{{ support_email }}</a>
-                <a href="tel:+221777901460">{{ support_phone_sn }}</a>
+                <a href="tel:{{ support_phone_sn|replace({' ': '', '-': ''}) }}">{{ support_phone_sn }}</a>
             </div>
         </div>
     </aside>
@@ -276,11 +276,11 @@
                         <span class="mkt-guide-support-label">E-mail</span>
                         <strong>{{ support_email }}</strong>
                     </a>
-                    <a class="mkt-guide-support-item" href="tel:+221777901460">
+                    <a class="mkt-guide-support-item" href="tel:{{ support_phone_sn|replace({' ': '', '-': ''}) }}">
                         <span class="mkt-guide-support-label">Wave / Orange Money · SN</span>
-                        <strong>+221 77 790 14 60</strong>
+                        <strong>{{ support_phone_sn }}</strong>
                     </a>
-                    <a class="mkt-guide-support-item" href="tel:+212684088765">
+                    <a class="mkt-guide-support-item" href="tel:{{ support_phone_ma|replace({' ': '', '-': ''}) }}">
                         <span class="mkt-guide-support-label">Maroc</span>
                         <strong>{{ support_phone_ma }}</strong>
                     </a>

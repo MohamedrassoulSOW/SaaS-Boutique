@@ -8,8 +8,10 @@ use App\Repository\ShopMemberRepository;
 use App\Security\Voter\ShopVoter;
 use App\Service\ShopContext;
 use App\Service\ShopMemberService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -126,10 +128,18 @@ class ShopMemberController extends ShopAwareController
         Request $request,
         ShopContext $shopContext,
         ShopMemberService $service,
+        #[Autowire(service: 'limiter.admin_operations')]
+        RateLimiterFactory $rateLimiter,
     ): Response {
         $shop = $this->requireShop($shopContext);
         $this->denyAccessUnlessGranted(ShopVoter::MANAGE, $shop);
         $this->assertShopData($shopContext, $member->getShop());
+        $limiterKey = 'delete_' . ($this->getShopUser()?->getId() ?? 'anon');
+        if (!$rateLimiter->create($limiterKey)->consume(1)->isAccepted()) {
+            $this->addFlash('danger', 'Trop de requêtes. Réessayez dans une minute.');
+
+            return $this->redirectToRoute('app_staff_index');
+        }
 
         if ($member->getUser()?->isMerchant() || $member->getUser()?->isAdmin()) {
             throw $this->createAccessDeniedException();

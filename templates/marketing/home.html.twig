@@ -8,10 +8,10 @@
 <section class="mkt-hero">
     <div class="mkt-hero-media" aria-hidden="true">
         <img
-            src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=2000&q=80"
+            src="{{ asset('images/ndamstore-1.jpg') }}?v=1"
             alt=""
-            width="2000"
-            height="1333"
+            width="1200"
+            height="800"
         >
     </div>
     <div class="mkt-hero-scrim" aria-hidden="true"></div>
@@ -30,15 +30,15 @@
     <div class="mkt-wrap mkt-split">
         <div class="reveal-up">
             <p class="mkt-kicker">Une plateforme</p>
-            <h2 class="mkt-h2">Conçue pour le rythme réel d’une entreprise.</h2>
+            <h2 class="mkt-h2">Conçue pour le rythme réel d'une entreprise.</h2>
             <p class="mkt-lead">Ventes multi-articles, stock à jour, factures PDF et comptes agents — sans quitter le comptoir.</p>
         </div>
         <figure class="mkt-photo reveal-up delay-1">
             <img
-                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80"
-                alt="Rayon commercial au détail"
-                width="1400"
-                height="933"
+                src="{{ asset('images/ndamstore-2.jpg') }}?v=1"
+                alt="Interface {{ app_name }}"
+                width="1200"
+                height="800"
             >
         </figure>
     </div>
@@ -58,10 +58,44 @@
                 <span>Mouvements, achats, inventaires et alertes de rupture.</span>
             </li>
             <li class="reveal-up delay-3">
-                <strong>Diriger l’équipe</strong>
+                <strong>Diriger l'équipe</strong>
                 <span>Rôles caissier, magasinier ou responsable — chaque accès à sa place.</span>
             </li>
         </ul>
+    </div>
+</section>
+
+<section class="mkt-section">
+    <div class="mkt-wrap">
+        <p class="mkt-kicker reveal-up">Captures d'écran</p>
+        <h2 class="mkt-h2 reveal-up delay-1">Découvrez l'interface</h2>
+        <p class="mkt-lead reveal-up delay-2">Un aperçu de ce que vous verrez au quotidien.</p>
+        <div class="mkt-screenshot-grid reveal-up delay-2">
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-1.jpg') }}?v=1" alt="Vue d'ensemble" width="1200" height="800" loading="lazy">
+                <figcaption>Vue d'ensemble</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-2.jpg') }}?v=1" alt="Point de vente" width="1200" height="800" loading="lazy">
+                <figcaption>Point de vente</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-3.jpg') }}?v=1" alt="Gestion des produits" width="1200" height="800" loading="lazy">
+                <figcaption>Gestion des produits</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-4.jpg') }}?v=1" alt="Rapports et analyses" width="1200" height="800" loading="lazy">
+                <figcaption>Rapports et analyses</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-1-1.jpg') }}?v=1" alt="Stock et inventaire" width="1200" height="800" loading="lazy">
+                <figcaption>Stock et inventaire</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-item">
+                <img src="{{ asset('images/ndamstore-1-2.jpg') }}?v=1" alt="Gestion des clients" width="1200" height="800" loading="lazy">
+                <figcaption>Gestion des clients</figcaption>
+            </figure>
+        </div>
     </div>
 </section>
 
@@ -72,4 +106,45 @@
         <a class="mkt-btn mkt-btn-primary" href="{{ path('app_contact') }}">Nous contacter</a>
     </div>
 </section>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.mkt-screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 2rem;
+}
+.mkt-screenshot-item {
+    margin: 0;
+    border-radius: .85rem;
+    overflow: hidden;
+    background: var(--mkt-surface, #f8faf9);
+    border: 1px solid var(--mkt-line, #e2eae6);
+    transition: transform .2s, box-shadow .2s;
+}
+.mkt-screenshot-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(8,63,55,.12);
+}
+.mkt-screenshot-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.mkt-screenshot-item figcaption {
+    padding: .65rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--mkt-ink, #13201c);
+    text-align: center;
+}
+@media (max-width: 768px) {
+    .mkt-screenshot-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .mkt-screenshot-grid { grid-template-columns: 1fr; }
+}
+</style>
 {% endblock %}

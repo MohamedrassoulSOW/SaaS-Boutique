@@ -241,6 +241,34 @@
                     <li>Mise à jour automatique des nouvelles versions</li>
                 </ul>
             </div>
+
+            <h3 class="mt-4 mb-3" style="display:flex;align-items:center;gap:.5rem;"><i class="bi bi-images" style="color:var(--mkt-brand);"></i> Captures d'écran</h3>
+            <div class="pres-screenshot-grid">
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-1.jpg') }}?v=1" alt="Vue d'ensemble" width="1200" height="800" loading="lazy">
+                    <figcaption>Vue d'ensemble</figcaption>
+                </figure>
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-2.jpg') }}?v=1" alt="Point de vente" width="1200" height="800" loading="lazy">
+                    <figcaption>Point de vente</figcaption>
+                </figure>
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-3.jpg') }}?v=1" alt="Gestion des produits" width="1200" height="800" loading="lazy">
+                    <figcaption>Gestion des produits</figcaption>
+                </figure>
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-4.jpg') }}?v=1" alt="Rapports et analyses" width="1200" height="800" loading="lazy">
+                    <figcaption>Rapports et analyses</figcaption>
+                </figure>
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-1-1.jpg') }}?v=1" alt="Stock et inventaire" width="1200" height="800" loading="lazy">
+                    <figcaption>Stock et inventaire</figcaption>
+                </figure>
+                <figure class="pres-screenshot-item">
+                    <img src="{{ asset('images/ndamstore-1-2.jpg') }}?v=1" alt="Gestion des clients" width="1200" height="800" loading="lazy">
+                    <figcaption>Gestion des clients</figcaption>
+                </figure>
+            </div>
         </div>
     </div>
 </section>
@@ -887,6 +915,48 @@
 }
 
 .pres-section--footer { padding-bottom: 0; }
+
+/* Screenshot grid */
+.pres-screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.pres-screenshot-item {
+    margin: 0;
+    border-radius: .75rem;
+    overflow: hidden;
+    background: var(--mkt-surface, #f8faf9);
+    border: 1px solid var(--mkt-line, #e2eae6);
+    transition: transform .2s, box-shadow .2s;
+}
+.pres-screenshot-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(8,63,55,.1);
+}
+.pres-screenshot-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.pres-screenshot-item figcaption {
+    padding: .5rem .75rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--mkt-ink, #13201c);
+    text-align: center;
+}
+@media (max-width: 768px) {
+    .pres-screenshot-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .pres-screenshot-grid { grid-template-columns: 1fr; }
+}
+@media print {
+    .pres-screenshot-grid { grid-template-columns: repeat(2, 1fr); }
+    .pres-screenshot-item { break-inside: avoid; }
+}
 
 .mkt-page-hero--tall {
     padding: 7rem 0 3rem;

@@ -78,7 +78,7 @@
             </div>
         </div>
 
-        <div class="mkt-shot-row mkt-shot-row--reverse reveal-up">
+        <div class="mkt-shot-row reveal-up">
             <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-2.jpg') }}?v=1" alt="Point de vente" width="1200" height="800" loading="lazy"></figure>
             <div class="mkt-shot-text">
                 <h3>Point de vente</h3>
@@ -94,7 +94,7 @@
             </div>
         </div>
 
-        <div class="mkt-shot-row mkt-shot-row--reverse reveal-up">
+        <div class="mkt-shot-row reveal-up">
             <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-4.jpg') }}?v=1" alt="Rapports et analyses" width="1200" height="800" loading="lazy"></figure>
             <div class="mkt-shot-text">
                 <h3>Rapports et analyses</h3>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <div class="mkt-shot-row mkt-shot-row--reverse reveal-up">
+        <div class="mkt-shot-row reveal-up">
             <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-1-2.jpg') }}?v=1" alt="Gestion des clients" width="1200" height="800" loading="lazy"></figure>
             <div class="mkt-shot-text">
                 <h3>Gestion des clients</h3>
@@ -133,13 +133,11 @@
 <style>
 .mkt-shot-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 45% 1fr;
     gap: 2.5rem;
     align-items: center;
     margin-top: 3rem;
 }
-.mkt-shot-row--reverse { direction: rtl; }
-.mkt-shot-row--reverse > * { direction: ltr; }
 
 .mkt-shot-img {
     margin: 0;
@@ -173,11 +171,9 @@
 }
 
 @media (max-width: 768px) {
-    .mkt-shot-row,
-    .mkt-shot-row--reverse {
+    .mkt-shot-row {
         grid-template-columns: 1fr;
         gap: 1.25rem;
-        direction: ltr;
     }
     .mkt-shot-text h3 { font-size: 1.15rem; }
 }

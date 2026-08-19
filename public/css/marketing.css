@@ -1999,3 +1999,82 @@ html[data-theme="dark"] .mkt-h2 {
     .mkt-page-hero::after { animation: none; }
     .mkt-btn::after { display: none; }
 }
+
+/* —— Mobile home page improvements —— */
+@media (max-width: 640px) {
+    /* Hero */
+    .mkt-hero {
+        min-height: auto;
+    }
+    .mkt-hero-inner {
+        padding: 6.5rem 0 2.5rem;
+    }
+    .mkt-hero-title {
+        font-size: clamp(1.9rem, 7vw, 2.6rem);
+        max-width: none;
+        padding: 0 .5rem;
+    }
+    .mkt-hero-lead {
+        font-size: 1.05rem;
+        padding: 0 .25rem;
+        max-width: none;
+    }
+    .mkt-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 1rem;
+    }
+    .mkt-hero-actions .mkt-btn {
+        justify-content: center;
+        font-size: 1rem;
+        padding: .9rem 1.2rem;
+    }
+
+    /* Points */
+    .mkt-points {
+        margin-top: 1.5rem;
+        gap: 1.25rem;
+    }
+    .mkt-points strong {
+        font-size: 1.1rem;
+    }
+    .mkt-points span {
+        font-size: .92rem;
+    }
+
+    /* CTA band */
+    .mkt-cta-band {
+        text-align: center;
+    }
+    .mkt-cta-band .mkt-h2 {
+        max-width: none;
+    }
+    .mkt-cta-band .mkt-lead {
+        max-width: none;
+    }
+    .mkt-cta-band .mkt-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Screenshot grid */
+    .mkt-screenshot-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Split section */
+    .mkt-split {
+        gap: 1.5rem;
+    }
+
+    /* Sections */
+    .mkt-section {
+        padding: 2.5rem 0;
+    }
+
+    /* Photo */
+    .mkt-photo {
+        border-radius: .75rem;
+    }
+}

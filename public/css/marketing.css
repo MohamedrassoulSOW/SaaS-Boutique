@@ -769,7 +769,8 @@ html[data-theme="dark"] .mkt-input {
     }
 
     .mkt-wrap {
-        width: min(100% - 1.5rem, var(--mkt-max));
+        width: 100%;
+        padding: 0;
     }
 
     .mkt-hero-inner {
@@ -854,6 +855,11 @@ html[data-theme="dark"] .mkt-input {
     .mkt-contact-grid {
         grid-template-columns: 1fr;
         direction: ltr;
+    }
+
+    .mkt-wrap {
+        width: 100%;
+        padding: 0;
     }
 
     .mkt-hero-inner {

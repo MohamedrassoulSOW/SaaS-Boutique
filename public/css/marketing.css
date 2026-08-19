@@ -936,9 +936,8 @@ html[data-theme="dark"] .mkt-input {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 80% 70% at 10% 20%, rgba(20, 122, 106, .28), transparent 55%),
-        radial-gradient(ellipse 60% 50% at 90% 10%, rgba(12, 92, 80, .18), transparent 50%),
-        linear-gradient(160deg, #0c5c50 0%, #147a6a 42%, #0e3f38 100%);
+        linear-gradient(160deg, rgba(12, 92, 80, .72) 0%, rgba(20, 122, 106, .60) 42%, rgba(14, 63, 56, .75) 100%),
+        url('../images/ndamstore-1-1.jpg') center/cover no-repeat;
     animation: mkt-guide-shift 14s ease-in-out infinite alternate;
 }
 

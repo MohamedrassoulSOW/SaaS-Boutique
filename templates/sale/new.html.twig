@@ -86,9 +86,14 @@
                     <h2 class="modal-title" id="posCartTitle">Panier</h2>
                     <p class="pos-cart-subtitle mb-0"><span class="js-cart-count">0</span> article(s)</p>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-brand pos-cart-close" data-bs-dismiss="modal" aria-label="Fermer le panier">
-                    <i class="bi bi-x-lg" aria-hidden="true"></i>
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="posCartClear" hidden>
+                        <i class="bi bi-trash3" aria-hidden="true"></i> Vider
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-brand pos-cart-close" data-bs-dismiss="modal" aria-label="Fermer le panier">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="modal-body pos-cart-body">
@@ -169,6 +174,7 @@
   const amountPaidInput = document.getElementById('amountPaid');
   const search = document.getElementById('posSearch');
   const cartModalEl = document.getElementById('posCartModal');
+  const cartClearBtn = document.getElementById('posCartClear');
   const saleForm = document.getElementById('saleForm');
   const taxEnabled = {{ taxConfig.enabled ? 'true' : 'false' }};
   const taxRate = {{ taxConfig.rate|default(0) }};
@@ -402,6 +408,7 @@
     document.getElementById('totalDisplay').textContent = money(total);
     const count = String(items.reduce((n, i) => n + i.qty, 0));
     document.querySelectorAll('.js-cart-count').forEach((el) => { el.textContent = count; });
+    if (cartClearBtn) cartClearBtn.hidden = items.length === 0;
     if (persist) {
       saveCart();
     } else {
@@ -433,6 +440,16 @@
       cart.delete(item.id);
     }
     renderCart();
+  });
+
+  cartClearBtn?.addEventListener('click', async () => {
+    if (cart.size === 0) return;
+    const ok = window.AppUI
+      ? await AppUI.confirm('Vider tout le panier ? Tous les articles seront retirés.', { title: 'Vider le panier', confirmLabel: 'Vider' })
+      : window.confirm('Vider tout le panier ?');
+    if (!ok) return;
+    emptyCartUi();
+    if (window.AppUI) AppUI.toast('Panier vidé.', 'success');
   });
 
   search?.addEventListener('input', () => {

@@ -67,6 +67,30 @@
   } catch (_) {
     /* ignore */
   }
+
+  // Popup « Encaissement validé » : proposer l'annulation immédiate de la vente
+  const cancelForm = document.querySelector('form[action*="/cancel"]');
+  const resultModal = document.getElementById('appResultModal');
+  if (cancelForm && resultModal && window.bootstrap) {
+    resultModal.addEventListener('shown.bs.modal', () => {
+      if (resultModal.dataset.resultType !== 'success') return;
+      const actions = resultModal.querySelector('.modal-body .d-flex');
+      if (!actions || actions.querySelector('.js-cancel-sale')) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-danger js-cancel-sale';
+      btn.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i>Annuler la vente';
+      btn.addEventListener('click', () => {
+        bootstrap.Modal.getOrCreateInstance(resultModal).hide();
+        if (typeof cancelForm.requestSubmit === 'function') {
+          cancelForm.requestSubmit();
+        } else {
+          cancelForm.submit();
+        }
+      });
+      actions.appendChild(btn);
+    });
+  }
 })();
 </script>
 {% endblock %}

@@ -25,97 +25,130 @@
     </div>
 </section>
 
-<section class="mkt-section">
-    <div class="mkt-wrap mkt-split">
-        <div class="reveal-up">
+<section class="mkt-section mkt-platform-section">
+    <div class="mkt-wrap">
+        <div class="mkt-platform-intro reveal-up">
             <p class="mkt-kicker">Une plateforme</p>
-            <h2 class="mkt-h2">Conçue pour le rythme réel d'une entreprise.</h2>
-            <p class="mkt-lead">Ventes multi-articles, stock à jour, factures PDF et comptes agents — sans quitter le comptoir.</p>
+            <h2 class="mkt-h2 mkt-h2--wide">Conçue pour le rythme réel d'une entreprise.</h2>
+            <p class="mkt-lead mkt-lead-wide">Ventes multi-articles, stock à jour, factures PDF et comptes agents — sans quitter le comptoir.</p>
         </div>
-        <figure class="mkt-photo reveal-up delay-1">
-            <img
-                src="{{ asset('images/ndamstore-2.jpg') }}?v=1"
-                alt="Interface {{ app_name }}"
-                width="1200"
-                height="800"
-            >
-        </figure>
     </div>
 </section>
 
-<section class="mkt-section mkt-section-tint">
+<section class="mkt-section mkt-devices-section">
+    <div class="mkt-wrap">
+        <div class="mkt-devices-grid reveal-up">
+
+            <div class="mkt-device-card mkt-device-pos">
+                <div class="mkt-device-visual">
+                    <img src="{{ asset('images/ndamstore-2.jpg') }}?v=1" alt="Interface caisse {{ app_name }}" loading="lazy" width="1200" height="800">
+                </div>
+                <div class="mkt-device-overlay">
+                    <h3>Conçue pour le rythme réel d'une entreprise.</h3>
+                    <ul class="mkt-device-checklist">
+                        <li><i class="bi bi-check-circle-fill"></i> Ventes multi-articles</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Stock à jour</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Factures PDF</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Comptes agents</li>
+                    </ul>
+                    <div class="mkt-device-footer">
+                        <span><i class="bi bi-lightning-charge-fill"></i> Rapide</span>
+                        <span><i class="bi bi-shield-check"></i> Fiable</span>
+                        <span><i class="bi bi-hand-thumbs-up-fill"></i> Simple</span>
+                        <span><i class="bi bi-grid-3x3-gap-fill"></i> Complet</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mkt-device-card mkt-device-laptop">
+                <div class="mkt-device-visual">
+                    <img src="{{ asset('images/ndamstore-1.jpg') }}?v=1" alt="Interface multi-sites {{ app_name }}" loading="lazy" width="1200" height="800">
+                </div>
+                <div class="mkt-device-overlay">
+                    <h3>Une équipe, plusieurs points de vente.</h3>
+                    <p class="mkt-device-desc">NdamStore multi-site centralise la gestion de vos boutiques, ateliers et entrepôts — vos données, vos règles, partout.</p>
+                    <div class="mkt-device-icon-grid">
+                        <div class="mkt-device-icon-item">
+                            <i class="bi bi-buildings"></i>
+                            <span>Entreprise</span>
+                        </div>
+                        <div class="mkt-device-icon-item">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Agents</span>
+                        </div>
+                        <div class="mkt-device-icon-item">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Données sécurisées</span>
+                        </div>
+                        <div class="mkt-device-icon-item">
+                            <i class="bi bi-phone-fill"></i>
+                            <span>Web &amp; Mobile</span>
+                        </div>
+                    </div>
+                    <ul class="mkt-device-checklist mkt-device-checklist--small">
+                        <li><i class="bi bi-check2"></i> Contrats d'agents</li>
+                        <li><i class="bi bi-check2"></i> Abonnements mensuels ou annuels</li>
+                        <li><i class="bi bi-check2"></i> Règles d'accès par rôle</li>
+                    </ul>
+                    <p class="mkt-device-footnote">Tout est configurable depuis votre tableau de bord administrateur.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="mkt-section mkt-gestes-section">
     <div class="mkt-wrap">
         <p class="mkt-kicker reveal-up">Ce que vous gagnez</p>
         <h2 class="mkt-h2 reveal-up delay-1">Trois gestes. Toute votre opération.</h2>
-        <ul class="mkt-points">
-            <li class="reveal-up delay-1">
-                <strong>Vendre vite</strong>
-                <span>Caisse multi-lignes, clients optionnels, tickets et factures en FCFA.</span>
-            </li>
-            <li class="reveal-up delay-2">
-                <strong>Garder le stock juste</strong>
-                <span>Mouvements, achats, inventaires et alertes de rupture.</span>
-            </li>
-            <li class="reveal-up delay-3">
-                <strong>Diriger l'équipe</strong>
-                <span>Rôles caissier, magasinier ou responsable — chaque accès à sa place.</span>
-            </li>
-        </ul>
+        <div class="mkt-gestes-grid">
+            <div class="mkt-geste-card reveal-up delay-1">
+                <div class="mkt-geste-icon">
+                    <i class="bi bi-cart-check-fill"></i>
+                </div>
+                <h3>Vendre vite</h3>
+                <p>Caisse multi-lignes, clients optionnels, tickets et factures en F CFA.</p>
+            </div>
+            <div class="mkt-geste-card reveal-up delay-2">
+                <div class="mkt-geste-icon">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                </div>
+                <h3>Garder le stock juste</h3>
+                <p>Mouvements, achats, inventaires et alertes de rupture.</p>
+            </div>
+            <div class="mkt-geste-card reveal-up delay-3">
+                <div class="mkt-geste-icon">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <h3>Diriger l'équipe</h3>
+                <p>Rôles caissier, magasinier ou responsable — chaque accès à sa place.</p>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="mkt-section">
+<section class="mkt-section mkt-interface-section">
     <div class="mkt-wrap">
-        <p class="mkt-kicker reveal-up">Captures d'écran</p>
-        <h2 class="mkt-h2 reveal-up delay-1">Découvrez l'interface</h2>
-        <p class="mkt-lead reveal-up delay-2">Un aperçu de ce que vous verrez au quotidien.</p>
-
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-1.jpg') }}?v=1" alt="Vue d'ensemble" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Vue d'ensemble</h3>
-                <p>Un tableau de bord clair pour suivre vos ventes, stocks et finances en un coup d'œil. Tout est centralisé, rien ne vous échappe.</p>
-            </div>
+        <div class="mkt-interface-header reveal-up">
+            <p class="mkt-kicker">Captures d'écran</p>
+            <h2 class="mkt-h2">Découvrez l'interface</h2>
+            <p class="mkt-lead">Un tableau de bord clair pour suivre vos ventes, stocks et finances en un coup d'œil. Tout est centralisé, rien ne vous échappe.</p>
         </div>
+    </div>
+</section>
 
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-2.jpg') }}?v=1" alt="Point de vente" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Point de vente</h3>
-                <p>Caisse intuitive et rapide. Recherchez un produit par nom ou code-barres, enregistrez la vente et imprimez le reçu en quelques secondes.</p>
-            </div>
-        </div>
-
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-3.jpg') }}?v=1" alt="Gestion des produits" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Gestion des produits</h3>
-                <p>Catalogue complet avec images, prix d'achat et de vente, catégories et suivi des marges. Ajoutez ou modifiez un produit en un instant.</p>
-            </div>
-        </div>
-
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-4.jpg') }}?v=1" alt="Rapports et analyses" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Rapports et analyses</h3>
-                <p>Graphiques dynamiques, rapports de ventes par période, par agent ou par produit. Des données claires pour décider plus vite.</p>
-            </div>
-        </div>
-
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-1-1.jpg') }}?v=1" alt="Stock et inventaire" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Stock et inventaire</h3>
-                <p>Suivez les entrées, sorties et ajustements en temps réel. Alertes de rupture automatiques pour ne jamais manquer de marchandise.</p>
-            </div>
-        </div>
-
-        <div class="mkt-shot-row reveal-up">
-            <figure class="mkt-shot-img"><img src="{{ asset('images/ndamstore-1-2.jpg') }}?v=1" alt="Gestion des clients" width="1200" height="800" loading="lazy"></figure>
-            <div class="mkt-shot-text">
-                <h3>Gestion des clients</h3>
-                <p>Fiches clients avec historique d'achats, soldes et crédits. Offrez un service personnalisé et fidélisez votre clientèle.</p>
-            </div>
+<section class="mkt-section mkt-screenshots-section">
+    <div class="mkt-wrap">
+        <div class="mkt-screenshot-duo reveal-up">
+            <figure class="mkt-screenshot-card">
+                <img src="{{ asset('images/ndamstore-1.jpg') }}?v=1" alt="Vue d'ensemble du tableau de bord" width="1200" height="800" loading="lazy">
+                <figcaption>Tableau de bord — ventes, stocks et finances centralisés</figcaption>
+            </figure>
+            <figure class="mkt-screenshot-card">
+                <img src="{{ asset('images/ndamstore-3.jpg') }}?v=1" alt="Gestion des produits et catalogues" width="1200" height="800" loading="lazy">
+                <figcaption>Catalogue — produits, prix, catégories et marges</figcaption>
+            </figure>
         </div>
     </div>
 </section>
@@ -131,51 +164,285 @@
 
 {% block stylesheets %}
 <style>
-.mkt-shot-row {
-    display: grid;
-    grid-template-columns: 45% 1fr;
-    gap: 2.5rem;
-    align-items: center;
-    margin-top: 3rem;
+/* —— Platform intro —— */
+.mkt-platform-section {
+    padding-bottom: 0;
+}
+.mkt-platform-intro {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.mkt-h2--wide {
+    max-width: none;
 }
 
-.mkt-shot-img {
-    margin: 0;
-    border-radius: .85rem;
-    overflow: hidden;
-    border: 1px solid var(--mkt-line, #e2eae6);
-    background: var(--mkt-surface, #f8faf9);
+/* —— Device cards —— */
+.mkt-devices-section {
+    padding-top: 2.5rem;
 }
-.mkt-shot-img img {
+.mkt-devices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+.mkt-device-card {
+    position: relative;
+    border-radius: 1.1rem;
+    overflow: hidden;
+    background: var(--mkt-surface, #f8faf9);
+    border: 1px solid var(--mkt-line, #e2eae6);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+.mkt-device-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(8, 63, 55, .12);
+}
+.mkt-device-visual {
+    position: relative;
+    overflow: hidden;
+}
+.mkt-device-visual img {
     width: 100%;
     height: auto;
     display: block;
-    transition: transform .4s ease;
+    margin: 0 auto;
+    object-fit: cover;
+    transition: transform .5s ease;
 }
-.mkt-shot-row:hover .mkt-shot-img img {
+.mkt-device-card:hover .mkt-device-visual img {
     transform: scale(1.03);
 }
-
-.mkt-shot-text h3 {
+.mkt-device-overlay {
+    padding: 1.5rem 1.5rem 1.25rem;
+}
+.mkt-device-overlay h3 {
     font-family: var(--mkt-display);
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 650;
     color: var(--mkt-ink, #13201c);
-    margin: 0 0 .6rem;
+    margin: 0 0 .75rem;
+    line-height: 1.3;
 }
-.mkt-shot-text p {
+.mkt-device-desc {
+    font-size: .92rem;
+    line-height: 1.55;
+    color: var(--mkt-muted, #5a6f68);
+    margin: 0 0 1rem;
+}
+.mkt-device-checklist {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: grid;
+    gap: .5rem;
+}
+.mkt-device-checklist li {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .9rem;
+    font-weight: 500;
+    color: var(--mkt-ink, #13201c);
+}
+.mkt-device-checklist li i {
+    color: var(--mkt-brand, #0c5c50);
     font-size: 1rem;
-    line-height: 1.65;
+    flex-shrink: 0;
+}
+.mkt-device-checklist--small li {
+    font-size: .85rem;
+}
+.mkt-device-checklist--small li i {
+    color: var(--mkt-brand, #0c5c50);
+}
+.mkt-device-icon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin-bottom: 1rem;
+}
+.mkt-device-icon-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem .75rem;
+    border-radius: .65rem;
+    background: color-mix(in srgb, var(--mkt-brand, #0c5c50) 8%, transparent);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--mkt-brand-dark, #083f37);
+}
+.mkt-device-icon-item i {
+    font-size: 1rem;
+    color: var(--mkt-brand, #0c5c50);
+}
+.mkt-device-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    padding-top: .85rem;
+    border-top: 1px solid var(--mkt-line, #e2eae6);
+}
+.mkt-device-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--mkt-brand, #0c5c50);
+}
+.mkt-device-footer span i {
+    font-size: .85rem;
+}
+.mkt-device-footnote {
+    font-size: .82rem;
+    color: var(--mkt-muted, #5a6f68);
+    margin: .75rem 0 0;
+    font-style: italic;
+}
+
+/* —— Three gestes grid —— */
+.mkt-gestes-section {
+    background: color-mix(in srgb, var(--mkt-brand, #0c5c50) 6%, transparent);
+}
+.mkt-gestes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.75rem;
+    margin-top: 2.5rem;
+}
+.mkt-geste-card {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-radius: 1rem;
+    background: var(--mkt-surface, rgba(255,255,255,.72));
+    border: 1px solid var(--mkt-line, #e2eae6);
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+.mkt-geste-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(8, 63, 55, .08);
+}
+.mkt-geste-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 1rem;
+    border-radius: .85rem;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, var(--mkt-brand-mid, #147a6a), var(--mkt-brand-dark, #083f37));
+    color: #fff;
+    font-size: 1.4rem;
+}
+.mkt-geste-card h3 {
+    font-family: var(--mkt-display);
+    font-size: 1.15rem;
+    font-weight: 650;
+    color: var(--mkt-ink, #13201c);
+    margin: 0 0 .5rem;
+}
+.mkt-geste-card p {
+    font-size: .92rem;
+    line-height: 1.6;
     color: var(--mkt-muted, #5a6f68);
     margin: 0;
 }
 
-@media (max-width: 768px) {
-    .mkt-shot-row {
+/* —— Interface section header —— */
+.mkt-interface-section {
+    padding-bottom: 1.5rem;
+}
+.mkt-interface-header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* —— Screenshot duo —— */
+.mkt-screenshot-duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+.mkt-screenshot-card {
+    margin: 0 auto;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--mkt-line, #e2eae6);
+    background: var(--mkt-surface, #f8faf9);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+.mkt-screenshot-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(8, 63, 55, .1);
+}
+.mkt-screenshot-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.mkt-screenshot-card figcaption {
+    padding: .85rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--mkt-ink, #13201c);
+    text-align: center;
+    border-top: 1px solid var(--mkt-line, #e2eae6);
+}
+
+/* ═══════════ Responsive ═══════════ */
+@media (max-width: 900px) {
+    .mkt-devices-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        justify-items: center;
+    }
+    .mkt-gestes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .mkt-screenshot-duo {
         grid-template-columns: 1fr;
         gap: 1.25rem;
+        justify-items: center;
     }
-    .mkt-shot-text h3 { font-size: 1.15rem; }
+    .mkt-device-card,
+    .mkt-screenshot-card {
+        width: 100%;
+        max-width: 28rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .mkt-device-overlay {
+        padding: 1.25rem 1rem 1rem;
+    }
+    .mkt-device-icon-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem;
+    }
+    .mkt-device-visual img {
+        object-position: center top;
+    }
+    .mkt-screenshot-card img {
+        object-fit: cover;
+        object-position: center top;
+    }
+    .mkt-geste-card {
+        padding: 1.5rem 1.25rem;
+    }
+    .mkt-geste-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+    .mkt-screenshot-card {
+        margin: 0 auto;
+    }
 }
 </style>
 {% endblock %}

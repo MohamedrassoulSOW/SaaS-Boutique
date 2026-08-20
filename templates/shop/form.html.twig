@@ -6,7 +6,7 @@
     {% if shop is defined and shop.hasLogo %}
         <div class="mb-3">
             <div class="text-muted small mb-1">Logo actuel (base de données)</div>
-            <img src="{{ path('app_media_shop_logo', {id: shop.id}) }}" alt="" style="max-height:80px;border-radius:8px">
+            <img src="{{ path('app_media_shop_logo', {id: shop.id}) }}" alt="" style="max-height:80px;border-radius:8px;display:block;margin:0 auto">
         </div>
     {% endif %}
     {{ form_start(form, {attr: {enctype: 'multipart/form-data'}}) }}

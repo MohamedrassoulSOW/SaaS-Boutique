@@ -147,6 +147,7 @@ a:hover { color: var(--brand); }
     display: block;
     width: auto;
     height: auto;
+    margin: 0 auto;
     object-fit: contain;
 }
 
@@ -163,6 +164,7 @@ a:hover { color: var(--brand); }
 .brand-logo-auth {
     width: min(100%, 14rem);
     max-height: 4.5rem;
+    margin: 0 auto;
     background: #fff;
     border-radius: .85rem;
     padding: .45rem .65rem;
@@ -1103,6 +1105,7 @@ html[data-theme="dark"] #appConfirmModal .btn-close {
     height: 40px;
     border-radius: .7rem;
     flex-shrink: 0;
+    margin: 0 auto;
 }
 
 .pwa-install-copy {

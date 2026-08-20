@@ -6,7 +6,7 @@
     {% if product is defined and product.hasPhoto %}
         <div class="mb-3">
             <div class="text-muted small mb-1">Photo actuelle (base de données)</div>
-            <img src="{{ path('app_media_product_photo', {id: product.id}) }}" alt="" style="max-height:120px;border-radius:8px">
+            <img src="{{ path('app_media_product_photo', {id: product.id}) }}" alt="" style="max-height:120px;border-radius:8px;display:block;margin:0 auto">
         </div>
     {% endif %}
     {{ form_start(form, {attr: {enctype: 'multipart/form-data'}}) }}

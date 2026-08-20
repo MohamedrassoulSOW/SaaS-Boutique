@@ -12,7 +12,10 @@
 <tbody>
 {% for s in sales %}
 <tr>
-    <td>{{ s.reference }}</td>
+    <td>
+        {{ s.reference }}
+        {% if s.status == 'cancelled' %}<span class="badge-stock ms-1">Annulée</span>{% endif %}
+    </td>
     <td>{{ s.soldAt|date('d/m/Y H:i') }}</td>
     <td>
         {% if s.soldBy %}
@@ -25,7 +28,17 @@
     <td>{{ s.customer ? s.customer.fullName : 'Comptoir' }}</td>
     <td>{{ s.total|money }}</td>
     <td>{{ s.paymentMethod }}</td>
-    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ path('app_sale_show', {id: s.id}) }}">Voir</a></td>
+    <td class="text-end">
+        <div class="d-flex justify-content-end gap-1 flex-nowrap">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_sale_show', {id: s.id}) }}">Voir</a>
+            {% if can_module('sale_cancel') and s.status != 'cancelled' %}
+            <form method="post" action="{{ path('app_sale_cancel', {id: s.id}) }}" data-confirm="Annuler la vente {{ s.reference }} ? Le stock sera rétabli." data-confirm-title="Annuler la vente" data-confirm-label="Annuler la vente">
+                <input type="hidden" name="_token" value="{{ csrf_token('sale_cancel' ~ s.id) }}">
+                <button class="btn btn-sm btn-outline-danger">Annuler</button>
+            </form>
+            {% endif %}
+        </div>
+    </td>
 </tr>
 {% else %}
 <tr><td colspan="7" class="text-muted p-4">Aucune vente</td></tr>

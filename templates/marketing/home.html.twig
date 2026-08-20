@@ -396,52 +396,47 @@
 
 /* ═══════════ Responsive ═══════════ */
 @media (max-width: 900px) {
-    .mkt-devices-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        justify-items: center;
-    }
-    .mkt-gestes-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
+    .mkt-devices-grid,
     .mkt-screenshot-duo {
         grid-template-columns: 1fr;
         gap: 1.25rem;
-        justify-items: center;
     }
-    .mkt-device-card,
-    .mkt-screenshot-card {
-        width: 100%;
-        max-width: 28rem;
+    .mkt-gestes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 }
 
 @media (max-width: 640px) {
-    .mkt-device-overlay {
-        padding: 1.25rem 1rem 1rem;
+    .mkt-gestes-grid {
+        grid-template-columns: 1fr;
     }
-    .mkt-device-icon-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: .5rem;
-    }
-    .mkt-device-visual img {
-        object-position: center top;
-    }
+    .mkt-device-visual img,
     .mkt-screenshot-card img {
+        height: auto;
+        max-height: 12rem;
         object-fit: cover;
         object-position: center top;
     }
-    .mkt-geste-card {
-        padding: 1.5rem 1.25rem;
+}
+
+@media (max-width: 400px) {
+    .mkt-device-icon-grid {
+        grid-template-columns: 1fr;
     }
-    .mkt-geste-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 1.2rem;
+    .mkt-device-visual img,
+    .mkt-screenshot-card img {
+        max-height: 10rem;
     }
-    .mkt-screenshot-card {
-        margin: 0 auto;
+}
+
+/* Téléphone en mode paysage : hero compact */
+@media (max-height: 480px) and (orientation: landscape) {
+    .mkt-hero {
+        min-height: auto;
+    }
+    .mkt-hero-inner {
+        padding: 5.5rem 0 2rem;
     }
 }
 </style>
